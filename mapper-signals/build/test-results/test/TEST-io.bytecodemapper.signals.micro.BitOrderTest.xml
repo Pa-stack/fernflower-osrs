@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.signals.micro.BitOrderTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-18T17:59:20" hostname="PRAGMATIQPASCAL" time="0.001">
+<testsuite name="io.bytecodemapper.signals.micro.BitOrderTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-18T18:21:27" hostname="PRAGMATIQPASCAL" time="0.001">
   <properties/>
   <testcase name="frozenOrderHas17" classname="io.bytecodemapper.signals.micro.BitOrderTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>

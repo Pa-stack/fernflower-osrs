@@ -6,3 +6,9 @@ io/bytecodemapper/signals/micro/MicroScoreTest.java
  io.bytecodemapper.signals.micro.MicroScoreTest
 io/bytecodemapper/signals/idf/IdfStoreTest.java
  io.bytecodemapper.signals.idf.IdfStoreTest
+io/bytecodemapper/signals/strings/StringTfidfTest.java
+ io.bytecodemapper.signals.strings.StringTfidfTest
+io/bytecodemapper/signals/calls/CallBagTfidfTest.java
+ io.bytecodemapper.signals.calls.CallBagTfidfTest
+io/bytecodemapper/signals/opcode/OpcodeFeaturesTest.java
+ io.bytecodemapper.signals.opcode.OpcodeFeaturesTest

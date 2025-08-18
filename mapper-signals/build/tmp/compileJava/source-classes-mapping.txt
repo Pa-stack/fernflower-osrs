@@ -22,3 +22,9 @@ io/bytecodemapper/signals/calls/CallBagExtractor.java
  io.bytecodemapper.signals.calls.CallBagExtractor$OwnerNormalizer
 io/bytecodemapper/signals/calls/CallBagTfidf.java
  io.bytecodemapper.signals.calls.CallBagTfidf
+io/bytecodemapper/signals/strings/StringBagExtractor.java
+ io.bytecodemapper.signals.strings.StringBagExtractor
+io/bytecodemapper/signals/strings/StringTfidf.java
+ io.bytecodemapper.signals.strings.StringTfidf
+io/bytecodemapper/signals/opcode/OpcodeFeatures.java
+ io.bytecodemapper.signals.opcode.OpcodeFeatures
