@@ -18,8 +18,8 @@ public class CoreApisTest {
         MethodNode mn = new MethodNode();
         ReducedCFG cfg = ReducedCFG.build(mn);
         Dominators dom = Dominators.compute(cfg);
-        Map<Integer, Set<Integer>> df = DF.compute(cfg, dom);
-        Map<Integer, Set<Integer>> tdf = DF.iterateToFixpoint(df);
+    Map<Integer, int[]> df = DF.compute(cfg, dom);
+    Map<Integer, int[]> tdf = DF.iterateToFixpoint(df);
         Map<Integer, Long> labels = WLRefinement.refineLabels(
                 Arrays.asList(1,2,3),
                 new HashMap<Integer, List<Integer>>(),

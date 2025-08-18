@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.CoreApisTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-18T08:52:19" hostname="PRAGMATIQPASCAL" time="0.008">
+<testsuite name="io.bytecodemapper.core.CoreApisTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-18T13:55:45" hostname="PRAGMATIQPASCAL" time="0.001">
   <properties/>
-  <testcase name="apiSurfacesExist" classname="io.bytecodemapper.core.CoreApisTest" time="0.008"/>
+  <testcase name="apiSurfacesExist" classname="io.bytecodemapper.core.CoreApisTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
