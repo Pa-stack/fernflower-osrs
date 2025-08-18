@@ -5,7 +5,9 @@ package io.bytecodemapper.cli;
 import io.bytecodemapper.core.fingerprint.*;
 import io.bytecodemapper.signals.micro.MicroPatternProviderImpl;
 // >>> AUTOGEN: BYTECODEMAPPER CLI ClassMatch use CliPaths BEGIN
+// >>> AUTOGEN: BYTECODEMAPPER CLI ClassMatch use resolveInputOutput BEGIN
 import io.bytecodemapper.cli.util.CliPaths;
+// <<< AUTOGEN: BYTECODEMAPPER CLI ClassMatch use resolveInputOutput END
 import java.nio.file.Path;
 // <<< AUTOGEN: BYTECODEMAPPER CLI ClassMatch use CliPaths END
 import org.objectweb.asm.tree.ClassNode;
@@ -32,10 +34,12 @@ final class ClassMatch {
         if (oldJar == null || newJar == null || out == null) {
             throw new IllegalArgumentException("Usage: classMatch --old <old.jar> --new <new.jar> --out <path>");
         }
-    // Use shared path resolver
-    Path oldPath = CliPaths.resolveMaybeModuleRelative(oldJar.getPath());
-    Path newPath = CliPaths.resolveMaybeModuleRelative(newJar.getPath());
-    Path outPath = CliPaths.resolveMaybeModuleRelative(out.getPath());
+    // >>> AUTOGEN: BYTECODEMAPPER CLI ClassMatch use resolveInputOutput BEGIN
+    // Use shared path resolver: inputs vs outputs
+    Path oldPath = CliPaths.resolveInput(oldJar.getPath());
+    Path newPath = CliPaths.resolveInput(newJar.getPath());
+    Path outPath = CliPaths.resolveOutput(out.getPath());
+    // <<< AUTOGEN: BYTECODEMAPPER CLI ClassMatch use resolveInputOutput END
     oldJar = oldPath.toFile();
     newJar = newPath.toFile();
     out = outPath.toFile();

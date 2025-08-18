@@ -1,3 +1,33 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook io-paths BEGIN -->
+### CLI Input/Output Path Semantics
+
+Inputs (`--old`, `--new`, `--classMap`):
+
+1. Resolved relative to the **current working directory** (CWD).
+2. If not found, resolved **relative to repo root**.
+3. Otherwise kept as the absolute of the provided relative path (no module anchoring).
+
+Outputs (`--out`):
+
+- If absolute → used as-is.
+- If invoked from **repo root** (has `mapper-cli/`), relative outputs are anchored under `repoRoot/mapper-cli/…`.
+- Otherwise, outputs are CWD-relative (e.g., inside `:mapper-cli`).
+
+This keeps artifact locations predictable while allowing flexible invocation.
+
+#### Examples
+
+```bash
+# From repo root:
+./gradlew :mapper-cli:run --args="classMatch --old testData/jars/old.jar --new testData/jars/new.jar --out build/classmap.txt"
+# Output: mapper-cli/build/classmap.txt
+
+# From module dir:
+(cd mapper-cli && ../gradlew run --args="methodMatch --old ../testData/jars/old.jar --new ../testData/jars/new.jar --classMap build/classmap.txt --out build/methodmap.txt")
+# Output: mapper-cli/build/methodmap.txt
+```
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook io-paths END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC classMatch path semantics BEGIN -->
 ### classMatch path semantics
 

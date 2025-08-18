@@ -5,7 +5,9 @@ import io.bytecodemapper.cli.method.*;
 import io.bytecodemapper.core.fingerprint.ClasspathScanner;
 import io.bytecodemapper.signals.idf.IdfStore;
 // >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch use CliPaths BEGIN
+// >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch use resolveInputOutput BEGIN
 import io.bytecodemapper.cli.util.CliPaths;
+// <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch use resolveInputOutput END
 // <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch use CliPaths END
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -31,11 +33,13 @@ final class MethodMatch {
             throw new IllegalArgumentException("Usage: methodMatch --old <old.jar> --new <new.jar> --classMap build/classmap.txt --out build/methodmap.txt");
         }
 
-    // Resolve paths via shared helper
-    Path oldPath = CliPaths.resolveMaybeModuleRelative(oldArg.toString());
-    Path newPath = CliPaths.resolveMaybeModuleRelative(newArg.toString());
-    Path classMapPath = CliPaths.resolveMaybeModuleRelative(classMapArg.toString());
-    Path outPath = CliPaths.resolveMaybeModuleRelative(outArg.toString());
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch use resolveInputOutput BEGIN
+    // Resolve paths via shared helper: inputs vs outputs
+    Path oldPath = CliPaths.resolveInput(oldArg.toString());
+    Path newPath = CliPaths.resolveInput(newArg.toString());
+    Path classMapPath = CliPaths.resolveInput(classMapArg.toString());
+    Path outPath = CliPaths.resolveOutput(outArg.toString());
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch use resolveInputOutput END
     File oldJar = oldPath.toFile();
     File newJar = newPath.toFile();
     File classMapFile = classMapPath.toFile();

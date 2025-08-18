@@ -6,39 +6,73 @@ import java.nio.file.*;
 public final class CliPaths {
     private CliPaths(){}
 
-    /** Resolve a path robustly for Gradle :mapper-cli runs and repo-root runs. */
-    public static Path resolveMaybeModuleRelative(String raw) {
+    /**
+     * Resolve an INPUT path:
+     * 1) as given (CWD-relative),
+     * 2) repo-root relative,
+     * 3) otherwise return the absolute of the original (no anchoring under mapper-cli).
+     * NEVER creates directories or re-anchors under module folders.
+     */
+    public static Path resolveInput(String raw) {
         if (raw == null) return null;
-        Path rawPath = Paths.get(raw);
-        if (rawPath.isAbsolute()) return rawPath.normalize();
+        Path rp = Paths.get(raw);
+        if (rp.isAbsolute()) return rp.normalize();
 
         Path cwd = Paths.get("").toAbsolutePath();
-        Path repoRoot = cwd;
-        if (cwd.getFileName() != null && "mapper-cli".equals(cwd.getFileName().toString())) {
-            Path parent = cwd.getParent();
-            if (parent != null) repoRoot = parent;
-        }
-        boolean atRepoRoot = Files.isDirectory(repoRoot.resolve("mapper-cli"));
 
-        // 1) Try CWD
         Path tryCwd = cwd.resolve(raw);
         if (Files.exists(tryCwd)) return tryCwd.normalize();
 
-        // 2) Try repo root
+        Path repoRoot = findRepoRoot(cwd);
         Path tryRepo = repoRoot.resolve(raw);
         if (Files.exists(tryRepo)) return tryRepo.normalize();
 
-        // 3) For outputs when invoked from repo root: anchor under mapper-cli/ without double-prefixing
-        if (atRepoRoot) {
-            // If caller already provided a path starting with "mapper-cli/", respect it as module-relative
-            if (rawPath.getNameCount() > 0 && "mapper-cli".equals(rawPath.getName(0).toString())) {
-                return repoRoot.resolve(rawPath).normalize();
-            }
-            return repoRoot.resolve("mapper-cli").resolve(rawPath).normalize();
-        }
-
-        // 4) Fallback: under CWD
+        // Fall back to absolute of original; callers should check existence.
         return tryCwd.normalize();
+    }
+
+    /**
+     * Resolve an OUTPUT path:
+     * 1) If absolute → return as-is.
+     * 2) If at repo root (has mapper-cli), anchor under repoRoot/mapper-cli/<raw> unless already starts with mapper-cli/.
+     * 3) Else CWD-relative.
+     * Caller may create parent dirs.
+     */
+    public static Path resolveOutput(String raw) {
+        if (raw == null) return null;
+        Path rp = Paths.get(raw);
+        if (rp.isAbsolute()) return rp.normalize();
+
+        Path cwd = Paths.get("").toAbsolutePath();
+        Path repoRoot = findRepoRoot(cwd);
+        boolean atRepoRoot = Files.isDirectory(repoRoot.resolve("mapper-cli"));
+
+        if (atRepoRoot) {
+            if (rp.getNameCount() > 0 && "mapper-cli".equals(rp.getName(0).toString())) {
+                return repoRoot.resolve(rp).normalize();
+            }
+            return repoRoot.resolve("mapper-cli").resolve(rp).normalize();
+        }
+        return cwd.resolve(rp).normalize();
+    }
+
+    /** Detect repo root as parent of mapper-cli when running inside modules; else use CWD. */
+    private static Path findRepoRoot(Path cwd) {
+        if (cwd.getFileName() != null && "mapper-cli".equals(cwd.getFileName().toString())) {
+            Path parent = cwd.getParent();
+            if (parent != null) return parent;
+        }
+        return cwd;
+    }
+
+    /**
+     * @deprecated Prefer resolveInput/resolveOutput for clarity.
+     * Retained for idempotency with earlier prompts.
+     */
+    @Deprecated
+    public static Path resolveMaybeModuleRelative(String raw) {
+        // Heuristic: assume outputs by default (old behavior).
+        return resolveOutput(raw);
     }
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI CliPaths END
