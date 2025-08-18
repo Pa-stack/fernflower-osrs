@@ -7,8 +7,10 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    implementation "org.ow2.asm:asm:9.2"
-    implementation "org.ow2.asm:asm-tree:9.2"
+    // Standardize ASM to Java-8-safe 7.3.1
+    implementation "org.ow2.asm:asm:7.3.1"
+    implementation "org.ow2.asm:asm-tree:7.3.1"
+    // asm-commons will be added in Component 11 for remapping; not needed yet here.
     implementation "it.unimi.dsi:fastutil:8.5.12"
 }
 
