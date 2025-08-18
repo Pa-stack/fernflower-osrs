@@ -16,12 +16,14 @@
     }
   ],
   // Fallbacks for some extensions
-  "java.jdt.ls.java.home": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
+  "java.jdt.ls.java.home": "C:\\Users\\pashq\\.jdks\\temurin-17.0.15",
 
   // Ensure Gradle extension uses JDK 8
   "java.import.gradle.java.home": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
   // "java.import.gradle.java.home": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
   "gradle.java.home": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
+  // Force VS Code to use the Gradle wrapper in this project
+  "java.import.gradle.wrapper.enabled": true,
 
   // Make integrated terminals/tasks default to JDK 8 when opened in this workspace
   "terminal.integrated.env.windows": {
