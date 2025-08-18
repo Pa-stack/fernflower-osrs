@@ -1,2 +1,4 @@
 io/bytecodemapper/signals/micro/BitOrderTest.java
  io.bytecodemapper.signals.micro.BitOrderTest
+io/bytecodemapper/signals/micro/MicroPatternExtractorTest.java
+ io.bytecodemapper.signals.micro.MicroPatternExtractorTest
