@@ -18,14 +18,16 @@ public final class ReducedCFG implements Opcodes {
 
     public enum ExceptionEdgePolicy { STRICT, LOOSE }
 
+    // >>> AUTOGEN: BYTECODEMAPPER ReducedCFG BLOCK MUTABILITY PATCH BEGIN
+    // Change Block to have mutable endIdx so mergeLinearChains() can extend a block span.
     public static final class Block {
         public final int id;             // stable: first-insn index
         public final int startIdx;       // index in the method insn list
-        public int endIdx;               // inclusive (mutable for merges)
+        public int endIdx;               // inclusive (MUTABLE: may be extended during merges)
         public final boolean isHandlerStart;
 
-        private IntArrayList succs = new IntArrayList();
-        private IntArrayList preds = new IntArrayList();
+        IntArrayList succs = new IntArrayList();
+        IntArrayList preds = new IntArrayList();
 
         Block(int id, int startIdx, int endIdx, boolean isHandlerStart) {
             this.id = id;
@@ -37,6 +39,7 @@ public final class ReducedCFG implements Opcodes {
         public int[] succs() { return toSortedDistinctArray(succs); }
         public int[] preds() { return toSortedDistinctArray(preds); }
     }
+    // >>> AUTOGEN: BYTECODEMAPPER ReducedCFG BLOCK MUTABILITY PATCH END
 
     private final MethodNode method;
     private final Int2ObjectMap<Block> blocks = new Int2ObjectOpenHashMap<Block>();
