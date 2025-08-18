@@ -40,13 +40,23 @@ public class OpcodeFeaturesTest implements Opcodes {
         assertEquals(1.0, sim, 1e-9);
     }
 
+    // >>> AUTOGEN: BYTECODEMAPPER TEST OpcodeFeaturesTest POLISH BEGIN
     @Test
     public void ngramCapturesOrderChanges() {
-        // 2-gram maps should differ for permuted sequence
+        // seqA: ILOAD, ILOAD, IADD, IRETURN
+        // seqB_permutation: ILOAD, IADD, ILOAD, IRETURN
+        // Intention: SAME histogram, DIFFERENT bigrams.
+
+        int[] h1 = OpcodeFeatures.opcodeHistogram(seqA());
+        int[] h2 = OpcodeFeatures.opcodeHistogram(seqB_permutation());
+        // Histogram should be identical (cosine == 1.0) even though order changed.
+        assertEquals(1.0, OpcodeFeatures.cosineHistogram(h1, h2), 1e-9);
+
         it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap g1 = OpcodeFeatures.opcodeNGram(seqA(), 2);
         it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap g2 = OpcodeFeatures.opcodeNGram(seqB_permutation(), 2);
         double sim2 = OpcodeFeatures.cosineNGram(g1, g2);
         assertTrue("order-sensitive similarity should drop below 1.0", sim2 < 1.0);
     }
+    // <<< AUTOGEN: BYTECODEMAPPER TEST OpcodeFeaturesTest POLISH END
 }
 // <<< AUTOGEN: BYTECODEMAPPER TEST OpcodeFeaturesTest END

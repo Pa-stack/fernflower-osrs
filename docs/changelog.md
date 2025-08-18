@@ -80,3 +80,15 @@
 - Java 8 & Gradle 6.4.9 compatible; deterministic & idempotent.
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component5 END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component6 BEGIN -->
+
+## [2025-08-18] Component 6 — Secondary signals (calls, strings, opcode)
+
+- Implemented **Call-bag TF-IDF** (excludes `java.*`, `javax.*`) with cosine similarity and stub owner normalization.
+- Implemented **String TF-IDF** (lightweight) with cosine similarity.
+- Implemented **Opcode features**: histogram + cosine, and optional 2–3-gram frequencies with sparse cosine.
+- Added unit tests ensuring stability: harmless reorderings leave histograms/call-bags unaffected.
+- Java 8 / Gradle 6.4.9 compatible and deterministic (sorted vocabulary).
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component6 END -->
