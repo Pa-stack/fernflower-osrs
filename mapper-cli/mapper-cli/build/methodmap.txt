@@ -1,3 +1,6 @@
+# BytecodeMapper Method Map
+# S_total = 0.45*calls + 0.25*micro + 0.15*opcode + 0.10*strings + 0.05*fields
+# abstain if (best-second) < 0.05 or best < 0.60
 # abstain below_tau | com/jagex/oldscape/pub/OtlTokenRequester#request(Ljava/lang/String;Ljava/net/URL;Ljava/util/Map;Ljava/lang/String;)Ljava/util/concurrent/Future; -> com/jagex/oldscape/pub/OtlTokenRequester#request(Ljava/lang/String;Ljava/net/URL;Ljava/util/Map;Ljava/lang/String;)Ljava/util/concurrent/Future; score=0.2500 second=-1.0000
 # abstain low_margin+below_tau | com/jagex/oldscape/pub/OtlTokenResponse#getToken()Ljava/lang/String; -> com/jagex/oldscape/pub/OtlTokenResponse#getToken()Ljava/lang/String; score=0.2500 second=0.2500
 # abstain low_margin+below_tau | com/jagex/oldscape/pub/OtlTokenResponse#isSuccess()Z -> com/jagex/oldscape/pub/OtlTokenResponse#getToken()Ljava/lang/String; score=0.2500 second=0.2500

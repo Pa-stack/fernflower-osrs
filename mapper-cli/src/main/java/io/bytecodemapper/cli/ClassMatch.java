@@ -4,6 +4,10 @@ package io.bytecodemapper.cli;
 
 import io.bytecodemapper.core.fingerprint.*;
 import io.bytecodemapper.signals.micro.MicroPatternProviderImpl;
+// >>> AUTOGEN: BYTECODEMAPPER CLI ClassMatch use CliPaths BEGIN
+import io.bytecodemapper.cli.util.CliPaths;
+import java.nio.file.Path;
+// <<< AUTOGEN: BYTECODEMAPPER CLI ClassMatch use CliPaths END
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.File;
@@ -17,7 +21,7 @@ import java.util.List;
 final class ClassMatch {
 
     static void run(String[] args) throws Exception {
-        File oldJar = null, newJar = null, out = null;
+    File oldJar = null, newJar = null, out = null;
         for (int i=0;i<args.length;i++) {
             String a = args[i];
             if ("--old".equals(a) && i+1<args.length) oldJar = new File(args[++i]);
@@ -28,11 +32,13 @@ final class ClassMatch {
         if (oldJar == null || newJar == null || out == null) {
             throw new IllegalArgumentException("Usage: classMatch --old <old.jar> --new <new.jar> --out <path>");
         }
-    // >>> AUTOGEN: PATH RESOLVE CALLS BEGIN
-    oldJar = resolveMaybeModuleRelative(oldJar);
-    newJar = resolveMaybeModuleRelative(newJar);
-    out = resolveOutMaybeModuleRelative(out);
-    // <<< AUTOGEN: PATH RESOLVE CALLS END
+    // Use shared path resolver
+    Path oldPath = CliPaths.resolveMaybeModuleRelative(oldJar.getPath());
+    Path newPath = CliPaths.resolveMaybeModuleRelative(newJar.getPath());
+    Path outPath = CliPaths.resolveMaybeModuleRelative(out.getPath());
+    oldJar = oldPath.toFile();
+    newJar = newPath.toFile();
+    out = outPath.toFile();
     if (!oldJar.isFile()) throw new FileNotFoundException("old jar not found: " + oldJar);
     if (!newJar.isFile()) throw new FileNotFoundException("new jar not found: " + newJar);
         if (out.getParentFile()!=null) out.getParentFile().mkdirs();
@@ -73,32 +79,6 @@ final class ClassMatch {
         return out;
     }
 
-    // >>> AUTOGEN: PATH RESOLVER HELPERS BEGIN
-    // Resolve input files (must exist). If running from :mapper-cli, use CWD; if running from repo root, try parent fallback.
-    private static File resolveMaybeModuleRelative(File f) throws java.io.IOException {
-        if (f == null) return null;
-        if (f.isAbsolute() || f.isFile()) return f.getCanonicalFile();
-        File cwd = new File(".").getCanonicalFile();
-        File parent = cwd.getParentFile();
-        if (parent != null) {
-            File alt = new File(parent, f.getPath());
-            if (alt.isFile()) return alt.getCanonicalFile();
-        }
-        return f.getCanonicalFile();
-    }
-
-    // Resolve output path robustly: if invoked from repo root, anchor relative paths to mapper-cli/; otherwise use CWD.
-    private static File resolveOutMaybeModuleRelative(File f) throws java.io.IOException {
-        if (f == null) return null;
-        if (f.isAbsolute()) return f.getCanonicalFile();
-        File cwd = new File(".").getCanonicalFile();
-        // If cwd looks like repo root (has mapper-cli/), write under mapper-cli by default
-        File module = new File(cwd, "mapper-cli");
-        if (module.isDirectory() && !cwd.getName().equals("mapper-cli")) {
-            return new File(module, f.getPath()).getCanonicalFile();
-        }
-        return f.getCanonicalFile();
-    }
-    // <<< AUTOGEN: PATH RESOLVER HELPERS END
+    // (Path resolver helpers removed in favor of CliPaths)
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI ClassMatch END

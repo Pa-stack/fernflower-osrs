@@ -1,10 +1,9 @@
 io/bytecodemapper/cli/PrintIdf.java
  io.bytecodemapper.cli.PrintIdf
-io/bytecodemapper/cli/ClassMatch.java
- io.bytecodemapper.cli.ClassMatch
- io.bytecodemapper.cli.ClassMatch$1
- io.bytecodemapper.cli.ClassMatch$2
- io.bytecodemapper.cli.ClassMatch$3
+io/bytecodemapper/cli/method/CandidateGenerator.java
+ io.bytecodemapper.cli.method.CandidateGenerator
+ io.bytecodemapper.cli.method.CandidateGenerator$1
+ io.bytecodemapper.cli.method.CandidateGenerator$Scored
 io/bytecodemapper/cli/method/MethodScorer.java
  io.bytecodemapper.cli.method.MethodScorer
  io.bytecodemapper.cli.method.MethodScorer$Result
@@ -17,12 +16,15 @@ io/bytecodemapper/cli/method/MethodFeatures.java
  io.bytecodemapper.cli.method.MethodFeatures
 io/bytecodemapper/cli/method/MethodRef.java
  io.bytecodemapper.cli.method.MethodRef
-io/bytecodemapper/cli/method/CandidateGenerator.java
- io.bytecodemapper.cli.method.CandidateGenerator
- io.bytecodemapper.cli.method.CandidateGenerator$1
- io.bytecodemapper.cli.method.CandidateGenerator$Scored
 io/bytecodemapper/cli/Main.java
  io.bytecodemapper.cli.Main
+io/bytecodemapper/cli/util/CliPaths.java
+ io.bytecodemapper.cli.util.CliPaths
+io/bytecodemapper/cli/ClassMatch.java
+ io.bytecodemapper.cli.ClassMatch
+ io.bytecodemapper.cli.ClassMatch$1
+ io.bytecodemapper.cli.ClassMatch$2
+ io.bytecodemapper.cli.ClassMatch$3
 io/bytecodemapper/cli/MethodMatch.java
  io.bytecodemapper.cli.MethodMatch
  io.bytecodemapper.cli.MethodMatch$1

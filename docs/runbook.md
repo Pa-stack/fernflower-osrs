@@ -97,3 +97,39 @@ Use `τ_accept` for final acceptance; abstain on low margin.
 
 See `mapper-signals/README.md` for API details.
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook signals END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook methodMatch BEGIN -->
+## Phase-2 Method Matching
+
+**Inputs:** `--old`, `--new`, `--classMap`, `--out`
+**Candidate generation:** per mapped class pair, top-K (default 7) nearest by **WL signature Hamming**.
+
+**Composite score:**
+
+```text
+S_total = 0.45*S_calls
+	+ 0.25*S_micro(α_mp=0.60)
+	+ 0.15*S_opcode
+	+ 0.10*S_strings
+	+ 0.05*S_fields  # (stub for now)
+```
+
+
+**Smart filters:**
+
+- Leaf vs non-Leaf penalty (−0.05)
+- Recursive mismatch penalty (−0.03)
+
+**Abstention:** if `(best − secondBest) < 0.05` **or** `best < τ_accept (0.60)`.
+
+**Owner normalization (calls):** old-side call owners are mapped through the **class map** so both sides compare in **new-space**.
+
+**CLI:**
+
+```bash
+./gradlew :mapper-cli:run --args="methodMatch --old old.jar --new new.jar --classMap build/classmap.txt --out build/methodmap.txt"
+```
+
+Output includes accepted pairs and # abstain … audit lines.
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook methodMatch END -->

@@ -4,6 +4,9 @@ package io.bytecodemapper.cli;
 import io.bytecodemapper.cli.method.*;
 import io.bytecodemapper.core.fingerprint.ClasspathScanner;
 import io.bytecodemapper.signals.idf.IdfStore;
+// >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch use CliPaths BEGIN
+import io.bytecodemapper.cli.util.CliPaths;
+// <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch use CliPaths END
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -28,11 +31,15 @@ final class MethodMatch {
             throw new IllegalArgumentException("Usage: methodMatch --old <old.jar> --new <new.jar> --classMap build/classmap.txt --out build/methodmap.txt");
         }
 
-        // Resolve paths robustly (repo root or :mapper-cli)
-        File oldJar = resolveMaybeModuleRelative(oldArg.toFile());
-        File newJar = resolveMaybeModuleRelative(newArg.toFile());
-        File classMapFile = resolveMaybeModuleRelative(classMapArg.toFile());
-        File outFile = resolveOutMaybeModuleRelative(outArg.toFile());
+    // Resolve paths via shared helper
+    Path oldPath = CliPaths.resolveMaybeModuleRelative(oldArg.toString());
+    Path newPath = CliPaths.resolveMaybeModuleRelative(newArg.toString());
+    Path classMapPath = CliPaths.resolveMaybeModuleRelative(classMapArg.toString());
+    Path outPath = CliPaths.resolveMaybeModuleRelative(outArg.toString());
+    File oldJar = oldPath.toFile();
+    File newJar = newPath.toFile();
+    File classMapFile = classMapPath.toFile();
+    File outFile = outPath.toFile();
 
         if (!oldJar.isFile()) throw new FileNotFoundException("old jar not found: " + oldJar);
         if (!newJar.isFile()) throw new FileNotFoundException("new jar not found: " + newJar);
@@ -59,7 +66,7 @@ final class MethodMatch {
 
         int matched=0, abstained=0, total=0;
 
-        PrintWriter pw = new PrintWriter(outFile, "UTF-8");
+    PrintWriter pw = new PrintWriter(outFile, "UTF-8");
         try {
             // >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch HEADER BEGIN
             pw.println("# BytecodeMapper Method Map");
@@ -163,29 +170,6 @@ final class MethodMatch {
             }
         });
         return ms;
-    }
-
-    // Reuse ClassMatch-style path resolution
-    private static File resolveMaybeModuleRelative(File f) throws java.io.IOException {
-        if (f == null) return null;
-        if (f.isAbsolute() || f.isFile()) return f.getCanonicalFile();
-        File cwd = new File(".").getCanonicalFile();
-        File parent = cwd.getParentFile();
-        if (parent != null) {
-            File alt = new File(parent, f.getPath());
-            if (alt.isFile()) return alt.getCanonicalFile();
-        }
-        return f.getCanonicalFile();
-    }
-    private static File resolveOutMaybeModuleRelative(File f) throws java.io.IOException {
-        if (f == null) return null;
-        if (f.isAbsolute()) return f.getCanonicalFile();
-        File cwd = new File(".").getCanonicalFile();
-        File module = new File(cwd, "mapper-cli");
-        if (module.isDirectory() && !cwd.getName().equals("mapper-cli")) {
-            return new File(module, f.getPath()).getCanonicalFile();
-        }
-        return f.getCanonicalFile();
     }
 
     private MethodMatch(){}

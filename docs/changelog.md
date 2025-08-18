@@ -101,3 +101,15 @@
 - Java 8 / Gradle 6.4.9 compatible and deterministic (sorted vocabulary).
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component6 END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component8 BEGIN -->
+
+## [2025-08-18] Component 8 — Phase-2 Method matching
+
+- Candidate generation: top-K by WL signature Hamming distance (default K=7).
+- Composite score: 0.45*calls + 0.25*micro(α_mp=0.60) + 0.15*opcode + 0.10*strings + 0.05*fields (stub).
+- Smart filters: Leaf vs non-Leaf penalty, Recursive mismatch penalty.
+- Abstention when (best-secondBest) < 0.05 or best < τ_accept(0.60).
+- CLI: `methodMatch --old ... --new ... --classMap build/classmap.txt --out build/methodmap.txt`.
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component8 END -->
