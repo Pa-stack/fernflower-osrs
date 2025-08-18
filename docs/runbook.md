@@ -1,3 +1,22 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC classMatch path semantics BEGIN -->
+### classMatch path semantics
+
+The `classMatch` subcommand resolves `--old`, `--new`, and `--out` paths in this order:
+
+1. As given (relative to current working directory).
+2. Relative to the **repo root**.
+3. Relative to the **parent of `mapper-cli/`** (when invoked via `:mapper-cli:run`).
+
+This makes the command resilient whether it is run from the repo root or inside module directories.
+
+Example:
+
+```bash
+./gradlew :mapper-cli:run --args="classMatch --old testdata/old.jar --new testdata/new.jar --out build/classmap.txt"
+# writes mapper-cli/build/classmap.txt
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC classMatch path semantics END -->
+```
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook classMatch BEGIN -->
 ## Phase-1 Class Matching
 
