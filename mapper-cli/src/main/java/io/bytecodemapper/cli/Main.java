@@ -30,6 +30,14 @@ public final class Main {
             return;
         }
         // <<< AUTOGEN: BYTECODEMAPPER CLI Main classMatch DISPATCH END
+        // >>> AUTOGEN: BYTECODEMAPPER CLI Main methodMatch DISPATCH BEGIN
+        if ("methodMatch".equalsIgnoreCase(args[0])) {
+            String[] tail = new String[Math.max(0, args.length - 1)];
+            if (tail.length > 0) System.arraycopy(args, 1, tail, 0, tail.length);
+            MethodMatch.run(tail);
+            return;
+        }
+        // <<< AUTOGEN: BYTECODEMAPPER CLI Main methodMatch DISPATCH END
         if ("mapOldNew".equals(args[0])) {
             File out = new File(findArg(args, "--out", "build/mappings.tiny"));
             // Placeholder: write a dummy class mapping to prove pipeline works.
