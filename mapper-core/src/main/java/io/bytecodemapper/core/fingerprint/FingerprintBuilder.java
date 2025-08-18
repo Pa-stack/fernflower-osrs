@@ -6,6 +6,7 @@ import io.bytecodemapper.core.dom.Dominators;
 import io.bytecodemapper.core.hash.StableHash64;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.BitSet;
@@ -49,7 +50,20 @@ public final class FingerprintBuilder {
             bag.add(sig);
         }
 
-        return new ClassFingerprint(cn.name, hist, bag);
+        int methodCount = cn.methods == null ? 0 : cn.methods.size();
+        int fieldCount = cn.fields == null ? 0 : cn.fields.size();
+        String superName = cn.superName;
+        String[] interfaces = toStringArray(cn.interfaces);
+
+        return new ClassFingerprint(cn.name, hist, bag, methodCount, fieldCount, superName, interfaces);
+    }
+
+    private static String[] toStringArray(List<?> list) {
+        if (list == null || list.isEmpty()) return new String[0];
+        String[] out = new String[list.size()];
+        for (int i = 0; i < list.size(); i++) out[i] = String.valueOf(list.get(i));
+        java.util.Arrays.sort(out);
+        return out;
     }
 
     private static long wlSignature64(String ownerInternalName, MethodNode mn) {

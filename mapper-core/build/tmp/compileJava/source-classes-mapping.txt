@@ -1,29 +1,32 @@
-io/bytecodemapper/core/hash/StableHash64.java
- io.bytecodemapper.core.hash.StableHash64
-io/bytecodemapper/core/assign/GreedyAssign.java
- io.bytecodemapper.core.assign.GreedyAssign
- io.bytecodemapper.core.assign.GreedyAssign$1
+io/bytecodemapper/core/dom/Dominators.java
+ io.bytecodemapper.core.dom.Dominators
+io/bytecodemapper/core/df/DF.java
+ io.bytecodemapper.core.df.DF
+io/bytecodemapper/core/fingerprint/ClassScoring.java
+ io.bytecodemapper.core.fingerprint.ClassScoring
 io/bytecodemapper/core/normalize/Normalizer.java
  io.bytecodemapper.core.normalize.Normalizer
  io.bytecodemapper.core.normalize.Normalizer$Options
  io.bytecodemapper.core.normalize.Normalizer$Result
  io.bytecodemapper.core.normalize.Normalizer$Stats
-io/bytecodemapper/core/dom/Dominators.java
- io.bytecodemapper.core.dom.Dominators
-io/bytecodemapper/core/df/DF.java
- io.bytecodemapper.core.df.DF
-io/bytecodemapper/core/cfg/ReducedCFG.java
- io.bytecodemapper.core.cfg.ReducedCFG
- io.bytecodemapper.core.cfg.ReducedCFG$1
- io.bytecodemapper.core.cfg.ReducedCFG$Block
- io.bytecodemapper.core.cfg.ReducedCFG$ExceptionEdgePolicy
 io/bytecodemapper/core/wl/WLRefinement.java
  io.bytecodemapper.core.wl.WLRefinement
  io.bytecodemapper.core.wl.WLRefinement$MethodSignature
+io/bytecodemapper/core/fingerprint/ClassFingerprint.java
+ io.bytecodemapper.core.fingerprint.ClassFingerprint
+io/bytecodemapper/core/assign/GreedyAssign.java
+ io.bytecodemapper.core.assign.GreedyAssign
+ io.bytecodemapper.core.assign.GreedyAssign$1
 io/bytecodemapper/core/fingerprint/MethodSigBag.java
  io.bytecodemapper.core.fingerprint.MethodSigBag
  io.bytecodemapper.core.fingerprint.MethodSigBag$1
  io.bytecodemapper.core.fingerprint.MethodSigBag$Entry
+io/bytecodemapper/core/fingerprint/GreedyClassMatcher.java
+ io.bytecodemapper.core.fingerprint.GreedyClassMatcher
+ io.bytecodemapper.core.fingerprint.GreedyClassMatcher$1
+ io.bytecodemapper.core.fingerprint.GreedyClassMatcher$2
+ io.bytecodemapper.core.fingerprint.GreedyClassMatcher$Edge
+ io.bytecodemapper.core.fingerprint.GreedyClassMatcher$Pair
 io/bytecodemapper/core/fingerprint/MicroPatternProvider.java
  io.bytecodemapper.core.fingerprint.MicroPatternProvider
 io/bytecodemapper/core/fingerprint/ClasspathScanner.java
@@ -31,8 +34,13 @@ io/bytecodemapper/core/fingerprint/ClasspathScanner.java
  io.bytecodemapper.core.fingerprint.ClasspathScanner$1
  io.bytecodemapper.core.fingerprint.ClasspathScanner$2
  io.bytecodemapper.core.fingerprint.ClasspathScanner$Sink
-io/bytecodemapper/core/fingerprint/ClassFingerprint.java
- io.bytecodemapper.core.fingerprint.ClassFingerprint
+io/bytecodemapper/core/cfg/ReducedCFG.java
+ io.bytecodemapper.core.cfg.ReducedCFG
+ io.bytecodemapper.core.cfg.ReducedCFG$1
+ io.bytecodemapper.core.cfg.ReducedCFG$Block
+ io.bytecodemapper.core.cfg.ReducedCFG$ExceptionEdgePolicy
+io/bytecodemapper/core/hash/StableHash64.java
+ io.bytecodemapper.core.hash.StableHash64
 io/bytecodemapper/core/fingerprint/FingerprintBuilder.java
  io.bytecodemapper.core.fingerprint.FingerprintBuilder
  io.bytecodemapper.core.fingerprint.FingerprintBuilder$1
