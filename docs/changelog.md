@@ -10,6 +10,15 @@
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component1 END -->
 
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component4-Polish BEGIN -->
+## [2025-08-18] Component 4 — micropattern extractor polish
+
+- Owner-aware extraction is now null-safe; when owner is unknown, `Recursive` and `SameName` are left unset.
+- Clarified `Looping` detection to explicitly check successor edges (u→v) where `v` dominates `u`.
+- Deprecated the owner-less overload in favor of the owner-aware API; Javadoc updated.
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component4-Polish END -->
+
 <!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component2 BEGIN -->
 ## [2025-08-18] Component 2 — WL refinement
 

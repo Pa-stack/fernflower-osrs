@@ -67,7 +67,7 @@ goto fail
 :execute
 @rem Setup the command line
 
-set CLASSPATH=%APP_HOME%\lib\mapper-cli.jar;%APP_HOME%\lib\mapper-io.jar;%APP_HOME%\lib\mapper-signals.jar;%APP_HOME%\lib\mapper-core.jar;%APP_HOME%\lib\asm-tree-9.2.jar;%APP_HOME%\lib\asm-9.2.jar;%APP_HOME%\lib\fastutil-8.5.12.jar
+set CLASSPATH=%APP_HOME%\lib\mapper-cli.jar;%APP_HOME%\lib\mapper-io.jar;%APP_HOME%\lib\mapper-signals.jar;%APP_HOME%\lib\mapper-core.jar;%APP_HOME%\lib\asm-commons-7.3.1.jar;%APP_HOME%\lib\asm-analysis-7.3.1.jar;%APP_HOME%\lib\asm-tree-7.3.1.jar;%APP_HOME%\lib\asm-7.3.1.jar;%APP_HOME%\lib\fastutil-8.5.12.jar
 
 
 @rem Execute mapper-cli

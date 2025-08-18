@@ -31,3 +31,11 @@ Canonical order (indices) — **do not reorder**:
 
 _Source catalogue: Singer et al., “Fundamental Nano-Patterns to Characterize and Classify Java Methods,” Table 1 (17 patterns)._
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC bitset.md END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC bitset.md OWNER NOTE BEGIN -->
+## Owner context (extraction API)
+
+For accurate **Recursive** and **SameName** detection, the extractor requires the declaring class’ internal name.
+When `ownerInternalName` is **null** (owner-less overload), these two bits are **not evaluated** (left unset) to avoid false positives.
+All other bits are unaffected.
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC bitset.md OWNER NOTE END -->

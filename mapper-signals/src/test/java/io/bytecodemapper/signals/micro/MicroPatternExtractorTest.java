@@ -180,13 +180,23 @@ public class MicroPatternExtractorTest implements Opcodes {
     @Test public void bit10_Looping_only() {
         MethodNode m = mn("m","(I)I");
         InsnList in = m.instructions = new InsnList();
-        // create a back-edge: label L then GOTO L; also break Leaf
-        LabelNode L = new LabelNode();
-        in.add(L);
-        addLeafBreaker(in);
-        in.add(new JumpInsnNode(GOTO, L)); // back-edge
-        in.add(new InsnNode(ICONST_0));
-        in.add(new InsnNode(IRETURN));
+    // Create a two-block loop with a back-edge body->head (u!=v) and an exit path.
+    LabelNode H = new LabelNode(); // loop header
+    LabelNode B = new LabelNode(); // loop body
+    LabelNode E = new LabelNode(); // exit
+
+    in.add(H);
+    // benign branch to split blocks and ensure StraightLine=false
+    in.add(new InsnNode(ACONST_NULL));
+    in.add(new JumpInsnNode(IFNONNULL, E)); // jump to exit if non-null (never taken)
+
+    in.add(B);
+    addLeafBreaker(in); // ensure Leaf=false
+    in.add(new JumpInsnNode(GOTO, H)); // back-edge to header
+
+    in.add(E);
+    in.add(new InsnNode(ICONST_0));
+    in.add(new InsnNode(IRETURN));
         BitSet bs = extract("X/Owner", m);
         assertOnly(bs, MicroPatternExtractor.LOOPING);
     }
