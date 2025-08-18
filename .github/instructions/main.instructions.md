@@ -1,3 +1,7 @@
+---
+applyTo: '**'
+---
+
 # BytecodeMapper — Integration Guide for DF/TDF-centric Mapper in `osrs-fernflower` (Gradle 6.4.9, Java 1.8)
 
 ## Purpose (read me first)
