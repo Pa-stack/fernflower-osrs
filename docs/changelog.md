@@ -36,3 +36,17 @@
 
 - Result: `WLRefinementTest.differentConstantsSameWL` no longer times out; tests pass.
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component2-Fix END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component3 BEGIN -->
+
+## [2025-08-18] Component 3 — Normalizer + CFG wiring
+
+- Added `Normalizer` with options:
+	- `stripOpaquePredicates` (ICONST_0/1 + IFEQ/IFNE, constant–constant IF_ICMP*, constant-key switches),
+	- `removeTrivialRuntimeExceptionWrappers` (exact NEW/DUP/[LDC]/<init>/ATHROW sequence),
+	- `detectFlattening` heuristic (early big switch + high GOTO ratio) → sets `bypassDFTDF`.
+
+- Wired `ReducedCFG.build(...)` to normalize methods before CFG construction (analysis CFG is post-normalization).
+- Added tests verifying branch/switch folding, wrapper removal, and flattening detection.
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component3 END -->

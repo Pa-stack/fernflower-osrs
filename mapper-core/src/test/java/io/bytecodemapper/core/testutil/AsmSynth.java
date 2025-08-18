@@ -170,5 +170,120 @@ public final class AsmSynth implements Opcodes {
         in.add(new InsnNode(RETURN));
         return mn;
     }
+
+    // Non-folding variants to survive Normalizer's constant-folding
+
+    // diamond: use IF_ACMPNE with two nulls (not folded by Normalizer)
+    public static MethodNode diamondNoFold() {
+        MethodNode mn = mnInit();
+        InsnList insn = mn.instructions;
+        LabelNode Lthen = new LabelNode();
+        LabelNode Ljoin = new LabelNode();
+
+        insn.add(new InsnNode(ACONST_NULL));
+        insn.add(new InsnNode(ACONST_NULL));
+        insn.add(new JumpInsnNode(IF_ACMPNE, Lthen));
+        // else
+        insn.add(new InsnNode(NOP));
+        insn.add(new JumpInsnNode(GOTO, Ljoin));
+        // then
+        insn.add(Lthen);
+        insn.add(new InsnNode(NOP));
+        // join
+        insn.add(Ljoin);
+        insn.add(new InsnNode(RETURN));
+        return mn;
+    }
+
+    // simple loop: header with IF_ACMPEQ (two different objects) so not folded; back-edge via GOTO
+    public static MethodNode loopSimpleNoFold() {
+        MethodNode mn = mnInit();
+        InsnList in = mn.instructions;
+        LabelNode L = new LabelNode();
+        LabelNode Lend = new LabelNode();
+
+        in.add(L);
+        // push two distinct objects
+        in.add(new TypeInsnNode(NEW, "java/lang/Object"));
+        in.add(new InsnNode(DUP));
+        in.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        in.add(new TypeInsnNode(NEW, "java/lang/Object"));
+        in.add(new InsnNode(DUP));
+        in.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        // if equal, exit (never equal), so fallthrough into body
+        in.add(new JumpInsnNode(IF_ACMPEQ, Lend));
+        // body
+        in.add(new InsnNode(NOP));
+        // back-edge
+        in.add(new JumpInsnNode(GOTO, L));
+        in.add(Lend);
+        in.add(new InsnNode(RETURN));
+        return mn;
+    }
+
+    // nested loops: both conditions use IF_ACMPEQ with distinct objects to avoid folding
+    public static MethodNode loopNestedNoFold() {
+        MethodNode mn = mnInit();
+        InsnList in = mn.instructions;
+        LabelNode A = new LabelNode(); // outer head
+        LabelNode B = new LabelNode(); // inner head
+        LabelNode C = new LabelNode(); // after inner
+        LabelNode D = new LabelNode(); // after outer
+
+        in.add(A);
+        // outer condition: two distinct objects
+        in.add(new TypeInsnNode(NEW, "java/lang/Object"));
+        in.add(new InsnNode(DUP));
+        in.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        in.add(new TypeInsnNode(NEW, "java/lang/Object"));
+        in.add(new InsnNode(DUP));
+        in.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        in.add(new JumpInsnNode(IF_ACMPEQ, D)); // exit outer if equal (never)
+
+        // inner
+        in.add(B);
+        // inner condition: two distinct objects
+        in.add(new TypeInsnNode(NEW, "java/lang/Object"));
+        in.add(new InsnNode(DUP));
+        in.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        in.add(new TypeInsnNode(NEW, "java/lang/Object"));
+        in.add(new InsnNode(DUP));
+        in.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        in.add(new JumpInsnNode(IF_ACMPEQ, C)); // exit inner if equal (never)
+        in.add(new InsnNode(NOP));
+        in.add(new JumpInsnNode(GOTO, B)); // inner back-edge
+        in.add(C);
+        in.add(new JumpInsnNode(GOTO, A)); // outer back-edge
+        in.add(D);
+        in.add(new InsnNode(RETURN));
+        return mn;
+    }
+
+    // table switch with non-constant producer: use ARRAYLENGTH of a new array so Normalizer won't fold
+    public static MethodNode tableSwitchNoFold() {
+        MethodNode mn = mnInit();
+        InsnList in = mn.instructions;
+        LabelNode L0 = new LabelNode();
+        LabelNode L1 = new LabelNode();
+        LabelNode Ldef = new LabelNode();
+        LabelNode Lend = new LabelNode();
+
+        // Compute a value via ARRAYLENGTH; still constant, but not recognized by foldConstantSwitches
+        in.add(new IntInsnNode(BIPUSH, 1));
+        in.add(new IntInsnNode(NEWARRAY, T_INT));
+        in.add(new InsnNode(ARRAYLENGTH));
+        in.add(new TableSwitchInsnNode(0, 1, Ldef, new LabelNode[]{L0, L1}));
+        in.add(L0);
+        in.add(new InsnNode(NOP));
+        in.add(new JumpInsnNode(GOTO, Lend));
+        in.add(L1);
+        in.add(new InsnNode(NOP));
+        in.add(new JumpInsnNode(GOTO, Lend));
+        in.add(Ldef);
+        in.add(new InsnNode(NOP));
+        in.add(Lend);
+        in.add(new InsnNode(RETURN));
+        return mn;
+    }
 }
 // <<< AUTOGEN: BYTECODEMAPPER TEST AsmSynth END

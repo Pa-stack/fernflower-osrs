@@ -44,7 +44,7 @@ public class ReducedCfgDomDfTest {
 
     @Test
     public void diamondDf() {
-        MethodNode mn = AsmSynth.diamond();
+    MethodNode mn = AsmSynth.diamondNoFold();
         ReducedCFG cfg = ReducedCFG.build(mn);
         Dominators dom = Dominators.compute(cfg);
         Map<Integer, int[]> df = DF.compute(cfg, dom);
@@ -65,7 +65,7 @@ public class ReducedCfgDomDfTest {
 
     @Test
     public void simpleLoop() {
-        MethodNode mn = AsmSynth.loopSimple();
+    MethodNode mn = AsmSynth.loopSimpleNoFold();
         ReducedCFG cfg = ReducedCFG.build(mn);
         Dominators dom = Dominators.compute(cfg);
         Map<Integer,int[]> df = DF.compute(cfg, dom);
@@ -87,7 +87,7 @@ public class ReducedCfgDomDfTest {
 
     @Test
     public void nestedLoops() {
-        MethodNode mn = AsmSynth.loopNested();
+    MethodNode mn = AsmSynth.loopNestedNoFold();
         ReducedCFG cfg = ReducedCFG.build(mn);
         Dominators dom = Dominators.compute(cfg);
         Map<Integer,int[]> df = DF.compute(cfg, dom);
@@ -114,7 +114,7 @@ public class ReducedCfgDomDfTest {
 
     @Test
     public void tableSwitchEdges() {
-        MethodNode mn = AsmSynth.tableSwitch();
+    MethodNode mn = AsmSynth.tableSwitchNoFold();
         ReducedCFG cfg = ReducedCFG.build(mn);
         // Expect at least 3 successors from the switch block (2 cases + default)
         int maxSucc = 0;

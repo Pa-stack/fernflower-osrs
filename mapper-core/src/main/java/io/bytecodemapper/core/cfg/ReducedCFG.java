@@ -73,18 +73,26 @@ public final class ReducedCFG implements Opcodes {
 
     // ---- Build API ----
 
+    // >>> AUTOGEN: BYTECODEMAPPER ReducedCFG NORMALIZE PATCH BEGIN
+    // Find the two build(...) entrypoints and route through Normalizer
+
     public static ReducedCFG build(MethodNode mn) {
         return build(mn, ExceptionEdgePolicy.LOOSE);
     }
 
     public static ReducedCFG build(MethodNode mn, ExceptionEdgePolicy policy) {
-        ReducedCFG cfg = new ReducedCFG(mn);
+        // Normalize in-place with defaults before CFG construction
+        io.bytecodemapper.core.normalize.Normalizer.Result norm =
+                io.bytecodemapper.core.normalize.Normalizer.normalize(mn, io.bytecodemapper.core.normalize.Normalizer.Options.defaults());
+
+        ReducedCFG cfg = new ReducedCFG(norm.method);
         cfg.buildBlocks(policy);
         cfg.dropUnreachable();
         cfg.mergeLinearChains();
         cfg.sortEdges();
         return cfg;
     }
+    // >>> AUTOGEN: BYTECODEMAPPER ReducedCFG NORMALIZE PATCH END
 
     // ---- Internals ----
 
