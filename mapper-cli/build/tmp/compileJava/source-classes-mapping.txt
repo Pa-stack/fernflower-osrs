@@ -1,4 +1,9 @@
 io/bytecodemapper/cli/PrintIdf.java
  io.bytecodemapper.cli.PrintIdf
+io/bytecodemapper/cli/ClassMatch.java
+ io.bytecodemapper.cli.ClassMatch
+ io.bytecodemapper.cli.ClassMatch$1
+ io.bytecodemapper.cli.ClassMatch$2
+ io.bytecodemapper.cli.ClassMatch$3
 io/bytecodemapper/cli/Main.java
  io.bytecodemapper.cli.Main
