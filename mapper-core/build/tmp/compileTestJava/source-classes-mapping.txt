@@ -4,5 +4,7 @@ io/bytecodemapper/core/assign/GreedyAssignTest.java
  io.bytecodemapper.core.assign.GreedyAssignTest
 io/bytecodemapper/core/testutil/AsmSynth.java
  io.bytecodemapper.core.testutil.AsmSynth
+io/bytecodemapper/core/WLRefinementTest.java
+ io.bytecodemapper.core.WLRefinementTest
 io/bytecodemapper/core/ReducedCfgDomDfTest.java
  io.bytecodemapper.core.ReducedCfgDomDfTest

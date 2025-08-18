@@ -217,6 +217,58 @@ public final class WLRefinement {
         String s = "FINAL|" + Long.toUnsignedString(multiset) + "|B=" + blockCount + "|L=" + loopCount;
         return StableHash64.hashUtf8(s);
     }
+
+    // ---- generic API for tests/backward-compat ----
+    /**
+     * Deterministic WL relabeling over an abstract graph, for testing convenience.
+     * nodes: list of node ids, preds/succs: adjacency as lists of node ids, labels: initial labels.
+     * Returns a fresh map of final labels after given iterations.
+     */
+    public static Map<Integer, Long> refineLabels(
+            java.util.List<Integer> nodes,
+            java.util.Map<Integer, java.util.List<Integer>> preds,
+            java.util.Map<Integer, java.util.List<Integer>> succs,
+            java.util.Map<Integer, Long> labels,
+            int iterations) {
+        // Defensive copies and deterministic order
+        int n = nodes == null ? 0 : nodes.size();
+        int[] order = new int[n];
+        for (int i=0;i<n;i++) order[i] = nodes.get(i).intValue();
+        java.util.Arrays.sort(order);
+
+        it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap cur = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap();
+        for (int id : order) {
+            Long v = labels.get(id);
+            cur.put(id, v == null ? 0L : v.longValue());
+        }
+
+        for (int k=0;k<Math.max(0, iterations);k++) {
+            it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap next = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap(cur.size());
+            for (int id : order) {
+                long base = cur.get(id);
+                long predH = hashNeighborMultiset(cur, preds.get(id));
+                long succH = hashNeighborMultiset(cur, succs.get(id));
+                long lbl = hashConcat(base, predH, succH);
+                next.put(id, lbl);
+            }
+            cur = next;
+        }
+        java.util.Map<Integer, Long> out = new java.util.LinkedHashMap<Integer, Long>(order.length);
+        for (int id : order) out.put(id, cur.get(id));
+        return out;
+    }
+
+    private static long hashNeighborMultiset(it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap labels,
+                                             java.util.List<Integer> neigh) {
+        if (neigh == null || neigh.isEmpty()) return StableHash64.hashUtf8("MS|");
+        long[] vals = new long[neigh.size()];
+        for (int i=0;i<neigh.size();i++) vals[i] = labels.get(neigh.get(i).intValue());
+        java.util.Arrays.sort(vals);
+        StringBuilder sb = new StringBuilder();
+        sb.append("MSG").append('|');
+        for (long v : vals) sb.append(Long.toUnsignedString(v)).append(',');
+        return StableHash64.hashUtf8(sb.toString());
+    }
 }
 // <<< AUTOGEN: BYTECODEMAPPER WLRefinement END
 

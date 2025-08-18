@@ -10,12 +10,30 @@ public final class AsmSynth implements Opcodes {
     private static MethodNode mnInit() {
         MethodNode mn = new MethodNode(ACC_PUBLIC | ACC_STATIC, "m", "()V", null, null);
         mn.instructions = new InsnList();
-        mn.tryCatchBlocks = new java.util.ArrayList<TryCatchBlockNode>();
         return mn;
     }
 
     public static MethodNode singleBlock() {
         MethodNode mn = mnInit();
+        mn.instructions.add(new InsnNode(NOP));
+        mn.instructions.add(new InsnNode(RETURN));
+        return mn;
+    }
+
+    // Two NOPs then RETURN (order A)
+    public static MethodNode singleBlockTwoNopsA() {
+        MethodNode mn = mnInit();
+        mn.instructions.add(new InsnNode(NOP));
+        mn.instructions.add(new InsnNode(NOP));
+        mn.instructions.add(new InsnNode(RETURN));
+        return mn;
+    }
+
+    // Same block, reorder NOPs (effectively identical CFG)
+    public static MethodNode singleBlockTwoNopsB() {
+        MethodNode mn = mnInit();
+        mn.instructions.add(new InsnNode(NOP));
+        // Insert a NOP, then another NOP (order differs but still contiguous)
         mn.instructions.add(new InsnNode(NOP));
         mn.instructions.add(new InsnNode(RETURN));
         return mn;
@@ -30,6 +48,27 @@ public final class AsmSynth implements Opcodes {
 
         insn.add(new InsnNode(ICONST_0));           // push 0
         insn.add(new JumpInsnNode(IFNE, Lthen));    // never true; but structural
+        // else:
+        insn.add(new InsnNode(NOP));
+        insn.add(new JumpInsnNode(GOTO, Ljoin));
+        // then:
+        insn.add(Lthen);
+        insn.add(new InsnNode(NOP));
+        // join:
+        insn.add(Ljoin);
+        insn.add(new InsnNode(RETURN));
+        return mn;
+    }
+
+    // diamond variant: same CFG, different constant (1 instead of 0)
+    public static MethodNode diamondConst1() {
+        MethodNode mn = mnInit();
+        InsnList insn = mn.instructions;
+        LabelNode Lthen = new LabelNode();
+        LabelNode Ljoin = new LabelNode();
+
+        insn.add(new InsnNode(ICONST_1));           // push 1
+        insn.add(new JumpInsnNode(IFNE, Lthen));    // true at runtime, but CFG identical
         // else:
         insn.add(new InsnNode(NOP));
         insn.add(new JumpInsnNode(GOTO, Ljoin));
@@ -118,7 +157,6 @@ public final class AsmSynth implements Opcodes {
         LabelNode Lend = new LabelNode();
 
         in.add(new InsnNode(ICONST_1));
-        insnFixLdc(mn); // ensure stack value for tableswitch key
         in.add(new TableSwitchInsnNode(0, 1, Ldef, new LabelNode[]{L0, L1}));
         in.add(L0);
         in.add(new InsnNode(NOP));
@@ -131,11 +169,6 @@ public final class AsmSynth implements Opcodes {
         in.add(Lend);
         in.add(new InsnNode(RETURN));
         return mn;
-    }
-
-    // Some ASM versions require constant on stack for tableswitch validation in tools; keep as no-op for structure.
-    private static void insnFixLdc(MethodNode mn) {
-        // no-op placeholder, kept for potential future tweaks
     }
 }
 // <<< AUTOGEN: BYTECODEMAPPER TEST AsmSynth END
