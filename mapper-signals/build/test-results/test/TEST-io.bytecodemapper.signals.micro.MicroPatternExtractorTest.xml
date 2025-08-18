@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2025-08-18T17:46:20" hostname="PRAGMATIQPASCAL" time="0.032">
+<testsuite name="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2025-08-18T17:55:23" hostname="PRAGMATIQPASCAL" time="0.036">
   <properties/>
-  <testcase name="bit1_NoReturn_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.025"/>
+  <testcase name="bit1_NoReturn_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.028"/>
   <testcase name="bit12_LocalReader_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
   <testcase name="bit2_Recursive_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
   <testcase name="bit13_LocalWriter_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
-  <testcase name="bit8_TypeManipulator_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
-  <testcase name="bit15_ArrayReader_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
+  <testcase name="bit8_TypeManipulator_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
+  <testcase name="bit15_ArrayReader_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
   <testcase name="bit0_NoParams_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
-  <testcase name="bit3_SameName_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
-  <testcase name="bit5_ObjectCreator_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
-  <testcase name="bit6_FieldReader_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
+  <testcase name="bit3_SameName_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
+  <testcase name="bit5_ObjectCreator_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
+  <testcase name="bit6_FieldReader_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
   <testcase name="bit16_ArrayWriter_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
-  <testcase name="bit14_ArrayCreator_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
-  <testcase name="bit10_Looping_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
+  <testcase name="bit14_ArrayCreator_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
+  <testcase name="bit10_Looping_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
   <testcase name="bit11_Exceptions_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
   <testcase name="bit7_FieldWriter_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
-  <testcase name="bit4_Leaf_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.001"/>
+  <testcase name="bit4_Leaf_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
   <testcase name="bit9_StraightLine_only" classname="io.bytecodemapper.signals.micro.MicroPatternExtractorTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
