@@ -1,8 +1,8 @@
 {
   // Use PowerShell 7 for the integrated terminal (enables &&)
-  "terminal.integrated.shell.windows": "C:/Program Files/PowerShell/7/pwsh.exe",
+  "terminal.integrated.shell.windows": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
   "terminal.integrated.shellArgs.windows": [],
-
+  "terminal.external.windowsExec": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
   // Use Java 8 across the workspace
   "spring.initializr.defaultJavaVersion": "8",
   "maven.terminal.customEnv": [
