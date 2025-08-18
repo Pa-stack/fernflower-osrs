@@ -13,6 +13,13 @@ public final class Main {
             System.out.println("Commands:");
             System.out.println("  mapOldNew --old <old.jar> --new <new.jar> --out <out.tiny>");
             System.out.println("  applyMappings --inJar <in.jar> --mappings <mappings.tiny> --out <out.jar>");
+            System.out.println("  printIdf --out <path> [--from <existing.properties>] [--lambda 0.9]");
+            return;
+        }
+        if ("printIdf".equalsIgnoreCase(args[0])) {
+            String[] tail = new String[Math.max(0, args.length - 1)];
+            if (tail.length > 0) System.arraycopy(args, 1, tail, 0, tail.length);
+            PrintIdf.run(tail);
             return;
         }
         if ("mapOldNew".equals(args[0])) {

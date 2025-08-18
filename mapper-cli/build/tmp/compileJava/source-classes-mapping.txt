@@ -1,2 +1,4 @@
+io/bytecodemapper/cli/PrintIdf.java
+ io.bytecodemapper.cli.PrintIdf
 io/bytecodemapper/cli/Main.java
  io.bytecodemapper.cli.Main

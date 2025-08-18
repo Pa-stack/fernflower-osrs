@@ -1,4 +1,4 @@
-// >>> AUTOGEN: BYTECODEMAPPER mapper-CLI BUILD BEGIN
+// >>> AUTOGEN: BYTECODEMAPPER mapper-cli build.gradle IDF CLI BEGIN
 plugins {
     id "java"
     id "application"
@@ -7,10 +7,21 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
-    implementation project(":mapper-core")
     implementation project(":mapper-signals")
+    implementation project(":mapper-core")
     implementation project(":mapper-io")
+
+    // ASM baseline (align with Java 8)
+    implementation "org.ow2.asm:asm:7.3.1"
+    implementation "org.ow2.asm:asm-tree:7.3.1"
+    implementation "org.ow2.asm:asm-commons:7.3.1"
+
+    testImplementation "junit:junit:4.13.2"
 }
 
 application {
@@ -20,4 +31,4 @@ application {
 tasks.withType(JavaExec).configureEach {
     jvmArgs "-Xmx1g"
 }
-// <<< AUTOGEN: BYTECODEMAPPER mapper-CLI BUILD END
+// >>> AUTOGEN: BYTECODEMAPPER mapper-cli build.gradle IDF CLI END

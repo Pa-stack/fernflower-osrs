@@ -36,5 +36,5 @@
   },
   // Let Gradle extension scan nested projects
   "gradle.nestedProjects": true,
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "java.configuration.updateBuildConfiguration": "automatic"
 }
