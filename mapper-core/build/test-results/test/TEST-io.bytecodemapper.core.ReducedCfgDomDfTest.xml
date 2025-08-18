@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.ReducedCfgDomDfTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2025-08-18T17:00:49" hostname="PRAGMATIQPASCAL" time="0.051">
+<testsuite name="io.bytecodemapper.core.ReducedCfgDomDfTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2025-08-18T17:03:13" hostname="PRAGMATIQPASCAL" time="0.038">
   <properties/>
-  <testcase name="dfDeterminismHashTwice" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.044"/>
+  <testcase name="dfDeterminismHashTwice" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.033"/>
   <testcase name="nestedLoops" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.002"/>
-  <testcase name="singleBlock" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.002"/>
-  <testcase name="simpleLoop" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.001"/>
-  <testcase name="tableSwitchEdges" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.001"/>
+  <testcase name="singleBlock" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.001"/>
+  <testcase name="simpleLoop" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.0"/>
+  <testcase name="tableSwitchEdges" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.0"/>
   <testcase name="diamondDf" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.0"/>
   <testcase name="tryCatchAddsHandlerEdge" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.001"/>
   <system-out><![CDATA[DF hash run1=452273833165032129 run2=452273833165032129

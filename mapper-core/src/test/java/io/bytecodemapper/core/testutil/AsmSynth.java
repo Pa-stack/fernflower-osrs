@@ -171,6 +171,7 @@ public final class AsmSynth implements Opcodes {
         return mn;
     }
 
+    // >>> AUTOGEN: BYTECODEMAPPER TEST AsmSynth NOFOLD ADDITIONS BEGIN
     // Non-folding variants to survive Normalizer's constant-folding
 
     // diamond: use IF_ACMPNE with two nulls (not folded by Normalizer)
@@ -285,5 +286,6 @@ public final class AsmSynth implements Opcodes {
         in.add(new InsnNode(RETURN));
         return mn;
     }
+    // >>> AUTOGEN: BYTECODEMAPPER TEST AsmSynth NOFOLD ADDITIONS END
 }
 // <<< AUTOGEN: BYTECODEMAPPER TEST AsmSynth END

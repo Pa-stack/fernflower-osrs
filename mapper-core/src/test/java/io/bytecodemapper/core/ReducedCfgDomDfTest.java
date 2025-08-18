@@ -42,9 +42,10 @@ public class ReducedCfgDomDfTest {
         }
     }
 
+    // >>> AUTOGEN: BYTECODEMAPPER TEST ReducedCfgDomDfTest NOFOLD SWITCH BEGIN
     @Test
     public void diamondDf() {
-    MethodNode mn = AsmSynth.diamondNoFold();
+        MethodNode mn = io.bytecodemapper.core.testutil.AsmSynth.diamondNoFold();
         ReducedCFG cfg = ReducedCFG.build(mn);
         Dominators dom = Dominators.compute(cfg);
         Map<Integer, int[]> df = DF.compute(cfg, dom);
@@ -65,7 +66,7 @@ public class ReducedCfgDomDfTest {
 
     @Test
     public void simpleLoop() {
-    MethodNode mn = AsmSynth.loopSimpleNoFold();
+        MethodNode mn = io.bytecodemapper.core.testutil.AsmSynth.loopSimpleNoFold();
         ReducedCFG cfg = ReducedCFG.build(mn);
         Dominators dom = Dominators.compute(cfg);
         Map<Integer,int[]> df = DF.compute(cfg, dom);
@@ -87,7 +88,7 @@ public class ReducedCfgDomDfTest {
 
     @Test
     public void nestedLoops() {
-    MethodNode mn = AsmSynth.loopNestedNoFold();
+        MethodNode mn = io.bytecodemapper.core.testutil.AsmSynth.loopNestedNoFold();
         ReducedCFG cfg = ReducedCFG.build(mn);
         Dominators dom = Dominators.compute(cfg);
         Map<Integer,int[]> df = DF.compute(cfg, dom);
@@ -114,13 +115,14 @@ public class ReducedCfgDomDfTest {
 
     @Test
     public void tableSwitchEdges() {
-    MethodNode mn = AsmSynth.tableSwitchNoFold();
+        MethodNode mn = io.bytecodemapper.core.testutil.AsmSynth.tableSwitchNoFold();
         ReducedCFG cfg = ReducedCFG.build(mn);
         // Expect at least 3 successors from the switch block (2 cases + default)
         int maxSucc = 0;
         for (Block b : cfg.blocks()) maxSucc = Math.max(maxSucc, b.succs().length);
         assertTrue(maxSucc >= 3);
     }
+    // >>> AUTOGEN: BYTECODEMAPPER TEST ReducedCfgDomDfTest NOFOLD SWITCH END
 
     @Test
     public void dfDeterminismHashTwice() {
