@@ -17,8 +17,8 @@ Fernflower is licenced under the [Apache Licence Version 2.0](http://www.apache.
 \+ means 1 or more times
 
 \<source>: file or directory with files to be decompiled. Directories are recursively scanned. Allowed file extensions are class, zip and jar.
-          Sources prefixed with -e= mean "library" files that won't be decompiled, but taken into account when analysing relationships between
-          classes or methods. Especially renaming of identifiers (s. option 'ren') can benefit from information about external classes.
+Sources prefixed with -e= mean "library" files that won't be decompiled, but taken into account when analysing relationships between
+classes or methods. Especially renaming of identifiers (s. option 'ren') can benefit from information about external classes.
 
 \<destination>: destination directory
 
@@ -60,7 +60,7 @@ The rest of options can be left as they are: they are aimed at professional reve
 - mpm (0): maximum allowed processing time per decompiled method, in seconds. 0 means no upper limit
 - ren (0): rename ambiguous (resp. obfuscated) classes and class elements
 - urc (-): full name of a user-supplied class implementing IIdentifierRenamer interface. It is used to determine which class identifiers
-           should be renamed and provides new identifier names (see "Renaming identifiers")
+  should be renamed and provides new identifier names (see "Renaming identifiers")
 - inn (1): check for IntelliJ IDEA-specific @NotNull annotation and remove inserted code if found
 - lac (0): decompile lambda expressions to anonymous classes
 - nls (0): define new line character to be used for output. 0 - '\r\n' (Windows), 1 - '\n' (Unix), default is OS-dependent
@@ -74,11 +74,12 @@ code leads to a great number of conflicts. Therefore it is advisable to let the 
 ensuring uniqueness of each identifier.
 
 Option 'ren' (i.e. -ren=1) activates renaming functionality. Default renaming strategy goes as follows:
+
 - rename an element if its name is a reserved word or is shorter than 3 characters
-- new names are built according to a simple pattern: (class|method|field)_\<consecutive unique number>
-You can overwrite this rules by providing your own implementation of the 4 key methods invoked by the decompiler while renaming. Simply
-pass a class that implements org.jetbrains.java.decompiler.main.extern.IIdentifierRenamer in the option 'urc'
-(e.g. -urc=com.example.MyRenamer) to Fernflower. The class must be available on the application classpath.
+- new names are built according to a simple pattern: (class|method|field)\_\<consecutive unique number>
+  You can overwrite this rules by providing your own implementation of the 4 key methods invoked by the decompiler while renaming. Simply
+  pass a class that implements org.jetbrains.java.decompiler.main.extern.IIdentifierRenamer in the option 'urc'
+  (e.g. -urc=com.example.MyRenamer) to Fernflower. The class must be available on the application classpath.
 
 The meaning of each method should be clear from naming: toBeRenamed determine whether the element will be renamed, while the other three
 provide new names for classes, methods and fields respectively.
