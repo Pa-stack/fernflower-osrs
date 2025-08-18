@@ -1,0 +1,33 @@
+{
+  // Use Java 8 across the workspace
+  "spring.initializr.defaultJavaVersion": "8",
+  "maven.terminal.customEnv": [
+    {
+      "environmentVariable": "JAVA_HOME",
+      "value": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452"
+    }
+  ],
+  // VS Code Java runtime discovery
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-1.8",
+      "path": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
+      "default": true
+    }
+  ],
+  // Fallbacks for some extensions
+  "java.jdt.ls.java.home": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
+
+  // Ensure Gradle extension uses JDK 8
+  "java.import.gradle.java.home": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
+  // "java.import.gradle.java.home": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
+  "gradle.java.home": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
+
+  // Make integrated terminals/tasks default to JDK 8 when opened in this workspace
+  "terminal.integrated.env.windows": {
+    "JAVA_HOME": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
+    "PATH": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452\\bin;${env:PATH}"
+  },
+  // Let Gradle extension scan nested projects
+  "gradle.nestedProjects": true
+}
