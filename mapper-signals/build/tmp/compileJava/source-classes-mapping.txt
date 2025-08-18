@@ -1,10 +1,10 @@
-io/bytecodemapper/signals/micro/MicroPatternExtractor.java
- io.bytecodemapper.signals.micro.MicroPatternExtractor
-io/bytecodemapper/signals/micro/MicroPattern.java
- io.bytecodemapper.signals.micro.MicroPattern
 io/bytecodemapper/signals/idf/IdfStore.java
  io.bytecodemapper.signals.idf.IdfStore
 io/bytecodemapper/signals/score/Weights.java
  io.bytecodemapper.signals.score.Weights
 io/bytecodemapper/signals/score/MicroScore.java
  io.bytecodemapper.signals.score.MicroScore
+io/bytecodemapper/signals/micro/MicroPatternExtractor.java
+ io.bytecodemapper.signals.micro.MicroPatternExtractor
+io/bytecodemapper/signals/micro/MicroPattern.java
+ io.bytecodemapper.signals.micro.MicroPattern

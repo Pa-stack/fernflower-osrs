@@ -1,4 +1,4 @@
-// >>> AUTOGEN: BYTECODEMAPPER mapper-signals BUILD BEGIN
+// >>> AUTOGEN: BYTECODEMAPPER signals build.gradle DEP BEGIN
 plugins {
     id "java"
 }
@@ -6,11 +6,21 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-dependencies {
-    implementation project(":mapper-core")
-    implementation "it.unimi.dsi:fastutil:8.5.12"
-    // Include ASM as this module directly references ASM tree/opcodes
-    implementation "org.ow2.asm:asm:9.2"
-    implementation "org.ow2.asm:asm-tree:9.2"
+repositories {
+    mavenCentral()
 }
-// <<< AUTOGEN: BYTECODEMAPPER mapper-signals BUILD END
+
+dependencies {
+    implementation project(':mapper-core')
+
+    // ASM pinned to Java-8-safe 7.3.1 across repo
+    implementation "org.ow2.asm:asm:7.3.1"
+    implementation "org.ow2.asm:asm-tree:7.3.1"
+    implementation "org.ow2.asm:asm-commons:7.3.1"
+
+    implementation "it.unimi.dsi:fastutil:8.5.12"
+
+    testImplementation "junit:junit:4.13.2"
+}
+
+// >>> AUTOGEN: BYTECODEMAPPER signals build.gradle DEP END

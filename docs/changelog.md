@@ -50,3 +50,13 @@
 - Added tests verifying branch/switch folding, wrapper removal, and flattening detection.
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component3 END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component3-Fixes BEGIN -->
+## [2025-08-18] Component 3 — test & formatting fixes
+
+- Added non-folding AsmSynth variants and updated CFG tests to avoid normalization side-effects.
+- Made flattening detection test deterministic (opaque disabled, higher GOTO ratio).
+- Minor test lint: removed unused labels in constant switch test.
+- Formatting: spaces over tabs; blank lines around headings/lists.
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component3-Fixes END -->

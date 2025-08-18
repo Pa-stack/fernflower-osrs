@@ -50,6 +50,7 @@ public class NormalizerTest implements Opcodes {
         return mn;
     }
 
+    // >>> AUTOGEN: BYTECODEMAPPER TEST NormalizerTest CONSTSWITCH LINT PATCH BEGIN
     /** ICONST_1 ; TABLESWITCH 0..2 -> L0,L1,L2 ; default Ld ; L0: RETURN ; L1: RETURN ; L2: RETURN ; Ld: RETURN */
     private static MethodNode constTableSwitch() {
         MethodNode mn = mnInit();
@@ -64,7 +65,10 @@ public class NormalizerTest implements Opcodes {
         in.add(Ld); in.add(new InsnNode(RETURN));
         return mn;
     }
+    // >>> AUTOGEN: BYTECODEMAPPER TEST NormalizerTest CONSTSWITCH LINT PATCH END
 
+    // >>> AUTOGEN: BYTECODEMAPPER TEST NormalizerTest FLATTENING PATCH BEGIN
+    // In flatteningLike(), ensure two GOTOs per arm to raise ratio:
     /** Flattening-like: early tableswitch with many arms and many GOTOs. */
     private static MethodNode flatteningLike() {
         MethodNode mn = mnInit();
@@ -76,8 +80,8 @@ public class NormalizerTest implements Opcodes {
         in.add(new TableSwitchInsnNode(0, 9, Ld, cases));
         for (int i=0;i<cases.length;i++) {
             in.add(cases[i]);
-            in.add(new JumpInsnNode(GOTO, cases[i])); // self-loop goto, artificial but bumps ratio
-            in.add(new JumpInsnNode(GOTO, cases[i])); // second goto to raise goto ratio over labels
+            in.add(new JumpInsnNode(GOTO, cases[i]));
+            in.add(new JumpInsnNode(GOTO, cases[i])); // second GOTO to raise ratio
         }
         in.add(Ld);
         in.add(new InsnNode(RETURN));
@@ -136,11 +140,11 @@ public class NormalizerTest implements Opcodes {
     @Test
     public void flatteningDetectionSetsBypassFlag() {
         MethodNode mn = flatteningLike();
-    Normalizer.Options opt = Normalizer.Options.defaults();
-    // Keep dispatcher intact to test detection; no need to strip opaque branches here
-    opt.normalizeOpaque = false;
-    Normalizer.Result r = Normalizer.normalize(mn, opt);
+        Normalizer.Options opt = Normalizer.Options.defaults();
+        opt.normalizeOpaque = false; // keep dispatcher to test detection deterministically
+        Normalizer.Result r = Normalizer.normalize(mn, opt);
         assertTrue("flattening heuristic should trigger bypass", r.bypassDFTDF);
     }
+    // >>> AUTOGEN: BYTECODEMAPPER TEST NormalizerTest FLATTENING PATCH END
 }
 // <<< AUTOGEN: BYTECODEMAPPER TEST NormalizerTest END
