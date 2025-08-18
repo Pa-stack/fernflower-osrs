@@ -84,9 +84,11 @@ final class MethodMatch {
                 ClassNode newCn = newByName.get(newOwner);
                 if (oldCn == null || newCn == null) continue;
 
-                // Index methods deterministically
-                List<MethodNode> oldMethods = sortMethods(oldCn);
-                List<MethodNode> newMethods = sortMethods(newCn);
+                // Index methods deterministically (skip abstract/native)
+                // >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch use filtered sort BEGIN
+                List<MethodNode> oldMethods = sortMethodsFiltered(oldCn);
+                List<MethodNode> newMethods = sortMethodsFiltered(newCn);
+                // <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch use filtered sort END
 
                 // Extract features
                 Map<MethodRef,MethodFeatures> oldFeats = new LinkedHashMap<MethodRef,MethodFeatures>();
@@ -165,16 +167,28 @@ final class MethodMatch {
         return m;
     }
 
-    private static List<MethodNode> sortMethods(ClassNode cn) {
-        List<MethodNode> ms = new ArrayList<MethodNode>(cn.methods);
-        java.util.Collections.sort(ms, new java.util.Comparator<MethodNode>() {
-            public int compare(MethodNode a, MethodNode b) {
+
+
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch skip abstract/native BEGIN
+    private static java.util.List<org.objectweb.asm.tree.MethodNode> sortMethodsFiltered(org.objectweb.asm.tree.ClassNode cn) {
+        java.util.List<org.objectweb.asm.tree.MethodNode> ms = new java.util.ArrayList<org.objectweb.asm.tree.MethodNode>(cn.methods);
+        java.util.Iterator<org.objectweb.asm.tree.MethodNode> it = ms.iterator();
+        while (it.hasNext()) {
+            org.objectweb.asm.tree.MethodNode m = it.next();
+            int acc = m.access;
+            boolean isAbstract = (acc & org.objectweb.asm.Opcodes.ACC_ABSTRACT) != 0;
+            boolean isNative   = (acc & org.objectweb.asm.Opcodes.ACC_NATIVE) != 0;
+            if (isAbstract || isNative) it.remove();
+        }
+        java.util.Collections.sort(ms, new java.util.Comparator<org.objectweb.asm.tree.MethodNode>() {
+            public int compare(org.objectweb.asm.tree.MethodNode a, org.objectweb.asm.tree.MethodNode b) {
                 int c = a.name.compareTo(b.name);
                 return c != 0 ? c : a.desc.compareTo(b.desc);
             }
         });
         return ms;
     }
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch skip abstract/native END
 
     private MethodMatch(){}
 }
