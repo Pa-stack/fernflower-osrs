@@ -11,3 +11,5 @@ io/bytecodemapper/core/hash/StableHash64.java
 io/bytecodemapper/core/assign/GreedyAssign.java
  io.bytecodemapper.core.assign.GreedyAssign
  io.bytecodemapper.core.assign.GreedyAssign$1
+io/bytecodemapper/core/normalize/Normalizer.java
+ io.bytecodemapper.core.normalize.Normalizer
