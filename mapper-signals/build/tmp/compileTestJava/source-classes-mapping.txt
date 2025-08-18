@@ -2,3 +2,7 @@ io/bytecodemapper/signals/micro/BitOrderTest.java
  io.bytecodemapper.signals.micro.BitOrderTest
 io/bytecodemapper/signals/micro/MicroPatternExtractorTest.java
  io.bytecodemapper.signals.micro.MicroPatternExtractorTest
+io/bytecodemapper/signals/micro/MicroScoreTest.java
+ io.bytecodemapper.signals.micro.MicroScoreTest
+io/bytecodemapper/signals/idf/IdfStoreTest.java
+ io.bytecodemapper.signals.idf.IdfStoreTest
