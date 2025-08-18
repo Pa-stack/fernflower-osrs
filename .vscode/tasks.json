@@ -1,0 +1,20 @@
+// >>> AUTOGEN: BYTECODEMAPPER VSCode TASKS BEGIN
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Mapper: build",
+      "type": "shell",
+      "command": "./gradlew build",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Mapper: mapOldNew",
+      "type": "shell",
+      "command": "./gradlew :mapper-cli:run --args=\"mapOldNew --old old.jar --new new.jar --out build/mappings.tiny\"",
+      "problemMatcher": []
+    }
+  ]
+}
+// <<< AUTOGEN: BYTECODEMAPPER VSCode TASKS END

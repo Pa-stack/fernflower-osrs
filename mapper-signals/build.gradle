@@ -1,0 +1,16 @@
+// >>> AUTOGEN: BYTECODEMAPPER mapper-signals BUILD BEGIN
+plugins {
+    id "java"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    implementation project(":mapper-core")
+    implementation "it.unimi.dsi:fastutil:8.5.12"
+    // Include ASM as this module directly references ASM tree/opcodes
+    implementation "org.ow2.asm:asm:9.2"
+    implementation "org.ow2.asm:asm-tree:9.2"
+}
+// <<< AUTOGEN: BYTECODEMAPPER mapper-signals BUILD END

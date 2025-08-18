@@ -1,0 +1,11 @@
+// >>> AUTOGEN: BYTECODEMAPPER SETTINGS BEGIN
+rootProject.name = rootProject.name ?: "osrs-fernflower"
+
+// Ensure multi-project includes (safe to re-run)
+def includes = [":mapper-core", ":mapper-signals", ":mapper-io", ":mapper-cli"]
+includes.each { p ->
+    if (!gradle.startParameter.projectProperties.containsKey('skipInclude')) {
+        include p
+    }
+}
+// <<< AUTOGEN: BYTECODEMAPPER SETTINGS END

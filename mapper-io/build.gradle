@@ -1,0 +1,13 @@
+// >>> AUTOGEN: BYTECODEMAPPER mapper-IO BUILD BEGIN
+plugins {
+    id "java"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    implementation project(":mapper-core")
+    implementation project(":mapper-signals")
+}
+// <<< AUTOGEN: BYTECODEMAPPER mapper-IO BUILD END

@@ -1,0 +1,7 @@
+# >>> AUTOGEN: BYTECODEMAPPER IDF example BEGIN
+# idf.<index>=<value>, 4dp, clamped [0.5,3.0]
+idf.0=1.0000
+idf.1=1.0000
+# ...
+meta=YYYY-MM-DD git:<sha>
+# <<< AUTOGEN: BYTECODEMAPPER IDF example END

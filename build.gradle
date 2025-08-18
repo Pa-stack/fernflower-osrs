@@ -38,3 +38,35 @@ test {
     showStandardStreams = true
   }
 }
+
+// >>> AUTOGEN: BYTECODEMAPPER ROOT BUILD BEGIN
+allprojects {
+  repositories {
+    mavenCentral()
+    // Add JCenter only if strictly needed; keeping MC only for Java 8-safe libs.
+  }
+}
+
+subprojects {
+  apply plugin: 'java'
+
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+
+  tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = null // ensure legacy toolchain works on JDK8/compat
+  }
+
+  test {
+    useJUnit()
+    testLogging {
+      events "passed", "skipped", "failed"
+    }
+  }
+
+  dependencies {
+    testImplementation "junit:junit:4.13.2"
+  }
+}
+// <<< AUTOGEN: BYTECODEMAPPER ROOT BUILD END

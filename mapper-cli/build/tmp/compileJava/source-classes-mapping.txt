@@ -1,0 +1,2 @@
+io/bytecodemapper/cli/Main.java
+ io.bytecodemapper.cli.Main

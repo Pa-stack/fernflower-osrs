@@ -1,0 +1,18 @@
+// >>> AUTOGEN: BYTECODEMAPPER mapper-core BUILD BEGIN
+plugins {
+    id "java"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    implementation "org.ow2.asm:asm:9.2"
+    implementation "org.ow2.asm:asm-tree:9.2"
+    implementation "it.unimi.dsi:fastutil:8.5.12"
+}
+
+tasks.withType(Jar).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+// <<< AUTOGEN: BYTECODEMAPPER mapper-core BUILD END

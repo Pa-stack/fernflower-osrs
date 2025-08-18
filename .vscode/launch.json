@@ -1,0 +1,16 @@
+// >>> AUTOGEN: BYTECODEMAPPER VSCode LAUNCH BEGIN
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Mapper CLI: mapOldNew",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "io.bytecodemapper.cli.Main",
+      "projectName": "mapper-cli",
+      "args": "mapOldNew --old old.jar --new new.jar --out build/mappings.tiny",
+      "vmArgs": "-Xmx1g"
+    }
+  ]
+}
+// <<< AUTOGEN: BYTECODEMAPPER VSCode LAUNCH END

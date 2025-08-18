@@ -1,0 +1,2 @@
+io/bytecodemapper/io/TinyLikeWriter.java
+ io.bytecodemapper.io.TinyLikeWriter

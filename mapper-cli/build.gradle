@@ -1,0 +1,23 @@
+// >>> AUTOGEN: BYTECODEMAPPER mapper-CLI BUILD BEGIN
+plugins {
+    id "java"
+    id "application"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    implementation project(":mapper-core")
+    implementation project(":mapper-signals")
+    implementation project(":mapper-io")
+}
+
+application {
+    mainClassName = "io.bytecodemapper.cli.Main"
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs "-Xmx1g"
+}
+// <<< AUTOGEN: BYTECODEMAPPER mapper-CLI BUILD END

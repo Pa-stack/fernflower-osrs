@@ -1,0 +1,2 @@
+io/bytecodemapper/cli/DeterminismSmokeTest.java
+ io.bytecodemapper.cli.DeterminismSmokeTest
