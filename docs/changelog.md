@@ -69,3 +69,14 @@
 - Formatting: spaces over tabs; blank lines around headings/lists.
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component3-Fixes END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component5 BEGIN -->
+
+## [2025-08-18] Component 5 — Micropattern IDF EMA + scoring blend
+
+- Added `IdfStore` with 12-week EMA (λ=0.9), clamp [0.5, 3.0], 4dp rounding; `.properties` save/load.
+- Implemented `MicroScore.blended(a,b,idf, α_mp)` and `MicroScoringService` API.
+- Added CLI hook: `printIdf --out build/idf.properties` to emit the current IDF table.
+- Java 8 & Gradle 6.4.9 compatible; deterministic & idempotent.
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component5 END -->
