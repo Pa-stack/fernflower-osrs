@@ -49,36 +49,60 @@ public final class DF {
 
     /** Iterate DF to fixpoint to produce TDF (transitive DF). */
     public static Map<Integer, int[]> iterateToFixpoint(Map<Integer, int[]> df) {
-        // Copy into mutable sets
+        // Copy into mutable sets; also track arrays per node to ensure no aliasing and content comparisons
         Map<Integer, IntOpenHashSet> work = new LinkedHashMap<Integer, IntOpenHashSet>();
+        Map<Integer, int[]> arrays = new LinkedHashMap<Integer, int[]>();
         int[] keys = new int[df.size()];
         int ki = 0;
         for (Map.Entry<Integer, int[]> e : df.entrySet()) {
-            keys[ki++] = e.getKey().intValue();
-            work.put(e.getKey(), new IntOpenHashSet(e.getValue()));
+            Integer key = e.getKey();
+            keys[ki++] = key.intValue();
+            IntOpenHashSet set = new IntOpenHashSet(e.getValue());
+            work.put(key, set);
+            // Initialize arrays map with a fresh sorted copy (no aliasing)
+            arrays.put(key, toSortedArray(set));
         }
         Arrays.sort(keys);
 
-        boolean changed;
-        do {
-            changed = false;
+        System.out.println("[DF] iterateToFixpoint start, nodes=" + df.size());
+        int iter = 0; final int GUARD = 1000;
+        while (true) {
+            boolean changed = false;
             for (int b : keys) {
-                IntOpenHashSet set = work.get(b);
+                IntOpenHashSet set = work.get(Integer.valueOf(b));
                 // For each y in current DF(b), union DF(y)
                 IntOpenHashSet add = new IntOpenHashSet();
                 for (int y : set) {
-                    int[] dfy = df.get(y);
+                    int[] dfy = df.get(Integer.valueOf(y));
                     if (dfy == null) continue;
                     for (int z : dfy) add.add(z);
                 }
-                int before = set.size();
+                // Apply union to set
                 set.addAll(add);
-                if (set.size() != before) changed = true;
-            }
-        } while (changed);
 
+                // Compute new array snapshot and compare content (no aliasing)
+                int[] beforeArr = arrays.get(Integer.valueOf(b));
+                int[] afterArr = toSortedArray(set);
+                if (!Arrays.equals(beforeArr, afterArr)) {
+                    changed = true;
+                    arrays.put(Integer.valueOf(b), afterArr); // new array object
+                }
+            }
+            System.out.println("[DF] iter=" + (iter + 1) + ", changed=" + changed);
+            iter++;
+            if (iter > GUARD) {
+                throw new IllegalStateException("DF.iterateToFixpoint: no convergence after " + iter);
+            }
+            if (!changed) break;
+        }
+
+        // Emit out map from arrays snapshot to ensure deterministic, non-aliased results
         Map<Integer, int[]> out = new LinkedHashMap<Integer, int[]>();
-        for (int b : keys) out.put(b, toSortedArray(work.get(b)));
+        for (int b : keys) {
+            int[] a = arrays.get(Integer.valueOf(b));
+            // Ensure we hand out a fresh array instance
+            out.put(Integer.valueOf(b), a == null ? new int[0] : Arrays.copyOf(a, a.length));
+        }
         return out;
     }
 

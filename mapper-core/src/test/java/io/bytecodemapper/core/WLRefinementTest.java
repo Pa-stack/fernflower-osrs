@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 
 public class WLRefinementTest {
 
-    @Test
+    @Test(timeout = 5_000)
     public void stableUnderNoopReorder() {
         MethodNode a = AsmSynth.singleBlockTwoNopsA();
         MethodNode b = AsmSynth.singleBlockTwoNopsB();
@@ -40,7 +40,7 @@ public class WLRefinementTest {
         assertEquals(sa.loopCount, sb.loopCount);
     }
 
-    @Test
+    @Test(timeout = 5_000)
     public void differentConstantsSameWL() {
         MethodNode m0 = AsmSynth.diamond();
         MethodNode m1 = AsmSynth.diamondConst1();

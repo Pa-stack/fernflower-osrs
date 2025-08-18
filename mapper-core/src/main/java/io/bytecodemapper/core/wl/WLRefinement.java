@@ -61,6 +61,12 @@ public final class WLRefinement {
             Map<Integer,int[]> tdf,
             int iterations) {
 
+        // >>> AUTOGEN: BYTECODEMAPPER WLRefinement PATCH BEGIN
+        // 1) Clamp iterations and skip trivial dominates checks
+        // clamp iterations defensively
+        if (iterations < 0) iterations = 0;
+        if (iterations > 8) iterations = 8;
+
         // Collect nodes deterministically
         int[] nodes = cfg.allBlockIds();
         Arrays.sort(nodes);
@@ -72,15 +78,14 @@ public final class WLRefinement {
             int b = nodes[i];
             Block bb = cfg.block(b);
             boolean header = false;
-            int[] predsArr = bb.preds();
-            if (predsArr != null) {
-                for (int p : predsArr) {
-                    if (dom.dominates(b, p)) { header = true; break; }
-                }
+            for (int p : bb.preds()) {
+                if (p == b) continue; // skip degenerate self
+                if (dom.dominates(b, p)) { header = true; break; }
             }
             isLoopHeader[i] = header;
             loopHeaderById.put(b, header);
         }
+        // >>> AUTOGEN: BYTECODEMAPPER WLRefinement PATCH END
 
         // Precompute DF/TDF hashes and sizes for each node
         final Int2LongOpenHashMap dfHash = new Int2LongOpenHashMap();
