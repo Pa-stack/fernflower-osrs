@@ -12,7 +12,7 @@
     {
       "label": "Mapper: mapOldNew",
       "type": "shell",
-      "command": "./gradlew :mapper-cli:run --args=\"mapOldNew --old old.jar --new new.jar --out build/mappings.tiny\"",
+      "command": "./gradlew :mapper-cli:run --args=\"mapOldNew --old testData/jars/old.jar --new testData/jars/new.jar --out build/mappings.tiny\"",
       "problemMatcher": []
     }
   ]

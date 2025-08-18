@@ -8,7 +8,7 @@
       "request": "launch",
       "mainClass": "io.bytecodemapper.cli.Main",
       "projectName": "mapper-cli",
-      "args": "mapOldNew --old old.jar --new new.jar --out build/mappings.tiny",
+  "args": "mapOldNew --old testData/jars/old.jar --new testData/jars/new.jar --out build/mappings.tiny",
       "vmArgs": "-Xmx1g"
     }
   ]
