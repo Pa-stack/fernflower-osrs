@@ -28,3 +28,5 @@ io/bytecodemapper/signals/strings/StringTfidf.java
  io.bytecodemapper.signals.strings.StringTfidf
 io/bytecodemapper/signals/opcode/OpcodeFeatures.java
  io.bytecodemapper.signals.opcode.OpcodeFeatures
+io/bytecodemapper/signals/micro/MicroPatternProviderImpl.java
+ io.bytecodemapper.signals.micro.MicroPatternProviderImpl
