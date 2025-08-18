@@ -12,3 +12,13 @@ io/bytecodemapper/signals/micro/MicroScore.java
  io.bytecodemapper.signals.micro.MicroScore
 io/bytecodemapper/signals/micro/MicroScoringService.java
  io.bytecodemapper.signals.micro.MicroScoringService
+io/bytecodemapper/signals/tfidf/TfIdfModel.java
+ io.bytecodemapper.signals.tfidf.TfIdfModel
+io/bytecodemapper/signals/common/Cosine.java
+ io.bytecodemapper.signals.common.Cosine
+io/bytecodemapper/signals/calls/CallBagExtractor.java
+ io.bytecodemapper.signals.calls.CallBagExtractor
+ io.bytecodemapper.signals.calls.CallBagExtractor$1
+ io.bytecodemapper.signals.calls.CallBagExtractor$OwnerNormalizer
+io/bytecodemapper/signals/calls/CallBagTfidf.java
+ io.bytecodemapper.signals.calls.CallBagTfidf
