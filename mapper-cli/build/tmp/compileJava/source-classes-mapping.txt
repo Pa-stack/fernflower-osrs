@@ -16,3 +16,7 @@ io/bytecodemapper/cli/method/MethodFeatures.java
  io.bytecodemapper.cli.method.MethodFeatures
 io/bytecodemapper/cli/method/MethodRef.java
  io.bytecodemapper.cli.method.MethodRef
+io/bytecodemapper/cli/method/CandidateGenerator.java
+ io.bytecodemapper.cli.method.CandidateGenerator
+ io.bytecodemapper.cli.method.CandidateGenerator$1
+ io.bytecodemapper.cli.method.CandidateGenerator$Scored
