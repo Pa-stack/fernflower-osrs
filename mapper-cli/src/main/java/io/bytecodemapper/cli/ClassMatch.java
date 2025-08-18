@@ -27,8 +27,10 @@ final class ClassMatch {
         if (oldJar == null || newJar == null || out == null) {
             throw new IllegalArgumentException("Usage: classMatch --old <old.jar> --new <new.jar> --out <path>");
         }
-        if (!oldJar.isFile()) throw new FileNotFoundException("old jar not found: " + oldJar);
-        if (!newJar.isFile()) throw new FileNotFoundException("new jar not found: " + newJar);
+    oldJar = resolveMaybeModuleRelative(oldJar);
+    newJar = resolveMaybeModuleRelative(newJar);
+    if (!oldJar.isFile()) throw new FileNotFoundException("old jar not found: " + oldJar);
+    if (!newJar.isFile()) throw new FileNotFoundException("new jar not found: " + newJar);
         if (out.getParentFile()!=null) out.getParentFile().mkdirs();
 
     // 1) Read classes deterministically
@@ -65,6 +67,18 @@ final class ClassMatch {
             public int compare(ClassFingerprint a, ClassFingerprint b) { return a.internalName().compareTo(b.internalName()); }
         });
         return out;
+    }
+
+    private static File resolveMaybeModuleRelative(File f) throws java.io.IOException {
+        if (f.isAbsolute() || f.isFile()) return f;
+        // When running :mapper-cli:run, CWD is mapper-cli/. Try parent (repo root) as fallback.
+        File cwd = new File(".").getCanonicalFile();
+        File parent = cwd.getParentFile();
+        if (parent != null) {
+            File alt = new File(parent, f.getPath());
+            if (alt.isFile()) return alt;
+        }
+        return f; // return original; caller will error if still missing
     }
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI ClassMatch END

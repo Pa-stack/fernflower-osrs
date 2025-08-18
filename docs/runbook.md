@@ -1,3 +1,35 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook classMatch BEGIN -->
+## Phase-1 Class Matching
+
+**Inputs:** two jars (`--old`, `--new`).
+
+**Features per class:**
+
+- WL method signatures histogram (top-N = 32)
+- Micropattern class histogram (17)
+- Counts: method/field
+- Type info: super, interfaces
+
+**Scoring (fixed weights):**
+
+- WL cosine (0.70)
+- Micropattern cosine (0.15)
+- Count similarity (0.10)
+- Super/interfaces overlap (0.05)
+
+**Assignment:** deterministic greedy with threshold `τ_class=0.55` and margin `0.02`.
+
+**CLI:**
+
+```bash
+./gradlew :mapper-cli:run --args="classMatch --old <old.jar> --new <new.jar> --out build/classmap.txt"
+```
+
+Output lines:
+
+`a/b/OldClass -> x/y/NewClass score=0.8123`
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook classMatch END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook printIdf BEGIN -->
 # Runbook
 
@@ -32,10 +64,13 @@ test -f mapper-cli/build/idf.properties && echo "IDF file created"
 During **Phase-2 method matching**, after WL + DF/TDF candidate generation:
 
 - **Call-bag TF-IDF**: build token bags per method (excluding `java.*`, `javax.*`);
-	**Normalize owners after class matching** using the class map before scoring.
+
+**Normalize owners after class matching** using the class map before scoring.
 - **String TF-IDF**: lightweight, stable only when strings aren’t obfuscated.
 - **Opcode histogram**: order-invariant stability.
-	**Optional** 2–3-gram features provide order sensitivity for tie-breaks.
+
+**Optional** 2–3-gram features provide order sensitivity for tie-breaks.
+
 
 Scoring blend (defaults):
 `S_total = 0.45*S_calls + 0.25*S_micro(α_mp) + 0.15*S_opcode + 0.10*S_strings + 0.05*S_fields`

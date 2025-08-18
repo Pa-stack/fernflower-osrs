@@ -1,3 +1,12 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component7 BEGIN -->
+# BytecodeMapper Changelog
+
+## [2025-08-18] Component 7 — Phase-1 Class matching
+
+- Added class fingerprints (WL top-N, micropattern histogram, counts, super/interfaces).
+- Implemented deterministic greedy matcher with fixed weights and thresholding.
+- CLI `classMatch` writes `old -> new score=…` mappings.
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component7 END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component1 BEGIN -->
 # BytecodeMapper Changelog
 
