@@ -42,6 +42,10 @@ public class DecompilerTestFixture {
     targetDir = new File(tempDir, "decompiled");
     assertThat(targetDir.mkdirs()).isTrue();
 
+  // Help locate artifacts during CI/local debugging
+  System.out.println("[DecompilerTestFixture] testDataDir=" + testDataDir.getAbsolutePath());
+  System.out.println("[DecompilerTestFixture] targetDir=" + targetDir.getAbsolutePath());
+
     Map<String, Object> options = new HashMap<>();
     options.put(IFernflowerPreferences.LOG_LEVEL, "warn");
     options.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");

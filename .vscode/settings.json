@@ -31,5 +31,6 @@
     "PATH": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452\\bin;${env:PATH}"
   },
   // Let Gradle extension scan nested projects
-  "gradle.nestedProjects": true
+  "gradle.nestedProjects": true,
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

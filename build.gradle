@@ -28,3 +28,13 @@ jar {
     attributes 'Main-Class': 'org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler'
   }
 }
+
+test {
+  // Ensure JUnit 4 is used and surface useful logs
+  useJUnit()
+  testLogging {
+    events 'failed'
+    exceptionFormat 'full'
+    showStandardStreams = true
+  }
+}

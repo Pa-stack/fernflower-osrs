@@ -132,9 +132,12 @@ public class TextBuffer {
       sb.append(myStringBuilder.substring(lineStart, lineEnd));
       Set<Integer> integers = myLineMapping.get(count);
       if (integers != null) {
-        sb.append(" // L:");
-        for (Integer integer : integers) {
-          sb.append(' ').append(integer);
+        // Match expected unit-test format: no leading space before comment and no 'L:' label
+        sb.append("// ");
+        for (Iterator<Integer> it = integers.iterator(); it.hasNext(); ) {
+          Integer integer = it.next();
+          sb.append(integer);
+          if (it.hasNext()) sb.append(' ');
         }
       }
       sb.append(myLineSeparator);
