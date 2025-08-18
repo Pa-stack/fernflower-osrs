@@ -20,3 +20,6 @@ io/bytecodemapper/cli/method/CandidateGenerator.java
  io.bytecodemapper.cli.method.CandidateGenerator
  io.bytecodemapper.cli.method.CandidateGenerator$1
  io.bytecodemapper.cli.method.CandidateGenerator$Scored
+io/bytecodemapper/cli/method/MethodScorer.java
+ io.bytecodemapper.cli.method.MethodScorer
+ io.bytecodemapper.cli.method.MethodScorer$Result
