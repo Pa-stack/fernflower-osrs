@@ -7,3 +7,12 @@ io/bytecodemapper/cli/ClassMatch.java
  io.bytecodemapper.cli.ClassMatch$3
 io/bytecodemapper/cli/Main.java
  io.bytecodemapper.cli.Main
+io/bytecodemapper/cli/method/MethodFeatureExtractor.java
+ io.bytecodemapper.cli.method.MethodFeatureExtractor
+ io.bytecodemapper.cli.method.MethodFeatureExtractor$1
+ io.bytecodemapper.cli.method.MethodFeatureExtractor$ClassOwnerMapper
+ io.bytecodemapper.cli.method.MethodFeatureExtractor$IdentityMapper
+io/bytecodemapper/cli/method/MethodFeatures.java
+ io.bytecodemapper.cli.method.MethodFeatures
+io/bytecodemapper/cli/method/MethodRef.java
+ io.bytecodemapper.cli.method.MethodRef
