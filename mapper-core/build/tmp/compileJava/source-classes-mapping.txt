@@ -20,3 +20,19 @@ io/bytecodemapper/core/cfg/ReducedCFG.java
 io/bytecodemapper/core/wl/WLRefinement.java
  io.bytecodemapper.core.wl.WLRefinement
  io.bytecodemapper.core.wl.WLRefinement$MethodSignature
+io/bytecodemapper/core/fingerprint/MethodSigBag.java
+ io.bytecodemapper.core.fingerprint.MethodSigBag
+ io.bytecodemapper.core.fingerprint.MethodSigBag$1
+ io.bytecodemapper.core.fingerprint.MethodSigBag$Entry
+io/bytecodemapper/core/fingerprint/MicroPatternProvider.java
+ io.bytecodemapper.core.fingerprint.MicroPatternProvider
+io/bytecodemapper/core/fingerprint/ClasspathScanner.java
+ io.bytecodemapper.core.fingerprint.ClasspathScanner
+ io.bytecodemapper.core.fingerprint.ClasspathScanner$1
+ io.bytecodemapper.core.fingerprint.ClasspathScanner$2
+ io.bytecodemapper.core.fingerprint.ClasspathScanner$Sink
+io/bytecodemapper/core/fingerprint/ClassFingerprint.java
+ io.bytecodemapper.core.fingerprint.ClassFingerprint
+io/bytecodemapper/core/fingerprint/FingerprintBuilder.java
+ io.bytecodemapper.core.fingerprint.FingerprintBuilder
+ io.bytecodemapper.core.fingerprint.FingerprintBuilder$1
