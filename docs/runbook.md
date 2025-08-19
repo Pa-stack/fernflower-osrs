@@ -465,3 +465,28 @@ Get-Content build/bench.json -TotalCount 1
 ```
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook bench END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC vscode-tasks-launch BEGIN -->
+## VS Code tasks & launch
+
+The repo includes VS Code tasks and launchers to run common flows without typing Gradle commands.
+
+### Tasks (Terminal → Run Task…)
+
+- **Mapper: installDist** — builds the CLI launcher.
+- **Mapper: mapOldNew** — prompts for OLD/NEW jars and writes `mapper-cli/build/mappings.tiny`.
+- **Mapper: applyMappings** — remaps the NEW jar using the latest mappings.
+- **Mapper: bench** — runs the multi-pair benchmark into `mapper-cli/build/bench.json`.
+- **Mapper: printIdf** — writes `mapper-cli/build/idf.properties`.
+
+> Tips:
+> - Place week jars under `data/weeks` at repo root.
+> - On Windows/PowerShell, tasks use the installed launcher (`mapper-cli.bat`).
+
+### Launch (Run → Start Debugging)
+
+- **Mapper: mapOldNew (Java Main)** — runs `io.bytecodemapper.cli.Main` with defaults.
+- **Mapper: mapOldNew (Installed CLI)** — shell-based fallback that uses the installed launcher.
+
+All configs are patched **inside AUTOGEN markers**, so they’re safe to re-run without clobbering your custom entries.
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC vscode-tasks-launch END -->

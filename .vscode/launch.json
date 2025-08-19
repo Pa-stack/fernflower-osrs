@@ -1,16 +1,40 @@
-// >>> AUTOGEN: BYTECODEMAPPER VSCode LAUNCH BEGIN
 {
+  // VS Code launch configs. Keep user configs; AUTOGEN block is safe to re-run.
   "version": "0.2.0",
+  // >>> AUTOGEN: BYTECODEMAPPER VSCode launch BEGIN
   "configurations": [
     {
-      "name": "Mapper CLI: mapOldNew",
+      "name": "Mapper: mapOldNew (Java Main)",
       "type": "java",
       "request": "launch",
       "mainClass": "io.bytecodemapper.cli.Main",
       "projectName": "mapper-cli",
-  "args": "mapOldNew --old testData/jars/old.jar --new testData/jars/new.jar --out build/mappings.tiny",
-      "vmArgs": "-Xmx1g"
+      "args": [
+        "mapOldNew",
+        "--old", "data/weeks/osrs-231.jar",
+        "--new", "data/weeks/osrs-232.jar",
+        "--out", "mapper-cli/build/mappings.tiny",
+        "--deterministic",
+        "--cacheDir", "mapper-cli/build/cache",
+        "--idf", "mapper-cli/build/idf.properties",
+        "--debug-stats"
+      ]
+    },
+    {
+      "name": "Mapper: mapOldNew (Installed CLI)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "/bin/sh",
+      "windows": {
+        "runtimeExecutable": "cmd.exe",
+        "runtimeArgs": ["/c", "mapper-cli\\build\\install\\mapper-cli\\bin\\mapper-cli.bat"]
+      },
+      "runtimeArgs": [
+        "-lc",
+        "${workspaceFolder}/mapper-cli/build/install/mapper-cli/bin/mapper-cli mapOldNew --old data/weeks/osrs-231.jar --new data/weeks/osrs-232.jar --out mapper-cli/build/mappings.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties --debug-stats"
+      ],
+      "cwd": "${workspaceFolder}"
     }
   ]
+  // <<< AUTOGEN: BYTECODEMAPPER VSCode launch END
 }
-// <<< AUTOGEN: BYTECODEMAPPER VSCode LAUNCH END
