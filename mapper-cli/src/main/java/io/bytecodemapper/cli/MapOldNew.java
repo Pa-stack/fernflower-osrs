@@ -108,30 +108,44 @@ final class MapOldNew {
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY END
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG FLAGS SCOPE END
 
-        // Read classes deterministically
+        // Read classes, sort deterministically by internal name
         final List<ClassNode> oldClasses = new ArrayList<ClassNode>();
         final List<ClassNode> newClasses = new ArrayList<ClassNode>();
         ClasspathScanner scanner = new ClasspathScanner();
         scanner.scan(oldJar, new ClasspathScanner.Sink() { public void accept(ClassNode cn) { oldClasses.add(cn); }});
         scanner.scan(newJar, new ClasspathScanner.Sink() { public void accept(ClassNode cn) { newClasses.add(cn); }});
+        Collections.sort(oldClasses, new Comparator<ClassNode>() { public int compare(ClassNode a, ClassNode b){ return a.name.compareTo(b.name);} });
+        Collections.sort(newClasses, new Comparator<ClassNode>() { public int compare(ClassNode a, ClassNode b){ return a.name.compareTo(b.name);} });
 
-        // Build method features across both sets (deterministic order; skip abstract/native)
-        Map<MethodRef, MethodFeatures> oldMf = new LinkedHashMap<MethodRef, MethodFeatures>();
-        Map<MethodRef, MethodFeatures> newMf = new LinkedHashMap<MethodRef, MethodFeatures>();
-        MethodFeatureExtractor extractor = new MethodFeatureExtractor();
+        // Build MethodFeatures only when debug dump is requested, and cap to a small sample
+        Map<MethodRef, MethodFeatures> oldMf = null;
+        Map<MethodRef, MethodFeatures> newMf = null;
+        if (debugNormalized) {
+            oldMf = new LinkedHashMap<MethodRef, MethodFeatures>();
+            newMf = new LinkedHashMap<MethodRef, MethodFeatures>();
+            MethodFeatureExtractor extractor = new MethodFeatureExtractor();
 
-        for (ClassNode cn : oldClasses) {
-            for (MethodNode mn : sortMethodsFiltered(cn)) {
-                MethodFeatures f = extractor.extractForOld(cn, mn, new MethodFeatureExtractor.ClassOwnerMapper() {
-                    public String mapOldOwnerToNew(String o) { return o; }
-                });
-                oldMf.put(f.ref, f);
+            int oldCount = 0;
+            for (ClassNode cn : oldClasses) {
+                if (oldCount >= debugSample) break;
+                for (MethodNode mn : sortMethodsFiltered(cn)) {
+                    if (oldCount >= debugSample) break;
+                    MethodFeatures f = extractor.extractForOld(cn, mn, new MethodFeatureExtractor.ClassOwnerMapper() {
+                        public String mapOldOwnerToNew(String o) { return o; }
+                    });
+                    oldMf.put(f.ref, f);
+                    oldCount++;
+                }
             }
-        }
-        for (ClassNode cn : newClasses) {
-            for (MethodNode mn : sortMethodsFiltered(cn)) {
-                MethodFeatures f = extractor.extractForNew(cn, mn);
-                newMf.put(f.ref, f);
+            int newCount = 0;
+            for (ClassNode cn : newClasses) {
+                if (newCount >= debugSample) break;
+                for (MethodNode mn : sortMethodsFiltered(cn)) {
+                    if (newCount >= debugSample) break;
+                    MethodFeatures f = extractor.extractForNew(cn, mn);
+                    newMf.put(f.ref, f);
+                    newCount++;
+                }
             }
         }
 
@@ -146,6 +160,8 @@ final class MapOldNew {
             oldJar, newJar, dbgOutPath, debugSample, oldMf, newMf);
         System.out.println("Wrote normalized debug to: " + dbgOutPath);
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG PATH RESOLUTION END
+        // Release references to reduce peak memory before orchestrator runs
+        oldMf = null; newMf = null;
     }
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG DUMP CALL END
 
