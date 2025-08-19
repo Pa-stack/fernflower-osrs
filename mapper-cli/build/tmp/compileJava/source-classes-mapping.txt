@@ -41,6 +41,7 @@ io/bytecodemapper/core/match/MethodMatcher.java
  io.bytecodemapper.core.match.MethodMatcher$3
  io.bytecodemapper.core.match.MethodMatcher$4
  io.bytecodemapper.core.match.MethodMatcher$5
+ io.bytecodemapper.core.match.MethodMatcher$6
  io.bytecodemapper.core.match.MethodMatcher$Abstention
  io.bytecodemapper.core.match.MethodMatcher$CandidateScore
  io.bytecodemapper.core.match.MethodMatcher$Key
