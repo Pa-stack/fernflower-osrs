@@ -9,3 +9,6 @@ io/bytecodemapper/io/tiny/TinyV2Writer.java
  io.bytecodemapper.io.tiny.TinyV2Writer$MethodEntry
 io/bytecodemapper/io/tiny/TinyV2Mappings.java
  io.bytecodemapper.io.tiny.TinyV2Mappings
+io/bytecodemapper/io/remap/AsmJarRemapper.java
+ io.bytecodemapper.io.remap.AsmJarRemapper
+ io.bytecodemapper.io.remap.AsmJarRemapper$MapBackedRemapper
