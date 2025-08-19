@@ -2,6 +2,7 @@
 package io.bytecodemapper.cli.field;
 
 import io.bytecodemapper.cli.method.MethodRef;
+import io.bytecodemapper.core.normalize.Normalizer;
 import io.bytecodemapper.signals.fields.FieldUsageExtractor;
 import io.bytecodemapper.signals.fields.FieldUsageExtractor.FieldUse;
 import org.objectweb.asm.tree.ClassNode;
@@ -61,9 +62,13 @@ public final class FieldMatcher {
             MethodNode mnNew = find(cNew, mNew.name, mNew.desc);
             if (mnOld == null || mnNew == null) continue;
 
-            // Extract uses
-            java.util.List<FieldUse> usesOld = FieldUsageExtractor.extract(mnOld);
-            java.util.List<FieldUse> usesNew = FieldUsageExtractor.extract(mnNew);
+            // >>> AUTOGEN: BYTECODEMAPPER CLI FieldMatcher NORMALIZE BEFORE EXTRACT BEGIN
+            // Normalize method bodies to keep feature space aligned with analysis CFG
+            Normalizer.Result nOld = Normalizer.normalize(mnOld, Normalizer.Options.defaults());
+            Normalizer.Result nNew = Normalizer.normalize(mnNew, Normalizer.Options.defaults());
+            java.util.List<FieldUse> usesOld = FieldUsageExtractor.extract(nOld.method);
+            java.util.List<FieldUse> usesNew = FieldUsageExtractor.extract(nNew.method);
+            // <<< AUTOGEN: BYTECODEMAPPER CLI FieldMatcher NORMALIZE BEFORE EXTRACT END
 
             // Restrict to fields whose owners are either the class itself or a mapped owner (more conservative)
             Set<String> allowedNewOwners = new LinkedHashSet<String>();
