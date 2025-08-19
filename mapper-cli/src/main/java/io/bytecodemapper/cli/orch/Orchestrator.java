@@ -61,14 +61,15 @@ public final class Orchestrator {
         // --- Phase 0: per-method feature extraction (normalize -> CFG -> wl/micro/normalized) with persistent cache ---
         String oldKey = jarKey(oldJar);
         String newKey = jarKey(newJar);
-        // Compute Normalizer options fingerprint and persist per-jar cache metadata
+        // Compute IR fingerprint (Normalizer + ReducedCFG) and persist per-jar cache metadata
         io.bytecodemapper.core.normalize.Normalizer.Options nopt = io.bytecodemapper.core.normalize.Normalizer.Options.defaults();
-        final String optionsFp = io.bytecodemapper.core.normalize.NormalizerFingerprint.optionsFingerprint(nopt);
+        io.bytecodemapper.core.cfg.ReducedCFG.Options copt = io.bytecodemapper.core.cfg.ReducedCFG.Options.defaults();
+        final String irFp = io.bytecodemapper.core.ir.IRFingerprint.compose(nopt, copt);
+        final String irVersion = io.bytecodemapper.core.normalize.NormalizerFingerprint.NORMALIZER_VERSION + "+" +
+                io.bytecodemapper.core.cfg.ReducedCfgFingerprint.CFG_VERSION;
         try {
-            io.bytecodemapper.cli.cache.CacheMeta.write(opt.cacheDir, oldKey,
-                io.bytecodemapper.core.normalize.NormalizerFingerprint.NORMALIZER_VERSION, optionsFp);
-            io.bytecodemapper.cli.cache.CacheMeta.write(opt.cacheDir, newKey,
-                io.bytecodemapper.core.normalize.NormalizerFingerprint.NORMALIZER_VERSION, optionsFp);
+            io.bytecodemapper.cli.cache.CacheMeta.write(opt.cacheDir, oldKey, irVersion, irFp);
+            io.bytecodemapper.cli.cache.CacheMeta.write(opt.cacheDir, newKey, irVersion, irFp);
         } catch (Exception metaEx) {
             if (opt.debugStats) System.out.println("[Orch] Cache meta write failed: " + metaEx.getMessage());
         }
@@ -77,8 +78,8 @@ public final class Orchestrator {
         Map<String, Map<String, MethodFeature>> oldFeatures = null;
         Map<String, Map<String, MethodFeature>> newFeatures = null;
         try {
-            oldFeatures = extractFeatures(oldClasses, opt, oldCache, optionsFp);
-            newFeatures = extractFeatures(newClasses, opt, newCache, optionsFp);
+            oldFeatures = extractFeatures(oldClasses, opt, oldCache, irFp);
+            newFeatures = extractFeatures(newClasses, opt, newCache, irFp);
         } finally {
             // Flush caches deterministically
             try { oldCache.close(); } catch (Exception ignored) {}
@@ -169,7 +170,7 @@ public final class Orchestrator {
     }
 
     private Map<String, Map<String, MethodFeature>> extractFeatures(
-        Map<String, ClassNode> classes, OrchestratorOptions opt, MethodFeatureCache cache, String optionsFp) throws Exception {
+        Map<String, ClassNode> classes, OrchestratorOptions opt, MethodFeatureCache cache, String irFp) throws Exception {
         Map<String, Map<String, MethodFeature>> out = new TreeMap<String, Map<String, MethodFeature>>();
         List<String> owners = new ArrayList<String>(classes.keySet());
         Collections.sort(owners);
@@ -191,7 +192,7 @@ public final class Orchestrator {
                     }
             // Compute normalized body hash first for cache key
             String normHash = stableInsnHash(mn);
-            String cacheKey = owner + "::" + mn.name + mn.desc + "::" + normHash + "::" + (optionsFp != null ? optionsFp : "");
+            String cacheKey = owner + "::" + mn.name + mn.desc + "::" + normHash + "::" + (irFp != null ? irFp : "");
             MethodFeatureCacheEntry ce = cache != null ? cache.get(cacheKey) : null;
             MethodFeature feat;
             if (ce != null) {

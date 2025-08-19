@@ -18,6 +18,20 @@ public final class ReducedCFG implements Opcodes {
 
     public enum ExceptionEdgePolicy { STRICT, LOOSE }
 
+    // >>> AUTOGEN: BYTECODEMAPPER ReducedCFG Options BEGIN
+    /**
+     * CFG-affecting options. Defaults preserve current behavior.
+     * Note: These options are currently not plumbed through build(...);
+     * they exist to support stable IR fingerprinting and future wiring.
+     */
+    public static final class Options {
+        public ExceptionEdgePolicy exceptionEdgesPolicy = ExceptionEdgePolicy.LOOSE;
+        public boolean mergeLinearChains = true;
+
+        public static Options defaults() { return new Options(); }
+    }
+    // <<< AUTOGEN: BYTECODEMAPPER ReducedCFG Options END
+
     // >>> AUTOGEN: BYTECODEMAPPER ReducedCFG BLOCK MUTABILITY PATCH BEGIN
     // Change Block to have mutable endIdx so mergeLinearChains() can extend a block span.
     public static final class Block {

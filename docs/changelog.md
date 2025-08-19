@@ -160,3 +160,11 @@ Compatibility / minor adjustments from prompt:
 - Remapper now uses **case-sensitive** deterministic ordering and writes `META-INF/MANIFEST.MF` first when present.
 - `tinyStats` enhanced to display **identity vs non-identity** counts and sample pairs.
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component11 polishing END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component13 BEGIN -->
+## [2025-08-19] Component 13 — IR fingerprint for cache robustness
+
+- Added `IRFingerprint` that combines `NormalizerFingerprint` and `ReducedCfgFingerprint` to robustly key method-feature cache entries.
+- Updated orchestrator to include `#IRfp` in cache keys and write both normalizer and reduced-CFG option fingerprints into per-jar cache metadata.
+- Runbook updated: cache key now `owner#name(desc)#normalizedBodyHash#IRfp`; determinism acceptance snippet for Windows/PowerShell added.
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component13 END -->

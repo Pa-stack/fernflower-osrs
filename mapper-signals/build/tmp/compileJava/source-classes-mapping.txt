@@ -4,8 +4,8 @@ io/bytecodemapper/signals/micro/MicroScore.java
  io.bytecodemapper.signals.micro.MicroScore
 io/bytecodemapper/signals/score/Weights.java
  io.bytecodemapper.signals.score.Weights
-io/bytecodemapper/signals/micro/MicroPatternExtractor.java
- io.bytecodemapper.signals.micro.MicroPatternExtractor
+io/bytecodemapper/signals/micro/MicroPattern.java
+ io.bytecodemapper.signals.micro.MicroPattern
 io/bytecodemapper/signals/opcode/OpcodeFeatures.java
  io.bytecodemapper.signals.opcode.OpcodeFeatures
 io/bytecodemapper/signals/tfidf/TfIdfModel.java
@@ -35,7 +35,7 @@ io/bytecodemapper/signals/common/Cosine.java
  io.bytecodemapper.signals.common.Cosine
 io/bytecodemapper/signals/micro/MicroScoringService.java
  io.bytecodemapper.signals.micro.MicroScoringService
+io/bytecodemapper/signals/micro/MicroPatternExtractor.java
+ io.bytecodemapper.signals.micro.MicroPatternExtractor
 io/bytecodemapper/signals/micro/MicroPatternProviderImpl.java
  io.bytecodemapper.signals.micro.MicroPatternProviderImpl
-io/bytecodemapper/signals/micro/MicroPattern.java
- io.bytecodemapper.signals.micro.MicroPattern

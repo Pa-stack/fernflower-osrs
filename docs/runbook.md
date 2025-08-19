@@ -4,7 +4,7 @@
 **Flow:** `Normalize → CFG → Dominators/DF/TDF → WL → Class match → Method match (+Refine) → Field match → Write Tiny v2`.
 
 - **Normalization:** All downstream features (WL, micropatterns, normalized histogram/strings/calls) are computed from the **analysis CFG** after minimal normalization.
-- **Persistent caches:** Per-jar method-feature caches live under `build/cache/<jarSHA>.methods.ser`, keyed by `owner#name(desc)#normalizedBodyHash`. Each entry contains WL signature, micropattern bitset, generalized opcode histogram, filtered strings, call-bag, normalized descriptor, and the normalized fingerprint.
+- **Persistent caches:** Per-jar method-feature caches live under `build/cache/<jarSHA>.methods.ser`, keyed by `owner#name(desc)#normalizedBodyHash#IRfp`. Each entry contains WL signature, micropattern bitset, generalized opcode histogram, filtered strings, call-bag, normalized descriptor, and the IR fingerprint.
 - **Determinism:** When `--deterministic` is set, the pipeline avoids parallelism and imposes explicit sorting before hashing/serialization. Two identical runs must produce **byte-identical** `mappings.tiny`.
 
 **CLI flags:**
@@ -18,6 +18,15 @@
 
 **Determinism check:**
 Run `mapOldNew` twice with the same flags and compare `mappings.tiny` bytes; caches and IDF are reused across runs.
+
+Windows / PowerShell quick check:
+
+``powershell
+./gradlew :mapper-cli:run --args="mapOldNew --old testData/jars/old.jar --new testData/jars/new.jar --out mapper-cli/build/m4.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties"
+cp mapper-cli\build\m4.tiny mapper-cli\build\m4a.tiny
+./gradlew :mapper-cli:run --args="mapOldNew --old testData/jars/old.jar --new testData/jars/new.jar --out mapper-cli/build/m4b.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties"
+fc.exe mapper-cli\build\m4a.tiny mapper-cli\build\m4b.tiny
+``
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook orchestrator-caches END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook mapping-io-remap BEGIN -->
 ## Mapping I/O and Remapping (Tiny v2 default)
@@ -384,10 +393,12 @@ or to the path supplied after `--debug-normalized <path>`.
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook cache-fingerprint BEGIN -->
 ### Cache key & invalidation policy
 
-- **Key structure:** `owner#name(desc)#normalizedBodyHash#normalizerOptionsFp`
+- **Key structure:** `owner#name(desc)#normalizedBodyHash#IRfp`
 	- `normalizedBodyHash`: SHA-256 over normalized (post-normalization) opcodes/operands, ignoring labels/frames/line numbers.
-	- `normalizerOptionsFp`: compact string fingerprint of normalization options and a `normalizerVersion` bump when semantics change.
+	- `IRfp` (IR fingerprint): concatenation/hash of `NormalizerFingerprint` and `ReducedCfgFingerprint` so that both normalization semantics and reduced-CFG build options are part of the cache key.
 - **Per-jar metadata:** For each input JAR, a `*.meta.properties` file is written under `--cacheDir` with:
-	- `normalizerVersion` and `optionsFingerprint`
-- **When to bump:** Any change in normalization that *can* affect CFG/DF/TDF/WL, or feature extraction ordering, should bump `NormalizerFingerprint.NORMALIZER_VERSION`.
+	- `normalizerVersion`, `normalizerOptionsFingerprint`, and `reducedCfgOptionsFingerprint`
+- **When to bump:**
+	- Any change in normalization that can affect CFG/DF/TDF/WL, or feature extraction ordering → bump `NormalizerFingerprint.NORMALIZER_VERSION`.
+	- Any change in reduced-CFG construction options (e.g., linear-chain merge policy) → update `ReducedCfgFingerprint` content.
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook cache-fingerprint END -->
