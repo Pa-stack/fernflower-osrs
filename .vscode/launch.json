@@ -9,6 +9,7 @@
       "request": "launch",
       "mainClass": "io.bytecodemapper.cli.Main",
       "projectName": "mapper-cli",
+  "vmArgs": "-Xms1g -Xmx4g",
       "args": [
         "mapOldNew",
         "--old", "data/weeks/osrs-231.jar",

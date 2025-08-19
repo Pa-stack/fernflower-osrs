@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 public final class MethodFeatureCache implements Closeable {
     private final Path cacheFile;
     private final LinkedHashMap<String, MethodFeatureCacheEntry> map;
+    private static final String MAGIC = "BMAP:MFC:1\n"; // simple header to version cache format
 
     private MethodFeatureCache(Path cacheFile, LinkedHashMap<String, MethodFeatureCacheEntry> map) {
         this.cacheFile = cacheFile;
@@ -21,17 +22,42 @@ public final class MethodFeatureCache implements Closeable {
         Path file = cacheDir.resolve(jarKey + ".methods.ser");
         LinkedHashMap<String, MethodFeatureCacheEntry> m = new LinkedHashMap<String, MethodFeatureCacheEntry>();
         if (Files.exists(file)) {
-            ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(file));
+            // Guard against legacy or corrupt caches: if too large, skip reading to avoid OOM in tests/CI
             try {
-                Object obj = ois.readObject();
-                if (obj instanceof LinkedHashMap) {
-                    @SuppressWarnings("unchecked")
-                    LinkedHashMap<String, MethodFeatureCacheEntry> mm = (LinkedHashMap<String, MethodFeatureCacheEntry>) obj;
-                    m.putAll(mm);
+                long size = Files.size(file);
+                // ~64 MiB cap: current test-sized caches are << this; weekly datasets may exceed
+                final long MAX_BYTES = 64L * 1024L * 1024L;
+                if (size > MAX_BYTES) {
+                    // Treat as empty; a fresh run will repopulate a small subset deterministically
+                    return new MethodFeatureCache(file, m);
                 }
-            } catch (ClassNotFoundException ignored) {
+            } catch (Throwable ignored) {
+                // If size probe fails, continue with cautious read below
+            }
+            java.io.InputStream is = Files.newInputStream(file);
+            try {
+                // Read and verify magic header; if absent/mismatch, ignore legacy file content
+                byte[] head = new byte[MAGIC.length()];
+                int r = is.read(head);
+                boolean ok = r == MAGIC.length() && new String(head, java.nio.charset.StandardCharsets.UTF_8).equals(MAGIC);
+                if (ok) {
+                    ObjectInputStream ois = new ObjectInputStream(is);
+                    try {
+                        Object obj = ois.readObject();
+                        if (obj instanceof LinkedHashMap) {
+                            @SuppressWarnings("unchecked")
+                            LinkedHashMap<String, MethodFeatureCacheEntry> mm = (LinkedHashMap<String, MethodFeatureCacheEntry>) obj;
+                            m.putAll(mm);
+                        }
+                    } catch (ClassNotFoundException ignored) {
+                    } finally {
+                        ois.close();
+                    }
+                } else {
+                    // legacy/no-header: skip reading to avoid potential OOM from corrupted content
+                }
             } finally {
-                ois.close();
+                try { is.close(); } catch (IOException ignored) {}
             }
         }
         return new MethodFeatureCache(file, m);
@@ -47,11 +73,18 @@ public final class MethodFeatureCache implements Closeable {
 
     public void flush() throws IOException {
         // Deterministic write: LinkedHashMap iteration order = insertion order; entries were added deterministically.
-        ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(cacheFile));
+        java.io.OutputStream os = Files.newOutputStream(cacheFile);
         try {
-            oos.writeObject(map);
+            // Write header then object stream
+            os.write(MAGIC.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            ObjectOutputStream oos = new ObjectOutputStream(os);
+            try {
+                oos.writeObject(map);
+            } finally {
+                oos.close();
+            }
         } finally {
-            oos.close();
+            try { os.close(); } catch (IOException ignored) {}
         }
     }
 

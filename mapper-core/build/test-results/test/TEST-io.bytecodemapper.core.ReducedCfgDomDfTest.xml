@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.bytecodemapper.core.ReducedCfgDomDfTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2025-08-19T18:17:08" hostname="PRAGMATIQPASCAL" time="0.009">
+  <properties/>
+  <testcase name="dfDeterminismHashTwice" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.001"/>
+  <testcase name="nestedLoops" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.001"/>
+  <testcase name="singleBlock" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.003"/>
+  <testcase name="simpleLoop" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.0"/>
+  <testcase name="tableSwitchEdges" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.001"/>
+  <testcase name="diamondDf" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.001"/>
+  <testcase name="tryCatchAddsHandlerEdge" classname="io.bytecodemapper.core.ReducedCfgDomDfTest" time="0.0"/>
+  <system-out><![CDATA[DF hash run1=452273833165032129 run2=452273833165032129
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

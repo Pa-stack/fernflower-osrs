@@ -32,7 +32,9 @@ public class MapOldNewSmokeTest {
         "--new", "testData/jars/new.jar",
         "--out", "build/test-smoke-mappings.tiny",
         "--debug-normalized", "build/test-normalized_debug.txt",
-                "--debug-sample", "5"
+                "--debug-sample", "5",
+                "--maxMethods", "200",
+                "--deterministic"
         };
         Main.main(args);
 

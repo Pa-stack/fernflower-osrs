@@ -53,9 +53,22 @@ subprojects {
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
 
+  tasks.withType(JavaExec).configureEach {
+    // either form works
+    maxHeapSize = '4g'
+    jvmArgs = '-Xms1g'
+  }
+
+  tasks.withType(Test).configureEach {
+    maxHeapSize = '4g'
+  jvmArgs '-Xms1g'
+  }
+
   tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = null // ensure legacy toolchain works on JDK8/compat
+    options.fork = true
+    options.forkOptions.memoryMaximumSize = '2g'
   }
 
   test {

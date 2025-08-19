@@ -13,6 +13,7 @@ public final class OrchestratorOptions {
     public final boolean debugStats;   // phase summaries
     public final boolean debugNormalized; // dump normalized sample in mapOldNew (already exists)
     public final int debugNormalizedSample;
+    public final int maxMethods; // 0 = unlimited; test-only throttle
 
     // >>> AUTOGEN: BYTECODEMAPPER CLI OrchestratorOptions ABLATE BEGIN
     // Weights already exist; add ablation/toggles if missing.
@@ -39,7 +40,8 @@ public final class OrchestratorOptions {
             int refineIters,
             boolean debugStats,
             boolean debugNormalized,
-            int debugNormalizedSample) {
+            int debugNormalizedSample,
+            int maxMethods) {
         this.deterministic = deterministic;
         this.cacheDir = cacheDir;
         this.idfPath = idfPath;
@@ -49,13 +51,15 @@ public final class OrchestratorOptions {
         this.debugStats = debugStats;
         this.debugNormalized = debugNormalized;
         this.debugNormalizedSample = debugNormalizedSample;
+        this.maxMethods = maxMethods;
     }
 
     public static OrchestratorOptions defaults(Path cacheDir, Path idfPath) {
     OrchestratorOptions o = new OrchestratorOptions(
                 true, cacheDir, idfPath, // deterministic default ON in CI
                 false, 0.7, 5,           // refinement defaults
-                false, false, 50         // debug defaults
+                false, false, 50,        // debug defaults
+                0                        // no cap by default
     );
     // scoring defaults
     o.useNormalizedHistogram = true;

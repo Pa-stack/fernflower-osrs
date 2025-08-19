@@ -4,15 +4,15 @@ io/bytecodemapper/signals/strings/StringTfidfTest.java
  io.bytecodemapper.signals.strings.StringTfidfTest
 io/bytecodemapper/signals/micro/BitOrderTest.java
  io.bytecodemapper.signals.micro.BitOrderTest
-io/bytecodemapper/signals/calls/CallBagTfidfTest.java
- io.bytecodemapper.signals.calls.CallBagTfidfTest
+io/bytecodemapper/signals/micro/MicroPatternExtractorTest.java
+ io.bytecodemapper.signals.micro.MicroPatternExtractorTest
 io/bytecodemapper/signals/idf/IdfStoreTest.java
  io.bytecodemapper.signals.idf.IdfStoreTest
 io/bytecodemapper/signals/normalized/NormalizedMethodTest.java
  io.bytecodemapper.signals.normalized.NormalizedMethodTest
 io/bytecodemapper/signals/opcode/OpcodeFeaturesTest.java
  io.bytecodemapper.signals.opcode.OpcodeFeaturesTest
-io/bytecodemapper/signals/micro/MicroPatternExtractorTest.java
- io.bytecodemapper.signals.micro.MicroPatternExtractorTest
+io/bytecodemapper/signals/calls/CallBagTfidfTest.java
+ io.bytecodemapper.signals.calls.CallBagTfidfTest
 io/bytecodemapper/signals/micro/MicroPatternSuite.java
  io.bytecodemapper.signals.micro.MicroPatternSuite

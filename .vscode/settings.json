@@ -37,4 +37,15 @@
   // Let Gradle extension scan nested projects
   "gradle.nestedProjects": true,
   "java.configuration.updateBuildConfiguration": "automatic"
+  ,
+  // >>> AUTOGEN: BYTECODEMAPPER VSCode Java Test Heap BEGIN
+  // Configure Java Test Runner to use a larger heap for mapper tests
+  "java.test.config": [
+    {
+      "name": "large-heap",
+      "vmArgs": ["-Xms1g", "-Xmx4g"]
+    }
+  ],
+  "java.test.defaultConfig": "large-heap"
+  // <<< AUTOGEN: BYTECODEMAPPER VSCode Java Test Heap END
 }

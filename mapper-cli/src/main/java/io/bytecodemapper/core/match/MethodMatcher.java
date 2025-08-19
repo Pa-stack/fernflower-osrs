@@ -2,21 +2,26 @@
 package io.bytecodemapper.core.match;
 
 import io.bytecodemapper.cli.cache.MethodFeatureCacheEntry;
+import io.bytecodemapper.cli.method.MethodFeatures;
+import io.bytecodemapper.cli.method.MethodRef;
+import io.bytecodemapper.cli.method.MethodScorer;
 import io.bytecodemapper.signals.idf.IdfStore;
+import io.bytecodemapper.signals.normalized.NormalizedAdapters;
+import io.bytecodemapper.signals.micro.MicroPatternExtractor;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.util.*;
 
 /**
  * Method matching entrypoint (CLI-side adapter) using precomputed feature caches.
- * This Prompt A implementation builds a WL signature index on the NEW side and
- * produces abstentions with deterministic candidate lists. No acceptances yet.
+ * Builds a WL signature index on the NEW side and scores candidates using
+ * MethodScorer. Accept if best >= TAU_ACCEPT and (best - second) >= MIN_MARGIN.
  */
 public final class MethodMatcher {
 
     public static final int WL_K = 4; // iterations used by WL signature (precomputed in cache)
 
-    // Backwards-compatible DTOs (new in Prompt A)
+    // Backwards-compatible DTOs
     public static final class CandidateScore {
         public final String newOwner, newName, desc;
         public final double total;  // placeholder; filled in Prompt B
@@ -46,8 +51,9 @@ public final class MethodMatcher {
 
     /**
      * Overload that accepts feature caches. Builds WL index on NEW side and, for each OLD
-     * method, emits an abstention with deterministic candidates (same desc, equal WL first;
-     * if none, relaxed to same desc in mapped owner). Acceptance and scoring are added later.
+     * method, generates candidates (same desc, equal WL first; if none, relax to same desc
+     * in mapped owner). Scores with MethodScorer and either accepts or abstains with a
+     * deterministic, score-sorted candidate list.
      */
     public static MethodMatchResult matchMethods(
             Map<String, ClassNode> oldClasses,
@@ -65,6 +71,7 @@ public final class MethodMatcher {
         // 2) Iterate OLD owners deterministically
         ArrayList<String> owners = new ArrayList<String>(classMap.keySet());
         Collections.sort(owners);
+    final int MAX_CANDIDATES = 120; // safety cap to keep TF-IDF models bounded
         for (String oldOwner : owners) {
             String newOwner = classMap.get(oldOwner);
             Map<String, MethodFeatureCacheEntry> om = oldFeat.get(oldOwner);
@@ -88,16 +95,55 @@ public final class MethodMatcher {
                     cands = relaxedCandidates(nm, newOwner, desc);
                 }
 
-                ArrayList<CandidateScore> cs = new ArrayList<CandidateScore>(cands.size());
-                for (NewRef nr : cands) cs.add(new CandidateScore(nr.owner, nr.name, desc, 0.0, 0.0));
-                // Deterministic candidate order
-                Collections.sort(cs, new Comparator<CandidateScore>() {
-                    public int compare(CandidateScore a, CandidateScore b) {
-                        int c = a.newOwner.compareTo(b.newOwner); if (c!=0) return c;
-                        return a.newName.compareTo(b.newName);
+                // Deterministic cap to prevent excessive memory on large classes/signature collisions
+                if (cands.size() > MAX_CANDIDATES) {
+                    ArrayList<NewRef> trimmed = new ArrayList<NewRef>(cands);
+                    Collections.sort(trimmed, new Comparator<NewRef>() {
+                        public int compare(NewRef a, NewRef b) {
+                            int c = a.owner.compareTo(b.owner); if (c!=0) return c;
+                            return a.name.compareTo(b.name);
+                        }
+                    });
+                    cands = trimmed.subList(0, MAX_CANDIDATES);
+                }
+
+                // Build MethodFeatures for scoring
+                MethodFeatures src = toFeaturesFromCache(oldOwner, oldName, desc, ofe, classMap, true);
+                ArrayList<MethodFeatures> candFeat = new ArrayList<MethodFeatures>(cands.size());
+                for (NewRef nr : cands) {
+                    MethodFeatureCacheEntry nfe = newFeat.get(nr.owner).get(nr.name + desc);
+                    if (nfe != null) candFeat.add(toFeaturesFromCache(nr.owner, nr.name, desc, nfe, classMap, false));
+                }
+
+                // Score and decide
+                MethodScorer.Result r = MethodScorer.scoreOne(src, candFeat, idf);
+                if (r.accepted && r.best != null) {
+                    out.accepted.add(new Pair(oldOwner, oldName, r.best.ref.name, desc));
+                } else {
+                    // Abstain: compute candidate scores for diagnostics/output
+                    double[] scores = MethodScorer.scoreVector(src, candFeat, idf);
+                    double best = 0.0, second = 0.0;
+                    for (double s : scores) {
+                        if (s > best) { second = best; best = s; }
+                        else if (s > second) { second = s; }
                     }
-                });
-                out.abstained.add(new Abstention(oldOwner, oldName, desc, cs));
+                    ArrayList<CandidateScore> cs = new ArrayList<CandidateScore>(candFeat.size());
+                    for (int i=0;i<candFeat.size();i++) {
+                        MethodFeatures t = candFeat.get(i);
+                        double s = (i < scores.length ? scores[i] : 0.0);
+                        double margin = s - (Math.abs(s - best) < 1e-12 ? second : best); // per-candidate margin
+                        cs.add(new CandidateScore(t.ref.owner, t.ref.name, t.ref.desc, s, margin));
+                    }
+                    // Deterministic candidate order: sort by score desc, then owner/name
+                    Collections.sort(cs, new Comparator<CandidateScore>() {
+                        public int compare(CandidateScore a, CandidateScore b) {
+                            int c = java.lang.Double.compare(b.total, a.total); if (c!=0) return c;
+                            c = a.newOwner.compareTo(b.newOwner); if (c!=0) return c;
+                            return a.newName.compareTo(b.newName);
+                        }
+                    });
+                    out.abstained.add(new Abstention(oldOwner, oldName, desc, cs));
+                }
             }
         }
 
@@ -192,5 +238,41 @@ public final class MethodMatcher {
         }
         return out;
     }
+
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatcher SCORING HELPERS BEGIN
+    private static MethodFeatures toFeaturesFromCache(
+            String owner, String name, String desc,
+            MethodFeatureCacheEntry e,
+            Map<String,String> classMap,
+            boolean oldSide) {
+        // wl & bits
+        long wl = e.wlSignature;
+        java.util.BitSet bits = (java.util.BitSet) e.microBits.clone();
+        boolean leaf = bits != null && bits.get(MicroPatternExtractor.LEAF);
+        boolean recursive = bits != null && bits.get(MicroPatternExtractor.RECURSIVE);
+        // histograms
+        int[] normDense = NormalizedAdapters.toDense200(e.normOpcodeHistogram);
+        int[] legacy = new int[200]; // legacy unused when normalized is enabled
+        // calls: owner-normalize for old side via classMap
+        java.util.List<String> callBag = new java.util.ArrayList<String>(e.invokedSignatures.size());
+        for (String sig : e.invokedSignatures) {
+            if (sig.startsWith("indy:")) { callBag.add(sig); continue; }
+            int dot = sig.indexOf('.');
+            if (dot <= 0) { callBag.add(sig); continue; }
+            String o = sig.substring(0, dot);
+            String rest = sig.substring(dot);
+            String mapped = oldSide ? (classMap.get(o) != null ? classMap.get(o) : o) : o;
+            callBag.add(mapped + rest);
+        }
+        java.util.Collections.sort(callBag);
+        // strings
+        java.util.List<String> strBag = new java.util.ArrayList<String>(e.strings);
+        java.util.Collections.sort(strBag);
+        MethodRef ref = new MethodRef(owner, name, desc);
+        return new MethodFeatures(ref, wl, bits, leaf, recursive, legacy, normDense, callBag, strBag,
+                e.normalizedDescriptor != null ? e.normalizedDescriptor : desc,
+                e.normFingerprint != null ? e.normFingerprint : "");
+    }
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatcher SCORING HELPERS END
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatcher WL INDEX END

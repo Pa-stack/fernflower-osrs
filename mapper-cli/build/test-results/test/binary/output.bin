@@ -1,10 +1,48 @@
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-gWrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e4412625210578241125\mappings1.tiny
-gWrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e4412625210578241125\mappings2.tiny
+lWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m1.tiny
+lWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m2.tiny
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+ƒWrote normalized debug to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-normalized_debug.txt
+yWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-smoke-mappings.tiny
+7Refine iter=1 flips=0 maxDelta=0.05000 (prev flips=-)
+7Refine iter=2 flips=0 maxDelta=0.00000 (prev flips=0)
+7Refine iter=1 flips=0 maxDelta=0.10000 (prev flips=-)
+7Refine iter=2 flips=0 maxDelta=0.00000 (prev flips=0)
+
+	'[DF] iterateToFixpoint start, nodes=1
+
+	[DF] iter=1, changed=false
+
+	'[DF] iterateToFixpoint start, nodes=1
+
+	[DF] iter=1, changed=false
+
+	'[DF] iterateToFixpoint start, nodes=1
+
+	[DF] iter=1, changed=false
+
+	'[DF] iterateToFixpoint start, nodes=1
+
+	[DF] iter=1, changed=false
+
+	gWrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e2088301114964165463\mappings1.tiny
+
+	gWrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e2088301114964165463\mappings2.tiny

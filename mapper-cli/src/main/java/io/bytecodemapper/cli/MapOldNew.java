@@ -61,13 +61,16 @@ final class MapOldNew {
 
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG FLAGS SCOPE BEGIN
         // Parse debug flags only for mapOldNew
-        boolean debugNormalized = false;
+    boolean debugNormalized = false;
         String debugNormalizedPath = null;
         int debugSample = 50;
-        boolean debugStats = false;
+    boolean debugStats = false;
+    int maxMethods = 0; // test-only throttle; 0 = unlimited
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS BEGIN
         double tauAcceptMethods = 0.60;
         double marginMethods = 0.05;
+    // Refinement flags (optional)
+    boolean refine = false; double lambda = 0.7; int refineIters = 5;
     // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY BEGIN
     boolean includeIdentity = false; // unused when orchestrator is active
     // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY BEGIN
@@ -92,6 +95,14 @@ final class MapOldNew {
                 try { tauAcceptMethods = Double.parseDouble(args[++i]); } catch (NumberFormatException ignore) {}
             } else if ("--marginMethods".equals(a) && i+1<args.length) {
                 try { marginMethods = Double.parseDouble(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--refine".equals(a)) {
+                refine = true;
+            } else if ("--lambda".equals(a) && i+1<args.length) {
+                try { lambda = Double.parseDouble(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--refineIters".equals(a) && i+1<args.length) {
+                try { refineIters = Integer.parseInt(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--maxMethods".equals(a) && i+1<args.length) {
+                try { maxMethods = Integer.parseInt(args[++i]); } catch (NumberFormatException ignore) {}
             } else if ("--includeIdentity".equals(a)) {
                 includeIdentity = true;
             } else if ("--demoRemapCount".equals(a) && i+1<args.length) {
@@ -107,6 +118,11 @@ final class MapOldNew {
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY END
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY END
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG FLAGS SCOPE END
+
+        // Touch legacy flags to avoid unused warnings (kept for forward/back compat in autogen region)
+        if (includeIdentity || demoCount != 0 || (demoPrefix != null && demoPrefix.length() == 0)) {
+            // no-op
+        }
 
         // Read classes, sort deterministically by internal name
         final List<ClassNode> oldClasses = new ArrayList<ClassNode>();
@@ -168,11 +184,11 @@ final class MapOldNew {
     // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH INVOKE BEGIN
     // Orchestrated end-to-end run (deterministic ordering, persistent caches, IDF handling)
     // Note: refine/lambda/iters not parsed in this command yet; use defaults compatible with OrchestratorOptions
-    boolean refine = false; double lambda = 0.7; int refineIters = 5;
     OrchestratorOptions o = new OrchestratorOptions(
         deterministic, cacheDir, idfPath,
         refine, lambda, refineIters,
-        debugStats, debugNormalized, debugSample
+    debugStats, debugNormalized, debugSample,
+    maxMethods
     );
     Orchestrator orch = new Orchestrator();
     Orchestrator.Result r = orch.run(oldPath, newPath, o);

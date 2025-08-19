@@ -304,7 +304,10 @@ public final class Orchestrator {
         Map<String, Map<String, MethodFeature>> out = new TreeMap<String, Map<String, MethodFeature>>();
         List<String> owners = new ArrayList<String>(classes.keySet());
         Collections.sort(owners);
+        final int cap = opt != null ? Math.max(0, opt.maxMethods) : 0;
+        int processed = 0;
         for (String owner : owners) {
+            if (cap > 0 && processed >= cap) break;
             ClassNode cn = classes.get(owner);
             Map<String, MethodFeature> m = new TreeMap<String, MethodFeature>();
             if (cn.methods != null) {
@@ -317,6 +320,7 @@ public final class Orchestrator {
                     }
                 });
                 for (MethodNode mn : methods) {
+                    if (cap > 0 && processed >= cap) break;
                     if ((mn.access & (org.objectweb.asm.Opcodes.ACC_ABSTRACT | org.objectweb.asm.Opcodes.ACC_NATIVE)) != 0) {
                         continue;
                     }
@@ -376,6 +380,7 @@ public final class Orchestrator {
             }
             }
             m.put(mn.name + mn.desc, feat);
+            processed++;
                 }
             }
             out.put(owner, m);

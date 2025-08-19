@@ -1,9 +1,14 @@
+io/bytecodemapper/core/match/MethodMatchStats.java
+ io.bytecodemapper.core.match.MethodMatchStats
 io/bytecodemapper/core/dom/Dominators.java
  io.bytecodemapper.core.dom.Dominators
 io/bytecodemapper/core/ir/IRFingerprint.java
  io.bytecodemapper.core.ir.IRFingerprint
 io/bytecodemapper/core/df/DF.java
  io.bytecodemapper.core.df.DF
+io/bytecodemapper/core/score/CompositeScorer.java
+ io.bytecodemapper.core.score.CompositeScorer
+ io.bytecodemapper.core.score.CompositeScorer$Options
 io/bytecodemapper/core/fingerprint/ClassScoring.java
  io.bytecodemapper.core.fingerprint.ClassScoring
 io/bytecodemapper/core/normalize/Normalizer.java
@@ -51,8 +56,3 @@ io/bytecodemapper/core/hash/StableHash64.java
 io/bytecodemapper/core/fingerprint/FingerprintBuilder.java
  io.bytecodemapper.core.fingerprint.FingerprintBuilder
  io.bytecodemapper.core.fingerprint.FingerprintBuilder$1
-io/bytecodemapper/core/match/MethodMatchStats.java
- io.bytecodemapper.core.match.MethodMatchStats
-io/bytecodemapper/core/score/CompositeScorer.java
- io.bytecodemapper.core.score.CompositeScorer
- io.bytecodemapper.core.score.CompositeScorer$Options
