@@ -1,3 +1,17 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook refine BEGIN -->
+## Phase-3 Call-graph Refinement (optional)
+
+Enable with `--refine` to reinforce matches using **intra-class** call graphs:
+
+- Build app-only graphs per mapped class pair.
+- Update scores iteratively: `S' = (1 − λ)·S + λ·N`, where **N** is neighbor consistency.
+- Caps: **−0.05 / +0.10** relative to base S₀; Freeze: keep strong base matches (S₀≥0.80, margin≥0.05).
+- CLI prints per-iteration `flips` and `maxΔ`; flips should decrease.
+
+Example:
+./gradlew :mapper-cli:run --args="methodMatch --old old.jar --new new.jar --classMap build/classmap.txt --out build/methodmap.txt --refine --lambda 0.70 --refineIters 5"
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook refine END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook io-paths BEGIN -->
 ### CLI Input/Output Path Semantics
 

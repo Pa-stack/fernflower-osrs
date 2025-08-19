@@ -1,3 +1,9 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component9 BEGIN -->
+## [2025-08-19] Component 9 — Phase-3 Call-graph refinement
+- Added app-only intra-class call graphs and IsoRank-style damped refinement (λ in [0.6, 0.8]).
+- Caps (−0.05/+0.10) and freeze of strong base matches (S₀≥0.80, margin≥0.05) to protect WL/DF-TDF evidence.
+- `methodMatch` now supports `--refine [--lambda L --refineIters K]` and prints per-iteration flips/maxΔ.
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component9 END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component7 BEGIN -->
 # BytecodeMapper Changelog
 
