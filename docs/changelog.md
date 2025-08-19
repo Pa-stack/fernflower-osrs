@@ -119,3 +119,20 @@
 - CLI: `methodMatch --old ... --new ... --classMap build/classmap.txt --out build/methodmap.txt`.
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component8 END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component10 BEGIN -->
+## [2025-08-19] Component 10 — Phase-4 Field matching (conservative)
+
+- Added field usage extraction (reads/writes, static/instance, ordinal) in `mapper-signals`.
+- Implemented conservative matcher using co-occurrence across matched methods, RW-ratio similarity, and owner consistency via class map in `mapper-cli`.
+- New CLI: `fieldMatch --old --new --methodMap --out` with deterministic output and abstentions listed.
+
+Compatibility / minor adjustments from prompt:
+
+```diff
++ Added Main dispatcher branch for fieldMatch with AUTOGEN markers.
++ Used existing ClasspathScanner instead of non-existent AsmJar helper.
++ Implemented robust methodMap parser for lines like "owner#name(desc) -> owner#name(desc) score=…".
++ Removed an unused import/variable in FieldMatcher after initial stub to satisfy Java 8 compilation.
+```
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component10 END -->

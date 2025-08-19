@@ -177,3 +177,25 @@ S_total = 0.45*S_calls
 Output includes accepted pairs and # abstain … audit lines.
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook methodMatch END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook field-match BEGIN -->
+## Phase-4 Field Matching (conservative)
+
+Inputs:
+
+- `--old`, `--new` jars
+- `--methodMap` from Phase-2
+- `--out` output path
+
+Method:
+
+- For each matched method pair, collect field uses (GET/PUT, static/instance).
+- Aggregate votes: for each old field, count co-occurrences with new fields, and track read/write ratios.
+- Accept only if: support ≥ 3, margin ≥ 2, RW-ratio similarity ≥ 0.60, and the owner matches via the class map. Otherwise abstain.
+
+Usage:
+
+```bash
+./gradlew :mapper-cli:run --args="fieldMatch --old old.jar --new new.jar --methodMap build/methodmap.txt --out build/fieldmap.txt"
+```
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook field-match END -->
