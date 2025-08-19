@@ -47,6 +47,7 @@ final class MapOldNew {
         boolean debugNormalized = false;
         String debugNormalizedPath = null;
         int debugSample = 50;
+        boolean debugStats = false;
 
         for (int i = 0; i < args.length; i++) {
             String a = args[i];
@@ -60,6 +61,8 @@ final class MapOldNew {
                 if (i + 1 < args.length) {
                     try { debugSample = Integer.parseInt(args[++i]); } catch (NumberFormatException ignore) {}
                 }
+            } else if ("--debug-stats".equals(a)) {
+                debugStats = true;
             }
         }
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG FLAGS SCOPE END
@@ -117,6 +120,37 @@ final class MapOldNew {
         Map<String,String> classMap = new LinkedHashMap<String,String>();
         Map<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef> methodPairs = new LinkedHashMap<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef>();
         Map<io.bytecodemapper.cli.field.FieldRef,  io.bytecodemapper.cli.field.FieldRef>  fieldPairs  = new LinkedHashMap<io.bytecodemapper.cli.field.FieldRef,  io.bytecodemapper.cli.field.FieldRef>();
+
+        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG STATS BEGIN
+        if (debugStats) {
+            System.out.println("[Phase-1] Classes: old=" + oldClasses.size() + " new=" + newClasses.size()
+                    + " matched=" + classMap.size() + " abstained=" + (oldClasses.size() - classMap.size()));
+        }
+
+        if (debugStats) {
+            int accepted = methodPairs.size();
+            int abstained = Math.max(0, oldMf.size() - accepted); // best-effort approximation
+            int leafPenalty = 0; // optional counters not tracked yet
+            int recPenalty  = 0;
+            int lowScore    = 0;
+            int marginFail  = 0;
+            System.out.println("[Phase-2] Methods: accepted=" + accepted + " abstained=" + abstained
+                    + " lowScore=" + lowScore + " marginFail=" + marginFail
+                    + " leafPenalty=" + leafPenalty + " recPenalty=" + recPenalty);
+        }
+
+        // If refinement is implemented later, these will be replaced.
+        boolean refined = false; int flipsLastIter = 0; double maxDelta = 0.0;
+        if (debugStats && refined) {
+            System.out.println("[Phase-3] Refinement: flipsLastIter=" + flipsLastIter
+                    + " maxDelta=" + String.format(java.util.Locale.ROOT, "%.4f", maxDelta)
+                    + " accepted=" + methodPairs.size());
+        }
+
+        if (debugStats && fieldPairs != null) {
+            System.out.println("[Phase-4] Fields: accepted=" + fieldPairs.size());
+        }
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG STATS END
 
         Map<String,String> tinyClasses = new java.util.LinkedHashMap<String,String>(classMap);
 
