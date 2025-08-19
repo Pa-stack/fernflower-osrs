@@ -1,4 +1,4 @@
-// >>> AUTOGEN: BYTECODEMAPPER io AsmJarRemapper RENAMING+FALLBACK BEGIN
+// >>> AUTOGEN: BYTECODEMAPPER io AsmJarRemapper ORDER+MANIFEST BEGIN
 package io.bytecodemapper.io.remap;
 
 import io.bytecodemapper.io.tiny.TinyV2Mappings;
@@ -23,8 +23,8 @@ public final class AsmJarRemapper {
     public static void remapJar(Path inJar, Path outJar, TinyV2Mappings t) throws IOException {
         Files.createDirectories(outJar.getParent());
 
-        // Read all entries into memory to allow deterministic write order
-        Map<String, byte[]> entries = new TreeMap<String, byte[]>(String.CASE_INSENSITIVE_ORDER);
+        // Read all entries; keep natural String order. We'll write MANIFEST first if present.
+        Map<String, byte[]> entries = new TreeMap<String, byte[]>(); // natural (case-sensitive) ordering
         try (JarInputStream jin = new JarInputStream(Files.newInputStream(inJar))) {
             for (ZipEntry e; (e = jin.getNextJarEntry()) != null; ) {
                 if (e.isDirectory()) continue;
@@ -32,23 +32,30 @@ public final class AsmJarRemapper {
             }
         }
 
-        // Build a reverse class map for fallback owner lookups
-        final Map<String, String> classMap = t.classMap;           // obf -> deobf
-        final Map<String, String> classMapRev = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-        for (Map.Entry<String, String> ce : classMap.entrySet()) {
+        // Reverse class map for owner fallback (deobf -> obf)
+        final Map<String, String> classMapRev = new TreeMap<String, String>();
+        for (Map.Entry<String, String> ce : t.classMap.entrySet()) {
             classMapRev.put(ce.getValue(), ce.getKey());
         }
 
         final Remapper remapper = new MapBackedRemapper(t, classMapRev);
 
-        // Remap and write in deterministic order; rename .class entries to NEW internal name
         try (JarOutputStream jout = new JarOutputStream(Files.newOutputStream(outJar))) {
+            // 1) Write MANIFEST first if present
+            byte[] manifestBytes = entries.remove("META-INF/MANIFEST.MF");
+            if (manifestBytes != null) {
+                ZipEntry ze = new ZipEntry("META-INF/MANIFEST.MF");
+                jout.putNextEntry(ze);
+                jout.write(manifestBytes);
+                jout.closeEntry();
+            }
+
+            // 2) Then write everything else in deterministic order
             for (Map.Entry<String, byte[]> en : entries.entrySet()) {
                 String name = en.getKey();
                 byte[] data = en.getValue();
 
                 if (!name.endsWith(".class")) {
-                    // Non-class entries copied verbatim
                     ZipEntry ze = new ZipEntry(name);
                     jout.putNextEntry(ze);
                     jout.write(data);
@@ -56,18 +63,17 @@ public final class AsmJarRemapper {
                     continue;
                 }
 
-                // Remap bytecode
                 ClassReader cr = new ClassReader(data);
                 ClassWriter cw = new ClassWriter(0);
                 ClassRemapper rv = new ClassRemapper(cw, remapper);
                 cr.accept(rv, 0);
                 byte[] outBytes = cw.toByteArray();
 
-                // Determine NEW internal name post-remap for entry rename
+                // Rename entry to remapped internal name
                 ClassReader crOut = new ClassReader(outBytes);
-                String newInternalName = crOut.getClassName(); // e.g., a/b/C
-
+                String newInternalName = crOut.getClassName();
                 String newEntryName = newInternalName + ".class";
+
                 ZipEntry ze = new ZipEntry(newEntryName);
                 jout.putNextEntry(ze);
                 jout.write(outBytes);
@@ -77,12 +83,12 @@ public final class AsmJarRemapper {
         }
     }
 
-    /** Custom Remapper that uses tiny v2 maps (obf -> deobf) with owner fallback via reverse class map. */
+    /** Remapper using tiny v2 maps (obf -> deobf), with reverse-owner fallback for fields/methods. */
     private static final class MapBackedRemapper extends Remapper {
         final Map<String, String> classMap;     // obf -> deobf
-        final Map<String, String> methodMap;    // key: owner#name(desc) obf -> name_deobf
-        final Map<String, String> fieldMap;     // key: owner#name:desc   obf -> name_deobf
-        final Map<String, String> classMapRev;  // deobf -> obf (fallback)
+        final Map<String, String> methodMap;    // owner#name(desc) -> name_deobf
+        final Map<String, String> fieldMap;     // owner#name:desc   -> name_deobf
+        final Map<String, String> classMapRev;  // deobf -> obf
 
         MapBackedRemapper(TinyV2Mappings t, Map<String, String> classMapRev) {
             this.classMap = t.classMap;
@@ -91,42 +97,35 @@ public final class AsmJarRemapper {
             this.classMapRev = classMapRev;
         }
 
-        @Override
-        public String map(String internalName) {
+        @Override public String map(String internalName) {
             String n = classMap.get(internalName);
             return n != null ? n : internalName;
         }
 
-        @Override
-        public String mapFieldName(String owner, String name, String descriptor) {
-            // primary: assume owner is obf
-            String key = owner + "#" + name + ":" + descriptor;
-            String mapped = fieldMap.get(key);
+        @Override public String mapFieldName(String owner, String name, String descriptor) {
+            String key1 = owner + "#" + name + ":" + descriptor;
+            String mapped = fieldMap.get(key1);
             if (mapped != null) return mapped;
 
-            // fallback: if owner looks deobf, map back to obf and retry
             String obfOwner = classMapRev.get(owner);
             if (obfOwner != null) {
                 String key2 = obfOwner + "#" + name + ":" + descriptor;
-                String mapped2 = fieldMap.get(key2);
-                if (mapped2 != null) return mapped2;
+                String m2 = fieldMap.get(key2);
+                if (m2 != null) return m2;
             }
             return name;
         }
 
-        @Override
-        public String mapMethodName(String owner, String name, String descriptor) {
-            // primary: assume owner is obf
-            String key = owner + "#" + name + descriptor;
-            String mapped = methodMap.get(key);
+        @Override public String mapMethodName(String owner, String name, String descriptor) {
+            String key1 = owner + "#" + name + descriptor;
+            String mapped = methodMap.get(key1);
             if (mapped != null) return mapped;
 
-            // fallback: if owner looks deobf, map back to obf and retry
             String obfOwner = classMapRev.get(owner);
             if (obfOwner != null) {
                 String key2 = obfOwner + "#" + name + descriptor;
-                String mapped2 = methodMap.get(key2);
-                if (mapped2 != null) return mapped2;
+                String m2 = methodMap.get(key2);
+                if (m2 != null) return m2;
             }
             return name;
         }
@@ -142,4 +141,4 @@ public final class AsmJarRemapper {
 
     private AsmJarRemapper() {}
 }
-// <<< AUTOGEN: BYTECODEMAPPER io AsmJarRemapper RENAMING+FALLBACK END
+// <<< AUTOGEN: BYTECODEMAPPER io AsmJarRemapper ORDER+MANIFEST END
