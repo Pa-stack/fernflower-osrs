@@ -199,3 +199,14 @@ Usage:
 ./gradlew :mapper-cli:run --args="fieldMatch --old old.jar --new new.jar --methodMap build/methodmap.txt --out build/fieldmap.txt"
 ```
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook field-match END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook methodmap-format BEGIN -->
+### Method Map Format (tolerant)
+
+The CLI accepts either of the following per-line formats (comments `#` ignored):
+
+- `owner#name(desc) -> owner#name(desc) [score=…]`
+- `owner/name desc -> owner/name desc [score=…]`
+
+Any trailing `score=…` token is ignored during parsing.
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook methodmap-format END -->
