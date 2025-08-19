@@ -129,9 +129,12 @@ public final class BenchCommand {
         // Known toggles: calls, micro, opcode, strings, fields, norm
         // OrchestratorOptions currently does not carry these weights; hook up here later if needed.
         // This placeholder keeps CLI stable.
-        if (abl.contains("norm")) {
-            o.useNormalizedHistogram = false;
-        }
+    if (abl.contains("norm")) o.useNormalizedHistogram = false;
+    if (abl.contains("calls"))  o.weightCalls = 0.0;
+    if (abl.contains("micro"))  o.weightMicropatterns = 0.0;
+    if (abl.contains("opcode")) o.weightOpcode = 0.0;
+    if (abl.contains("strings")) o.weightStrings = 0.0;
+    if (abl.contains("fields"))  o.weightFields = 0.0;
     }
 
     private static String nonEmpty(String v, String msg) {

@@ -11,11 +11,11 @@ import java.util.*;
 
 public final class MethodScorer {
 
-    public static final double W_CALLS = 0.45;
-    public static final double W_MICRO = 0.25;
-    public static final double W_OPCODE= 0.15;
-    public static final double W_STR   = 0.10;
-    public static final double W_FIELDS= 0.05; // stubbed 0.0 for now
+    public static double W_CALLS = 0.45;
+    public static double W_MICRO = 0.25;
+    public static double W_OPCODE= 0.15; // legacy/raw histogram path only when enabled
+    public static double W_STR   = 0.10;
+    public static double W_FIELDS= 0.05; // stubbed contribution
 
     // >>> AUTOGEN: BYTECODEMAPPER CLI MethodScorer NORM WEIGHTS BEGIN
     // New: normalized histogram weight (generalized)
@@ -26,7 +26,7 @@ public final class MethodScorer {
     public static double W_OPCODE_LEGACY = 0.05;
     // <<< AUTOGEN: BYTECODEMAPPER CLI MethodScorer NORM WEIGHTS END
 
-    public static final double ALPHA_MP   = 0.60; // blend inside micropatterns
+    public static double ALPHA_MP   = 0.60; // blend inside micropatterns
     public static double TAU_ACCEPT = 0.60; // final acceptance threshold (configurable)
     public static double MIN_MARGIN = 0.05; // abstain if best - secondBest < MIN_MARGIN (configurable)
 
@@ -183,6 +183,24 @@ public final class MethodScorer {
     private MethodScorer(){}
 
     // >>> AUTOGEN: BYTECODEMAPPER CLI MethodScorer CONFIG BEGIN
+    /** Configure weights/toggles from orchestrator options or callers. */
+    public static void configureWeights(double wCalls, double wMicro, double wNorm, double wStr, double wFields, boolean useNorm) {
+        W_CALLS = wCalls;
+        W_MICRO = wMicro;
+        W_STR   = wStr;
+        W_FIELDS= wFields;
+        if (useNorm) {
+            W_NORM = wNorm;
+        } else {
+            W_NORM = 0.0;
+        }
+    }
+
+    /** Configure micropattern alpha in [0,1]. */
+    public static void setAlphaMicropattern(double v) {
+        if (v < 0) v = 0; else if (v > 1) v = 1;
+        ALPHA_MP = v;
+    }
     /** Configure acceptance threshold in [0,1]. */
     public static void setTauAccept(double v) {
         if (v < 0) v = 0; else if (v > 1) v = 1;

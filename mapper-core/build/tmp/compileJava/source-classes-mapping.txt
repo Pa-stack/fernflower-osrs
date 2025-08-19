@@ -53,3 +53,6 @@ io/bytecodemapper/core/fingerprint/FingerprintBuilder.java
  io.bytecodemapper.core.fingerprint.FingerprintBuilder$1
 io/bytecodemapper/core/match/MethodMatchStats.java
  io.bytecodemapper.core.match.MethodMatchStats
+io/bytecodemapper/core/score/CompositeScorer.java
+ io.bytecodemapper.core.score.CompositeScorer
+ io.bytecodemapper.core.score.CompositeScorer$Options

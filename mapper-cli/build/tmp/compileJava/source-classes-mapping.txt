@@ -1,86 +1,3 @@
-io/bytecodemapper/core/match/ClassMatcher.java
- io.bytecodemapper.core.match.ClassMatcher
- io.bytecodemapper.core.match.ClassMatcher$ClassMatchResult
-io/bytecodemapper/cli/method/CallGraphRefiner.java
- io.bytecodemapper.cli.method.CallGraphRefiner
- io.bytecodemapper.cli.method.CallGraphRefiner$CandidateSet
- io.bytecodemapper.cli.method.CallGraphRefiner$Result
- io.bytecodemapper.cli.method.CallGraphRefiner$Stats
-io/bytecodemapper/cli/field/FieldMatcher.java
- io.bytecodemapper.cli.field.FieldMatcher
- io.bytecodemapper.cli.field.FieldMatcher$VoteAgg
-io/bytecodemapper/cli/util/MethodMapParser.java
- io.bytecodemapper.cli.util.MethodMapParser
- io.bytecodemapper.cli.util.MethodMapParser$Parsed
-io/bytecodemapper/cli/cache/MethodFeatureCacheEntry.java
- io.bytecodemapper.cli.cache.MethodFeatureCacheEntry
-io/bytecodemapper/cli/method/MethodRef.java
- io.bytecodemapper.cli.method.MethodRef
-io/bytecodemapper/core/match/MethodMatcher.java
- io.bytecodemapper.core.match.MethodMatcher
- io.bytecodemapper.core.match.MethodMatcher$1
- io.bytecodemapper.core.match.MethodMatcher$MethodMatchResult
- io.bytecodemapper.core.match.MethodMatcher$Pair
-io/bytecodemapper/cli/cache/MethodFeatureCache.java
- io.bytecodemapper.cli.cache.MethodFeatureCache
-io/bytecodemapper/cli/method/MethodScorer.java
- io.bytecodemapper.cli.method.MethodScorer
- io.bytecodemapper.cli.method.MethodScorer$Result
-io/bytecodemapper/cli/method/MethodFeatureExtractor.java
- io.bytecodemapper.cli.method.MethodFeatureExtractor
- io.bytecodemapper.cli.method.MethodFeatureExtractor$1
- io.bytecodemapper.cli.method.MethodFeatureExtractor$ClassOwnerMapper
- io.bytecodemapper.cli.method.MethodFeatureExtractor$IdentityMapper
-io/bytecodemapper/cli/method/CandidateGenerator.java
- io.bytecodemapper.cli.method.CandidateGenerator
- io.bytecodemapper.cli.method.CandidateGenerator$1
- io.bytecodemapper.cli.method.CandidateGenerator$Scored
-io/bytecodemapper/cli/ApplyMappings.java
- io.bytecodemapper.cli.ApplyMappings
-io/bytecodemapper/cli/method/AppCallGraph.java
- io.bytecodemapper.cli.method.AppCallGraph
- io.bytecodemapper.cli.method.AppCallGraph$1
-io/bytecodemapper/cli/cache/CacheMeta.java
- io.bytecodemapper.cli.cache.CacheMeta
-io/bytecodemapper/cli/util/CliPaths.java
- io.bytecodemapper.cli.util.CliPaths
-io/bytecodemapper/cli/PrintIdf.java
- io.bytecodemapper.cli.PrintIdf
-io/bytecodemapper/cli/util/DebugNormalizedDump.java
- io.bytecodemapper.cli.util.DebugNormalizedDump
- io.bytecodemapper.cli.util.DebugNormalizedDump$1
- io.bytecodemapper.cli.util.DebugNormalizedDump$2
-io/bytecodemapper/cli/bench/BenchMetrics.java
- io.bytecodemapper.cli.bench.BenchMetrics
-io/bytecodemapper/cli/field/FieldRef.java
- io.bytecodemapper.cli.field.FieldRef
-io/bytecodemapper/cli/TinyStats.java
- io.bytecodemapper.cli.TinyStats
-io/bytecodemapper/cli/method/MethodFeatures.java
- io.bytecodemapper.cli.method.MethodFeatures
-io/bytecodemapper/cli/MethodMatch.java
- io.bytecodemapper.cli.MethodMatch
- io.bytecodemapper.cli.MethodMatch$1
- io.bytecodemapper.cli.MethodMatch$2
- io.bytecodemapper.cli.MethodMatch$3
- io.bytecodemapper.cli.MethodMatch$4
-io/bytecodemapper/cli/FieldMatch.java
- io.bytecodemapper.cli.FieldMatch
- io.bytecodemapper.cli.FieldMatch$1
- io.bytecodemapper.cli.FieldMatch$2
-io/bytecodemapper/cli/ClassMatch.java
- io.bytecodemapper.cli.ClassMatch
- io.bytecodemapper.cli.ClassMatch$1
- io.bytecodemapper.cli.ClassMatch$2
- io.bytecodemapper.cli.ClassMatch$3
-io/bytecodemapper/cli/bench/BenchJson.java
- io.bytecodemapper.cli.bench.BenchJson
-io/bytecodemapper/cli/bench/BenchPairs.java
- io.bytecodemapper.cli.bench.BenchPairs
- io.bytecodemapper.cli.bench.BenchPairs$1
- io.bytecodemapper.cli.bench.BenchPairs$BenchPair
-io/bytecodemapper/cli/orch/OrchestratorOptions.java
- io.bytecodemapper.cli.orch.OrchestratorOptions
 io/bytecodemapper/cli/orch/Orchestrator.java
  io.bytecodemapper.cli.orch.Orchestrator
  io.bytecodemapper.cli.orch.Orchestrator$1
@@ -92,6 +9,91 @@ io/bytecodemapper/cli/orch/Orchestrator.java
  io.bytecodemapper.cli.orch.Orchestrator$MethodFeature
  io.bytecodemapper.cli.orch.Orchestrator$MethodPair
  io.bytecodemapper.cli.orch.Orchestrator$Result
+io/bytecodemapper/cli/method/CallGraphRefiner.java
+ io.bytecodemapper.cli.method.CallGraphRefiner
+ io.bytecodemapper.cli.method.CallGraphRefiner$CandidateSet
+ io.bytecodemapper.cli.method.CallGraphRefiner$Result
+ io.bytecodemapper.cli.method.CallGraphRefiner$Stats
+io/bytecodemapper/cli/field/FieldMatcher.java
+ io.bytecodemapper.cli.field.FieldMatcher
+ io.bytecodemapper.cli.field.FieldMatcher$VoteAgg
+io/bytecodemapper/cli/cache/CacheMeta.java
+ io.bytecodemapper.cli.cache.CacheMeta
+io/bytecodemapper/cli/cache/MethodFeatureCacheEntry.java
+ io.bytecodemapper.cli.cache.MethodFeatureCacheEntry
+io/bytecodemapper/cli/Main.java
+ io.bytecodemapper.cli.Main
+io/bytecodemapper/cli/cache/MethodFeatureCache.java
+ io.bytecodemapper.cli.cache.MethodFeatureCache
+io/bytecodemapper/cli/method/CandidateGenerator.java
+ io.bytecodemapper.cli.method.CandidateGenerator
+ io.bytecodemapper.cli.method.CandidateGenerator$1
+ io.bytecodemapper.cli.method.CandidateGenerator$Scored
+io/bytecodemapper/core/match/ClassMatcher.java
+ io.bytecodemapper.core.match.ClassMatcher
+ io.bytecodemapper.core.match.ClassMatcher$ClassMatchResult
+io/bytecodemapper/cli/PrintIdf.java
+ io.bytecodemapper.cli.PrintIdf
+io/bytecodemapper/core/match/MethodMatcher.java
+ io.bytecodemapper.core.match.MethodMatcher
+ io.bytecodemapper.core.match.MethodMatcher$1
+ io.bytecodemapper.core.match.MethodMatcher$MethodMatchResult
+ io.bytecodemapper.core.match.MethodMatcher$Pair
+io/bytecodemapper/cli/bench/BenchMetrics.java
+ io.bytecodemapper.cli.bench.BenchMetrics
+io/bytecodemapper/cli/orch/OrchestratorOptions.java
+ io.bytecodemapper.cli.orch.OrchestratorOptions
+io/bytecodemapper/cli/bench/BenchJson.java
+ io.bytecodemapper.cli.bench.BenchJson
+io/bytecodemapper/cli/field/FieldRef.java
+ io.bytecodemapper.cli.field.FieldRef
+io/bytecodemapper/cli/method/MethodFeatures.java
+ io.bytecodemapper.cli.method.MethodFeatures
+io/bytecodemapper/cli/bench/BenchCommand.java
+ io.bytecodemapper.cli.bench.BenchCommand
+io/bytecodemapper/cli/util/MethodMapParser.java
+ io.bytecodemapper.cli.util.MethodMapParser
+ io.bytecodemapper.cli.util.MethodMapParser$Parsed
+io/bytecodemapper/cli/MethodMatch.java
+ io.bytecodemapper.cli.MethodMatch
+ io.bytecodemapper.cli.MethodMatch$1
+ io.bytecodemapper.cli.MethodMatch$2
+ io.bytecodemapper.cli.MethodMatch$3
+ io.bytecodemapper.cli.MethodMatch$4
+io/bytecodemapper/cli/method/MethodScorer.java
+ io.bytecodemapper.cli.method.MethodScorer
+ io.bytecodemapper.cli.method.MethodScorer$Result
+io/bytecodemapper/cli/method/MethodFeatureExtractor.java
+ io.bytecodemapper.cli.method.MethodFeatureExtractor
+ io.bytecodemapper.cli.method.MethodFeatureExtractor$1
+ io.bytecodemapper.cli.method.MethodFeatureExtractor$ClassOwnerMapper
+ io.bytecodemapper.cli.method.MethodFeatureExtractor$IdentityMapper
+io/bytecodemapper/cli/ApplyMappings.java
+ io.bytecodemapper.cli.ApplyMappings
+io/bytecodemapper/cli/method/AppCallGraph.java
+ io.bytecodemapper.cli.method.AppCallGraph
+ io.bytecodemapper.cli.method.AppCallGraph$1
+io/bytecodemapper/cli/FieldMatch.java
+ io.bytecodemapper.cli.FieldMatch
+ io.bytecodemapper.cli.FieldMatch$1
+ io.bytecodemapper.cli.FieldMatch$2
+io/bytecodemapper/cli/util/CliPaths.java
+ io.bytecodemapper.cli.util.CliPaths
+io/bytecodemapper/cli/ClassMatch.java
+ io.bytecodemapper.cli.ClassMatch
+ io.bytecodemapper.cli.ClassMatch$1
+ io.bytecodemapper.cli.ClassMatch$2
+ io.bytecodemapper.cli.ClassMatch$3
+io/bytecodemapper/cli/bench/BenchPairs.java
+ io.bytecodemapper.cli.bench.BenchPairs
+ io.bytecodemapper.cli.bench.BenchPairs$1
+ io.bytecodemapper.cli.bench.BenchPairs$BenchPair
+io/bytecodemapper/cli/TinyStats.java
+ io.bytecodemapper.cli.TinyStats
+io/bytecodemapper/cli/util/DebugNormalizedDump.java
+ io.bytecodemapper.cli.util.DebugNormalizedDump
+ io.bytecodemapper.cli.util.DebugNormalizedDump$1
+ io.bytecodemapper.cli.util.DebugNormalizedDump$2
 io/bytecodemapper/cli/MapOldNew.java
  io.bytecodemapper.cli.MapOldNew
  io.bytecodemapper.cli.MapOldNew$1
@@ -100,7 +102,5 @@ io/bytecodemapper/cli/MapOldNew.java
  io.bytecodemapper.cli.MapOldNew$4
  io.bytecodemapper.cli.MapOldNew$5
  io.bytecodemapper.cli.MapOldNew$6
-io/bytecodemapper/cli/bench/BenchCommand.java
- io.bytecodemapper.cli.bench.BenchCommand
-io/bytecodemapper/cli/Main.java
- io.bytecodemapper.cli.Main
+io/bytecodemapper/cli/method/MethodRef.java
+ io.bytecodemapper.cli.method.MethodRef

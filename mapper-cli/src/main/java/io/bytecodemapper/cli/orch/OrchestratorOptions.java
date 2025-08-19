@@ -17,6 +17,13 @@ public final class OrchestratorOptions {
     // >>> AUTOGEN: BYTECODEMAPPER CLI OrchestratorOptions ABLATE BEGIN
     // Weights already exist; add ablation/toggles if missing.
     public boolean useNormalizedHistogram = true;
+    public double weightCalls = 0.45;
+    public double weightMicropatterns = 0.25;
+    public double weightOpcode = 0.15;
+    public double weightStrings = 0.10;
+    public double weightFields = 0.05;
+    public double alphaMicropattern = 0.60; // blend inside micro
+    public double tauAccept = 0.60; // acceptance threshold
     // bench ablations are realized by zeroing weights and/or toggles above.
 
     // Defaults remain: calls=0.45, micro=0.25, opcode=0.15, strings=0.10, fields=0.05.
@@ -45,11 +52,16 @@ public final class OrchestratorOptions {
     }
 
     public static OrchestratorOptions defaults(Path cacheDir, Path idfPath) {
-        return new OrchestratorOptions(
+    OrchestratorOptions o = new OrchestratorOptions(
                 true, cacheDir, idfPath, // deterministic default ON in CI
                 false, 0.7, 5,           // refinement defaults
                 false, false, 50         // debug defaults
-        );
+    );
+    // scoring defaults
+    o.useNormalizedHistogram = true;
+    o.weightCalls = 0.45; o.weightMicropatterns = 0.25; o.weightOpcode = 0.15; o.weightStrings = 0.10; o.weightFields = 0.05;
+    o.alphaMicropattern = 0.60; o.tauAccept = 0.60;
+    return o;
     }
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI OrchestratorOptions END

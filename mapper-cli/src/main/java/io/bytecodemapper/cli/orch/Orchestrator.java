@@ -136,6 +136,16 @@ public final class Orchestrator {
             System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");
         }
 
+        // Configure scoring weights/toggles globally (if MethodScorer used downstream)
+        try {
+            io.bytecodemapper.cli.method.MethodScorer.configureWeights(
+                opt.weightCalls, opt.weightMicropatterns, opt.weightOpcode, opt.weightStrings, opt.weightFields, opt.useNormalizedHistogram);
+            io.bytecodemapper.cli.method.MethodScorer.setAlphaMicropattern(opt.alphaMicropattern);
+            io.bytecodemapper.cli.method.MethodScorer.setTauAccept(opt.tauAccept);
+        } catch (Throwable ignore) {
+            // scorer may not be invoked in current placeholder pipeline; keep forward compatibility silently
+        }
+
         // Load classes deterministically
         Map<String, ClassNode> oldClasses = readJarDeterministic(oldJar);
         Map<String, ClassNode> newClasses = readJarDeterministic(newJar);
