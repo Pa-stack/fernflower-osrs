@@ -4,6 +4,8 @@ package io.bytecodemapper.cli.orch;
 import io.bytecodemapper.cli.util.CliPaths;
 import io.bytecodemapper.cli.cache.MethodFeatureCache;
 import io.bytecodemapper.cli.cache.MethodFeatureCacheEntry;
+import io.bytecodemapper.core.match.MethodMatcher;
+import io.bytecodemapper.core.match.MethodMatcher.MethodMatchResult;
 import io.bytecodemapper.core.cfg.ReducedCFG;
 import io.bytecodemapper.core.dom.Dominators;
 import io.bytecodemapper.core.df.DF;
@@ -67,10 +69,37 @@ public final class Orchestrator {
         newSideMethodIdsByPair.put(tag, newSide);
         oldSideMethodIdsByPair.put(tag, oldSide);
 
-        // Counts (approximate due to missing ambiguous/abstain detail in current pipeline)
+        // Counts
         int acceptedMethods = r != null && r.methods != null ? r.methods.size() : 0;
         int acceptedClasses = r != null && r.classMap != null ? r.classMap.size() : 0;
+
+        // Compute abstained methods as (old methods in mapped classes) - (accepted matches in those classes)
         int abstainedMethods = 0;
+        if (r != null && r.classMap != null && !r.classMap.isEmpty()) {
+            // Build per-class accepted counts
+            java.util.Map<String,Integer> acceptedPerOwner = new java.util.HashMap<String,Integer>();
+            if (r.methods != null) {
+                for (io.bytecodemapper.io.tiny.TinyV2Writer.MethodEntry me : r.methods) {
+                    Integer c = acceptedPerOwner.get(me.ownerFrom);
+                    acceptedPerOwner.put(me.ownerFrom, c == null ? 1 : (c + 1));
+                }
+            }
+            // Load classes to count total eligible methods per mapped owner
+            java.util.Map<String, org.objectweb.asm.tree.ClassNode> oldClasses = readJarDeterministic(oldJar);
+            for (String oldOwner : r.classMap.keySet()) {
+                org.objectweb.asm.tree.ClassNode cn = oldClasses.get(oldOwner);
+                if (cn == null || cn.methods == null) continue;
+                int total = 0;
+                for (org.objectweb.asm.tree.MethodNode mn : (java.util.List<org.objectweb.asm.tree.MethodNode>) cn.methods) {
+                    if ((mn.access & (org.objectweb.asm.Opcodes.ACC_ABSTRACT | org.objectweb.asm.Opcodes.ACC_NATIVE)) != 0) continue;
+                    total++;
+                }
+                int acc = acceptedPerOwner.get(oldOwner) == null ? 0 : acceptedPerOwner.get(oldOwner);
+                abstainedMethods += Math.max(0, total - acc);
+            }
+        }
+
+        // With the current exact-signature matcher, ambiguity doesn't occur
         int ambiguous = 0;
 
         return new BenchPairResult(tag, acceptedMethods, abstainedMethods, acceptedClasses, ambiguous);
@@ -146,9 +175,43 @@ public final class Orchestrator {
             System.out.println("[Orch] Extracted features: oldClasses=" + oldFeatures.size() + " newClasses=" + newFeatures.size());
         }
 
-        // --- Phase 1/2/3/4: placeholders for matching — to be wired to actual matchers ---
+        // --- Phase 1/2/3/4: basic matching — identity class map + signature equality for methods ---
         java.util.Map<String,String> classMap = new java.util.LinkedHashMap<String,String>();
+        {
+            java.util.List<String> olds = new java.util.ArrayList<String>(oldClasses.keySet());
+            java.util.Collections.sort(olds);
+            for (String o : olds) if (newClasses.containsKey(o)) classMap.put(o, o);
+        }
+
+        // Convert features to cache-entry-shaped maps (keys are what matcher needs)
+        java.util.Map<String, java.util.Map<String, MethodFeatureCacheEntry>> oldFeat = new java.util.LinkedHashMap<String, java.util.Map<String, MethodFeatureCacheEntry>>();
+        java.util.Map<String, java.util.Map<String, MethodFeatureCacheEntry>> newFeat = new java.util.LinkedHashMap<String, java.util.Map<String, MethodFeatureCacheEntry>>();
+        for (java.util.Map.Entry<String, java.util.Map<String, MethodFeature>> e : oldFeatures.entrySet()) {
+            java.util.Map<String, MethodFeatureCacheEntry> m = new java.util.LinkedHashMap<String, MethodFeatureCacheEntry>();
+            for (java.util.Map.Entry<String, MethodFeature> mf : e.getValue().entrySet()) {
+                MethodFeature f = mf.getValue();
+                m.put(mf.getKey(), new MethodFeatureCacheEntry(
+                        f.wlSig, f.micro, f.opcodeHistogram, f.stringConstants, f.invokedSignatures,
+                        f.normalizedDescriptor, f.fingerprint, f.normalizedBodyHash));
+            }
+            oldFeat.put(e.getKey(), m);
+        }
+        for (java.util.Map.Entry<String, java.util.Map<String, MethodFeature>> e : newFeatures.entrySet()) {
+            java.util.Map<String, MethodFeatureCacheEntry> m = new java.util.LinkedHashMap<String, MethodFeatureCacheEntry>();
+            for (java.util.Map.Entry<String, MethodFeature> mf : e.getValue().entrySet()) {
+                MethodFeature f = mf.getValue();
+                m.put(mf.getKey(), new MethodFeatureCacheEntry(
+                        f.wlSig, f.micro, f.opcodeHistogram, f.stringConstants, f.invokedSignatures,
+                        f.normalizedDescriptor, f.fingerprint, f.normalizedBodyHash));
+            }
+            newFeat.put(e.getKey(), m);
+        }
+
         java.util.List<MethodPair> methodPairs = new java.util.ArrayList<MethodPair>();
+        {
+            MethodMatchResult mm = MethodMatcher.matchMethods(oldClasses, newClasses, classMap, oldFeat, newFeat, idf, opt.deterministic);
+            for (MethodMatcher.Pair p : mm.accepted) methodPairs.add(new MethodPair(p.oldOwner, p.oldName, p.desc, p.newName));
+        }
         java.util.List<FieldPair> fieldPairs = new java.util.ArrayList<FieldPair>();
 
     // --- Phase 5: prepare Tiny v2 mapping entries deterministically ---

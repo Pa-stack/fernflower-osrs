@@ -15,8 +15,8 @@ public final class BenchCommand {
 
     public static int run(Map<String,String> args) {
         try {
-            Path inDir  = CliPaths.resolveMaybeModuleRelative(nonEmpty(args.get("--in"), "missing --in"));
-            Path out    = CliPaths.resolveMaybeModuleRelative(nonEmpty(args.get("--out"), "missing --out"));
+            Path inDir  = CliPaths.resolveInput(nonEmpty(args.get("--in"), "missing --in"));
+            Path out    = CliPaths.resolveOutput(nonEmpty(args.get("--out"), "missing --out"));
             String ablateCsv = args.get("--ablate"); // e.g. "calls,micro,opcode,strings,fields,norm"
             Set<String> ablate = parseAblate(ablateCsv);
 
@@ -130,7 +130,7 @@ public final class BenchCommand {
         // OrchestratorOptions currently does not carry these weights; hook up here later if needed.
         // This placeholder keeps CLI stable.
         if (abl.contains("norm")) {
-            // no-op: placeholder for normalized histogram toggle
+            o.useNormalizedHistogram = false;
         }
     }
 

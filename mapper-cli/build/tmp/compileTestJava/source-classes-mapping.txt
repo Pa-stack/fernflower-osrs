@@ -4,9 +4,9 @@ io/bytecodemapper/cli/TestFixtures.java
  io.bytecodemapper.cli.TestFixtures
 io/bytecodemapper/cli/CallGraphRefinerMissingNeighborTest.java
  io.bytecodemapper.cli.CallGraphRefinerMissingNeighborTest
-io/bytecodemapper/cli/MapOldNewSmokeTest.java
- io.bytecodemapper.cli.MapOldNewSmokeTest
-io/bytecodemapper/cli/MapOldNewDebugFlagsTest.java
- io.bytecodemapper.cli.MapOldNewDebugFlagsTest
 io/bytecodemapper/cli/DeterminismSmokeTest.java
  io.bytecodemapper.cli.DeterminismSmokeTest
+io/bytecodemapper/cli/MapOldNewDebugFlagsTest.java
+ io.bytecodemapper.cli.MapOldNewDebugFlagsTest
+io/bytecodemapper/cli/MapOldNewSmokeTest.java
+ io.bytecodemapper.cli.MapOldNewSmokeTest
