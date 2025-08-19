@@ -1,1 +1,0 @@
-{"version":1,"totalMs":25734.641,"peakMB":443.395,"ablate":[],"pairs":[{"tag":"osrs-1.jar→osrs-2.jar","oldJar":"osrs-1.jar","newJar":"osrs-2.jar","acceptedMethods":6122.000,"abstainedMethods":12059.000,"acceptedClasses":1253.000,"churnJaccard":null,"osc3Coverage":null,"ambiguousPairF1":null,"ambiguousCount":0.000,"elapsedMs":25733.975,"usedMB":443.395}]}

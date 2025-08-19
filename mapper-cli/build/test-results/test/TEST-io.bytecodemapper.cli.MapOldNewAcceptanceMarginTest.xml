@@ -1,8 +1,1074 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-19T18:15:22" hostname="PRAGMATIQPASCAL" time="49.056">
+<testsuite name="io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-19T18:21:02" hostname="PRAGMATIQPASCAL" time="5.533">
   <properties/>
-  <testcase name="stricterThresholdsReduceAcceptances" classname="io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest" time="49.056"/>
-  <system-out><![CDATA[Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m1.tiny
+  <testcase name="stricterThresholdsReduceAcceptances" classname="io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest" time="5.533"/>
+  <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=114
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=86
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=false
+[DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=22
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=334
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=true
+[DF] iter=4, changed=true
+[DF] iter=5, changed=true
+[DF] iter=6, changed=true
+[DF] iter=7, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=21
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=11
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=442
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=true
+[DF] iter=4, changed=true
+[DF] iter=5, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=11
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=14
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=39
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=true
+[DF] iter=4, changed=true
+[DF] iter=5, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=46
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=11
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=206
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=17
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=25
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=233
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=134
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=true
+[DF] iter=4, changed=true
+[DF] iter=5, changed=true
+[DF] iter=6, changed=false
+[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=17
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=21
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=21
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=16
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=191
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=118
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=11
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=14
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=23
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=13
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=14
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=11
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=23
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=16
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=15
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=186
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=15
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=23
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=22
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=14
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=206
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=true
+[DF] iter=4, changed=true
+[DF] iter=5, changed=true
+[DF] iter=6, changed=true
+[DF] iter=7, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=13
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=16
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=17
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=15
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=27
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=11
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=13
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=14
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=14
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=13
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=15
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=15
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=121
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=true
+[DF] iter=4, changed=true
+[DF] iter=5, changed=true
+[DF] iter=6, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=15
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=13
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=11
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=15
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+[DF] iterateToFixpoint start, nodes=14
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m1.tiny
 Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m2.tiny
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>

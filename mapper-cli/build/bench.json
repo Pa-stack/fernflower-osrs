@@ -1,1 +1,0 @@
-{"version":1,"totalMs":66946.726,"peakMB":602.006,"ablate":[],"pairs":[{"tag":"new.jar→old.jar","oldJar":"new.jar","newJar":"old.jar","acceptedMethods":6122.000,"abstainedMethods":12287.000,"acceptedClasses":1253.000,"churnJaccard":null,"osc3Coverage":null,"ambiguousPairF1":null,"ambiguousCount":0.000,"elapsedMs":66946.241,"usedMB":602.006}]}

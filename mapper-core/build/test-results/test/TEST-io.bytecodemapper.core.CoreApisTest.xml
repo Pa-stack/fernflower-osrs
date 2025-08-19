@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.CoreApisTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-19T18:17:08" hostname="PRAGMATIQPASCAL" time="0.114">
-  <properties/>
-  <testcase name="apiSurfacesExist" classname="io.bytecodemapper.core.CoreApisTest" time="0.114"/>
-  <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=0
-[DF] iter=1, changed=false
-]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

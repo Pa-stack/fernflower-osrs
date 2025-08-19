@@ -56,7 +56,7 @@ subprojects {
   tasks.withType(JavaExec).configureEach {
     // either form works
     maxHeapSize = '4g'
-    jvmArgs = '-Xms1g'
+  jvmArgs '-Xms1g'
   }
 
   tasks.withType(Test).configureEach {
