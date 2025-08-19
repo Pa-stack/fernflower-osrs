@@ -39,6 +39,21 @@ public final class Main {
             MapOldNew.run(args);
             return;
         }
+        // >>> AUTOGEN: BYTECODEMAPPER CLI Main bench DISPATCH BEGIN
+        if ("bench".equalsIgnoreCase(args[0])) {
+            // Parse simple --k=v style args into a map
+            java.util.Map<String,String> parsed = new java.util.LinkedHashMap<String,String>();
+            for (int i=1;i<args.length;i++) {
+                String a = args[i];
+                int eq = a.indexOf('=');
+                if (a.startsWith("--") && eq>0) parsed.put(a.substring(0,eq), a.substring(eq+1));
+                else if (a.startsWith("--") && i+1<args.length && !args[i+1].startsWith("--")) { parsed.put(a, args[++i]); }
+            }
+            int rc = io.bytecodemapper.cli.bench.BenchCommand.run(parsed);
+            System.exit(rc);
+            return;
+        }
+        // <<< AUTOGEN: BYTECODEMAPPER CLI Main bench DISPATCH END
         // >>> AUTOGEN: BYTECODEMAPPER CLI Main tinyStats DISPATCH BEGIN
         if ("tinyStats".equalsIgnoreCase(args[0])) {
             String[] tail = new String[Math.max(0, args.length - 1)];

@@ -19,6 +19,42 @@ import java.nio.file.Path;
 import java.util.*;
 
 public final class Orchestrator {
+    // >>> AUTOGEN: BYTECODEMAPPER CLI Orchestrator BENCH STATE BEGIN
+    // Minimal state to support bench metrics across adjacent pairs
+    private final java.util.Map<String, java.util.Set<String>> oldSideByTag = new java.util.HashMap<String, java.util.Set<String>>();
+    private final java.util.Map<String, java.util.Set<String>> newSideByTag = new java.util.HashMap<String, java.util.Set<String>>();
+
+    public static final class BenchPairResult {
+        public final int acceptedMethods;
+        public final int abstainedMethods;
+        public final int ambiguousCount;
+        public final int acceptedClasses;
+        public BenchPairResult(int am, int abm, int amb, int ac){ this.acceptedMethods=am; this.abstainedMethods=abm; this.ambiguousCount=amb; this.acceptedClasses=ac; }
+    }
+
+    public java.util.Set<String> getOldSideMethodIds(String tag) { return oldSideByTag.get(tag); }
+    public java.util.Set<String> getNewSideMethodIds(String tag) { return newSideByTag.get(tag); }
+
+    public BenchPairResult mapPairForBench(java.nio.file.Path oldJar, java.nio.file.Path newJar, OrchestratorOptions opt) throws Exception {
+        Result r = run(oldJar, newJar, opt);
+        // For now, we don’t have acceptance stats wired; approximate using counts
+        int acceptedMethods = r.methods != null ? r.methods.size() : 0;
+        int acceptedClasses = r.classMap != null ? r.classMap.size() : 0;
+        int abstainedMethods = 0; // placeholder
+        int ambiguous = 0; // placeholder
+        // Record simple coverage sets keyed by a tag "old→new"
+        String tag = (oldJar.getFileName()!=null?oldJar.getFileName().toString():"old") + "→" + (newJar.getFileName()!=null?newJar.getFileName().toString():"new");
+        java.util.Set<String> oldIds = new java.util.TreeSet<String>();
+        java.util.Set<String> newIds = new java.util.TreeSet<String>();
+        for (io.bytecodemapper.io.tiny.TinyV2Writer.MethodEntry me : r.methods) {
+            oldIds.add(me.ownerFrom + "#" + me.nameFrom + me.desc);
+            newIds.add(me.ownerFrom + "#" + me.nameTo + me.desc);
+        }
+        oldSideByTag.put(tag, oldIds);
+        newSideByTag.put(tag, newIds);
+        return new BenchPairResult(acceptedMethods, abstainedMethods, ambiguous, acceptedClasses);
+    }
+    // <<< AUTOGEN: BYTECODEMAPPER CLI Orchestrator BENCH STATE END
 
     public static final class Result {
         public final java.util.Map<String,String> classMap;
