@@ -8,8 +8,12 @@ import io.bytecodemapper.cli.util.CliPaths;
 import io.bytecodemapper.cli.util.DebugNormalizedDump;
 import io.bytecodemapper.core.fingerprint.ClasspathScanner;
 // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 BEGIN
-import io.bytecodemapper.io.tiny.TinyV2Writer;
+// (Writer used through orchestrator path; no direct import needed here.)
 // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 END
+// >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH IMPORTS BEGIN
+import io.bytecodemapper.cli.orch.Orchestrator;
+import io.bytecodemapper.cli.orch.OrchestratorOptions;
+// <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH IMPORTS END
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -42,6 +46,19 @@ final class MapOldNew {
         if (!newJar.isFile()) throw new FileNotFoundException("new jar not found: " + newJar);
         if (out.getParentFile()!=null) out.getParentFile().mkdirs();
 
+        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH FLAGS BEGIN
+        boolean deterministic = false;
+        String cacheDirStr = "mapper-cli/build/cache";
+        String idfPathStr  = "mapper-cli/build/idf.properties";
+        for (int i=0;i<args.length;i++) {
+            if ("--deterministic".equals(args[i])) { deterministic = true; }
+            else if ("--cacheDir".equals(args[i]) && i+1<args.length) { cacheDirStr = args[++i]; }
+            else if ("--idf".equals(args[i]) && i+1<args.length) { idfPathStr = args[++i]; }
+        }
+        java.nio.file.Path cacheDir = io.bytecodemapper.cli.util.CliPaths.resolveOutput(cacheDirStr);
+        java.nio.file.Path idfPath  = io.bytecodemapper.cli.util.CliPaths.resolveOutput(idfPathStr);
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH FLAGS END
+
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG FLAGS SCOPE BEGIN
         // Parse debug flags only for mapOldNew
         boolean debugNormalized = false;
@@ -52,10 +69,10 @@ final class MapOldNew {
         double tauAcceptMethods = 0.60;
         double marginMethods = 0.05;
     // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY BEGIN
-    boolean includeIdentity = false;
+    boolean includeIdentity = false; // unused when orchestrator is active
     // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY BEGIN
-    int demoCount = 0;            // 0 = off
-    String demoPrefix = null;     // e.g., "zz/demo"
+    int demoCount = 0;            // unused when orchestrator is active
+    String demoPrefix = null;     // unused when orchestrator is active
 
         for (int i = 0; i < args.length; i++) {
             String a = args[i];
@@ -132,97 +149,27 @@ final class MapOldNew {
     }
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG DUMP CALL END
 
-        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 BEGIN
-        // Build TinyV2 inputs from computed maps
-        // Expect these maps to exist after phases:
-        //   classMap: Map<String,String>  (obfOwner -> deobfOwner)
-        //   methodPairs: Map<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef>
-        //   fieldPairs:  Map<io.bytecodemapper.cli.field.FieldRef,  io.bytecodemapper.cli.field.FieldRef>
-        // If your variables differ, adapt accordingly.
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH INVOKE BEGIN
+    // Orchestrated end-to-end run (deterministic ordering, persistent caches, IDF handling)
+    // Note: refine/lambda/iters not parsed in this command yet; use defaults compatible with OrchestratorOptions
+    boolean refine = false; double lambda = 0.7; int refineIters = 5;
+    OrchestratorOptions o = new OrchestratorOptions(
+        deterministic, cacheDir, idfPath,
+        refine, lambda, refineIters,
+        debugStats, debugNormalized, debugSample
+    );
+    Orchestrator orch = new Orchestrator();
+    Orchestrator.Result r = orch.run(oldPath, newPath, o);
 
-        // Placeholders for now; pipeline phases should populate these before this point.
-        Map<String,String> classMap = new LinkedHashMap<String,String>();
-        Map<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef> methodPairs = new LinkedHashMap<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef>();
-        Map<io.bytecodemapper.cli.field.FieldRef,  io.bytecodemapper.cli.field.FieldRef>  fieldPairs  = new LinkedHashMap<io.bytecodemapper.cli.field.FieldRef,  io.bytecodemapper.cli.field.FieldRef>();
+    // Write Tiny v2 deterministically using orchestrator output
+    io.bytecodemapper.io.tiny.TinyV2Writer.writeTiny2(outPath, r.classMap, r.methods, r.fields);
+    System.out.println("Wrote Tiny v2 to: " + outPath);
+    return;
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH INVOKE END
 
-        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG STATS BEGIN
-        if (debugStats) {
-            System.out.println("[Phase-1] Classes: old=" + oldClasses.size() + " new=" + newClasses.size()
-                    + " matched=" + classMap.size() + " abstained=" + (oldClasses.size() - classMap.size()));
-        }
-
-        if (debugStats) {
-            int accepted = methodPairs.size();
-            int abstained = Math.max(0, oldMf.size() - accepted); // best-effort approximation
-            int leafPenalty = 0; // optional counters not tracked yet
-            int recPenalty  = 0;
-            int lowScore    = 0;
-            int marginFail  = 0;
-            System.out.println("[Phase-2] Methods: accepted=" + accepted + " abstained=" + abstained
-                    + " lowScore=" + lowScore + " marginFail=" + marginFail
-                    + " leafPenalty=" + leafPenalty + " recPenalty=" + recPenalty);
-        }
-
-        // If refinement is implemented later, these will be replaced.
-        boolean refined = false; int flipsLastIter = 0; double maxDelta = 0.0;
-        if (debugStats && refined) {
-            System.out.println("[Phase-3] Refinement: flipsLastIter=" + flipsLastIter
-                    + " maxDelta=" + String.format(java.util.Locale.ROOT, "%.4f", maxDelta)
-                    + " accepted=" + methodPairs.size());
-        }
-
-        if (debugStats && fieldPairs != null) {
-            System.out.println("[Phase-4] Fields: accepted=" + fieldPairs.size());
-        }
-        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG STATS END
-
-        // Build tinyClasses map
-        java.util.Map<String,String> tinyClasses = new java.util.LinkedHashMap<String,String>(classMap);
-        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY BEGIN
-        if (includeIdentity) {
-            // Add identity entries for old classes not in classMap yet
-            for (org.objectweb.asm.tree.ClassNode cn : oldClasses) {
-                String obf = cn.name;
-                if (!tinyClasses.containsKey(obf)) tinyClasses.put(obf, obf);
-            }
-        }
-        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY END
-        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY BEGIN
-        if (demoCount > 0 && demoPrefix != null) {
-            java.util.List<String> obfSorted = new java.util.ArrayList<String>(oldClasses.size());
-            for (org.objectweb.asm.tree.ClassNode cn : oldClasses) obfSorted.add(cn.name);
-            java.util.Collections.sort(obfSorted);
-            int applied = Math.min(demoCount, obfSorted.size());
-            for (int i = 0; i < applied; i++) {
-                String obf = obfSorted.get(i);
-                String neo = demoPrefix + "/" + obf; // deterministically prefixed
-                tinyClasses.put(obf, neo);
-            }
-            System.out.println("Demo overlay: renamed " + applied + " classes with prefix " + demoPrefix);
-        }
-        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY END
-
-        java.util.List<TinyV2Writer.MethodEntry> tinyMethods = new java.util.ArrayList<TinyV2Writer.MethodEntry>();
-        for (java.util.Map.Entry<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef> e : methodPairs.entrySet()) {
-            io.bytecodemapper.cli.method.MethodRef obf = e.getKey();
-            io.bytecodemapper.cli.method.MethodRef neo = e.getValue();
-            tinyMethods.add(new TinyV2Writer.MethodEntry(obf.owner, obf.name, obf.desc, neo.name));
-        }
-
-        java.util.List<TinyV2Writer.FieldEntry> tinyFields = new java.util.ArrayList<TinyV2Writer.FieldEntry>();
-        if (fieldPairs != null) {
-            for (java.util.Map.Entry<io.bytecodemapper.cli.field.FieldRef, io.bytecodemapper.cli.field.FieldRef> e : fieldPairs.entrySet()) {
-                io.bytecodemapper.cli.field.FieldRef obf = e.getKey();
-                io.bytecodemapper.cli.field.FieldRef neo = e.getValue();
-                tinyFields.add(new TinyV2Writer.FieldEntry(obf.owner, obf.name, obf.desc, neo.name));
-            }
-        }
-
-        // Write tiny v2
-        java.nio.file.Path outTiny = outPath; // already resolved output path
-        io.bytecodemapper.io.tiny.TinyV2Writer.writeTiny2(outTiny, tinyClasses, tinyMethods, tinyFields);
-        System.out.println("Wrote Tiny v2 to: " + outTiny);
-        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 END
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 BEGIN
+    // Replaced by orchestrator path above. This block intentionally left minimal.
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 END
     }
 
     // Deterministic filtered method list (skip abstract/native)

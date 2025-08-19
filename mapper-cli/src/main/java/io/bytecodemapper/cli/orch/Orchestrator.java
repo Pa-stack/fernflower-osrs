@@ -2,6 +2,8 @@
 package io.bytecodemapper.cli.orch;
 
 import io.bytecodemapper.cli.util.CliPaths;
+import io.bytecodemapper.cli.cache.MethodFeatureCache;
+import io.bytecodemapper.cli.cache.MethodFeatureCacheEntry;
 import io.bytecodemapper.core.cfg.ReducedCFG;
 import io.bytecodemapper.core.dom.Dominators;
 import io.bytecodemapper.core.df.DF;
@@ -56,9 +58,21 @@ public final class Orchestrator {
         Path idfPath = opt.idfPath != null ? opt.idfPath : CliPaths.resolveOutput("build/idf.properties");
         IdfStore idf = IdfStore.load(idfPath.toFile());
 
-        // --- Phase 0: per-method feature extraction (normalize -> CFG -> wl/micro/normalized) ---
-        Map<String, Map<String, MethodFeature>> oldFeatures = extractFeatures(oldClasses, opt);
-        Map<String, Map<String, MethodFeature>> newFeatures = extractFeatures(newClasses, opt);
+        // --- Phase 0: per-method feature extraction (normalize -> CFG -> wl/micro/normalized) with persistent cache ---
+        String oldKey = jarKey(oldJar);
+        String newKey = jarKey(newJar);
+        MethodFeatureCache oldCache = MethodFeatureCache.open(opt.cacheDir, oldKey);
+        MethodFeatureCache newCache = MethodFeatureCache.open(opt.cacheDir, newKey);
+        Map<String, Map<String, MethodFeature>> oldFeatures = null;
+        Map<String, Map<String, MethodFeature>> newFeatures = null;
+        try {
+            oldFeatures = extractFeatures(oldClasses, opt, oldCache);
+            newFeatures = extractFeatures(newClasses, opt, newCache);
+        } finally {
+            // Flush caches deterministically
+            try { oldCache.close(); } catch (Exception ignored) {}
+            try { newCache.close(); } catch (Exception ignored) {}
+        }
         if (opt.debugStats) {
             System.out.println("[Orch] Extracted features: oldClasses=" + oldFeatures.size() + " newClasses=" + newFeatures.size());
         }
@@ -144,7 +158,7 @@ public final class Orchestrator {
     }
 
     private Map<String, Map<String, MethodFeature>> extractFeatures(
-            Map<String, ClassNode> classes, OrchestratorOptions opt) throws Exception {
+        Map<String, ClassNode> classes, OrchestratorOptions opt, MethodFeatureCache cache) throws Exception {
         Map<String, Map<String, MethodFeature>> out = new TreeMap<String, Map<String, MethodFeature>>();
         List<String> owners = new ArrayList<String>(classes.keySet());
         Collections.sort(owners);
@@ -164,33 +178,62 @@ public final class Orchestrator {
                     if ((mn.access & (org.objectweb.asm.Opcodes.ACC_ABSTRACT | org.objectweb.asm.Opcodes.ACC_NATIVE)) != 0) {
                         continue;
                     }
-                    // Normalize inside ReducedCFG.build (already integrated) for analysis alignment
-                    ReducedCFG cfg = ReducedCFG.build(mn);
-                    Dominators dom = Dominators.compute(cfg);
-                    java.util.Map<Integer,int[]> df = DF.compute(cfg, dom);
-                    java.util.Map<Integer,int[]> tdf = DF.iterateToFixpoint(df);
-                    WLRefinement.MethodSignature wlSig = WLRefinement.computeSignature(cfg, dom, df, tdf, 3);
+            // Compute normalized body hash first for cache key
+            String normHash = stableInsnHash(mn);
+            String cacheKey = owner + "::" + mn.name + mn.desc + "::" + normHash;
+            MethodFeatureCacheEntry ce = cache != null ? cache.get(cacheKey) : null;
+            MethodFeature feat;
+            if (ce != null) {
+            // Rehydrate from cache
+            feat = new MethodFeature(
+                ce.wlSignature,
+                ce.microBits,
+                ce.normOpcodeHistogram,
+                ce.strings,
+                ce.invokedSignatures,
+                ce.normalizedDescriptor,
+                ce.normFingerprint,
+                ce.normalizedBodyHash
+            );
+            } else {
+            // Normalize inside ReducedCFG.build (already integrated) for analysis alignment
+            ReducedCFG cfg = ReducedCFG.build(mn);
+            Dominators dom = Dominators.compute(cfg);
+            java.util.Map<Integer,int[]> df = DF.compute(cfg, dom);
+            java.util.Map<Integer,int[]> tdf = DF.iterateToFixpoint(df);
+            WLRefinement.MethodSignature wlSig = WLRefinement.computeSignature(cfg, dom, df, tdf, 3);
 
-                    // Micropatterns (owner-aware; back-edge loop)
-                    java.util.BitSet micro = MicroPatternExtractor.extract(owner, mn, cfg, dom);
+            // Micropatterns (owner-aware; back-edge loop)
+            java.util.BitSet micro = MicroPatternExtractor.extract(owner, mn, cfg, dom);
 
-                    // NormalizedMethod features (generalized histogram & fingerprint)
-                    NormalizedMethod norm = new NormalizedMethod(owner, mn, java.util.Collections.<Integer>emptySet());
+            // NormalizedMethod features (generalized histogram & fingerprint)
+            NormalizedMethod norm = new NormalizedMethod(owner, mn, java.util.Collections.<Integer>emptySet());
 
-                    // Stable normalizedBodyHash (SHA-256 of opcodes/operands; skip labels/frames)
-                    String normHash = stableInsnHash(mn);
-
-                    MethodFeature feat = new MethodFeature(
-                            wlSig.hash,
-                            micro,
-                            norm.opcodeHistogram,
-                            norm.stringConstants,
-                            norm.invokedSignatures,
-                            norm.normalizedDescriptor,
-                            norm.fingerprint,
-                            normHash
-                    );
-                    m.put(mn.name + mn.desc, feat);
+            feat = new MethodFeature(
+                wlSig.hash,
+                micro,
+                norm.opcodeHistogram,
+                norm.stringConstants,
+                norm.invokedSignatures,
+                norm.normalizedDescriptor,
+                norm.fingerprint,
+                normHash
+            );
+            if (cache != null) {
+                MethodFeatureCacheEntry ne = new MethodFeatureCacheEntry(
+                    wlSig.hash,
+                    micro,
+                    norm.opcodeHistogram,
+                    norm.stringConstants,
+                    norm.invokedSignatures,
+                    norm.normalizedDescriptor,
+                    norm.fingerprint,
+                    normHash
+                );
+                cache.put(cacheKey, ne);
+            }
+            }
+            m.put(mn.name + mn.desc, feat);
                 }
             }
             out.put(owner, m);
@@ -211,6 +254,16 @@ public final class Orchestrator {
         int n = 0;
         for (ClassNode cn : classes.values()) if (cn.methods != null) n += cn.methods.size();
         return n;
+    }
+
+    private static String jarKey(Path jar) throws Exception {
+        String abs = jar.toFile().getCanonicalPath();
+        java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
+        byte[] d = md.digest(abs.getBytes("UTF-8"));
+        StringBuilder sb = new StringBuilder();
+        for (byte b : d) sb.append(String.format("%02x", b));
+        String name = jar.getFileName() != null ? jar.getFileName().toString() : "jar";
+        return name.replace('.', '_') + "-" + sb.toString();
     }
 
     private static String stableInsnHash(MethodNode mn) throws Exception {

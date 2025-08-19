@@ -1,12 +1,0 @@
-'[DF] iterateToFixpoint start, nodes=0
-[DF] iter=1, changed=false
-
-9DF hash run1=452273833165032129 run2=452273833165032129
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=2
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=2
-[DF] iter=1, changed=false
