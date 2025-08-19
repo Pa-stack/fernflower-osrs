@@ -51,6 +51,8 @@ final class MapOldNew {
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS BEGIN
         double tauAcceptMethods = 0.60;
         double marginMethods = 0.05;
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY BEGIN
+    boolean includeIdentity = false;
 
         for (int i = 0; i < args.length; i++) {
             String a = args[i];
@@ -70,12 +72,15 @@ final class MapOldNew {
                 try { tauAcceptMethods = Double.parseDouble(args[++i]); } catch (NumberFormatException ignore) {}
             } else if ("--marginMethods".equals(a) && i+1<args.length) {
                 try { marginMethods = Double.parseDouble(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--includeIdentity".equals(a)) {
+                includeIdentity = true;
             }
         }
         // Apply method matching thresholds (global static for this run)
         io.bytecodemapper.cli.method.MethodScorer.setTauAccept(tauAcceptMethods);
         io.bytecodemapper.cli.method.MethodScorer.setMinMargin(marginMethods);
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS END
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY END
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG FLAGS SCOPE END
 
         // Read classes deterministically
@@ -163,7 +168,17 @@ final class MapOldNew {
         }
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG STATS END
 
-        Map<String,String> tinyClasses = new java.util.LinkedHashMap<String,String>(classMap);
+        // Build tinyClasses map
+        java.util.Map<String,String> tinyClasses = new java.util.LinkedHashMap<String,String>(classMap);
+        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY BEGIN
+        if (includeIdentity) {
+            // Add identity entries for old classes not in classMap yet
+            for (org.objectweb.asm.tree.ClassNode cn : oldClasses) {
+                String obf = cn.name;
+                if (!tinyClasses.containsKey(obf)) tinyClasses.put(obf, obf);
+            }
+        }
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY END
 
         java.util.List<TinyV2Writer.MethodEntry> tinyMethods = new java.util.ArrayList<TinyV2Writer.MethodEntry>();
         for (java.util.Map.Entry<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef> e : methodPairs.entrySet()) {
