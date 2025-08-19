@@ -3,7 +3,7 @@ package io.bytecodemapper.cli;
 
 public final class Main {
     public static void main(String[] args) throws Exception {
-    if (args.length == 0 || "--help".equals(args[0])) { usage(); return; }
+    if (args.length == 0 || "--help".equals(args[0]) || "help".equalsIgnoreCase(args[0]) || "-h".equals(args[0])) { usage(); return; }
         if ("printIdf".equalsIgnoreCase(args[0])) {
             String[] tail = new String[Math.max(0, args.length - 1)];
             if (tail.length > 0) System.arraycopy(args, 1, tail, 0, tail.length);
@@ -77,10 +77,11 @@ public final class Main {
     // >>> AUTOGEN: BYTECODEMAPPER CLI Main USAGE ORCH FLAGS BEGIN
     private static void usage() {
         System.out.println("Commands:");
-        System.out.println("  mapOldNew --old <old.jar> --new <new.jar> --out <mappings.tiny> " +
-                "[--refine --lambda <0.6..0.8> --refineIters <N>] " +
-                "[--deterministic] [--cacheDir <dir>] [--idf <path>] " +
-                "[--debug-stats] [--debug-normalized [path]] [--debug-sample <N>]");
+    System.out.println("  mapOldNew --old <old.jar> --new <new.jar> --out <mappings.tiny> \n" +
+        "           [--deterministic] [--cacheDir <dir>] [--idf <path>]\n" +
+        "           [--refine] [--refineIters <0|1>] [--lambda <0.0..1.0>]\n" +
+        "           [--tauAcceptMethods <0..1>] [--marginMethods <0..1>]\n" +
+        "           [--debug-stats] [--debug-normalized [path]] [--debug-sample <N>]");
         System.out.println("  applyMappings --inJar <in.jar> --mappings <mappings.tiny> --out <out.jar> [--verifyRemap]");
         System.out.println("  tinyStats --in <mappings.tiny> [--list N]");
         System.out.println("  printIdf --out <path> [--from <existing.properties>] [--lambda 0.9]");
