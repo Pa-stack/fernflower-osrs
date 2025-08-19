@@ -5,6 +5,9 @@ import io.bytecodemapper.cli.field.FieldMatcher;
 import io.bytecodemapper.cli.field.FieldRef;
 import io.bytecodemapper.cli.method.MethodRef;
 import io.bytecodemapper.cli.util.CliPaths;
+// >>> AUTOGEN: BYTECODEMAPPER CLI FieldMatch use MethodMapParser BEGIN
+import io.bytecodemapper.cli.util.MethodMapParser;
+// <<< AUTOGEN: BYTECODEMAPPER CLI FieldMatch use MethodMapParser END
 import io.bytecodemapper.core.fingerprint.ClasspathScanner;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -29,31 +32,15 @@ public final class FieldMatch {
             return;
         }
 
-        if (outPath.getParent()!=null) Files.createDirectories(outPath.getParent());
+    if (outPath.getParent()!=null) Files.createDirectories(outPath.getParent());
 
-        // class map derived from method owners
-        Map<String,String> classMap = new LinkedHashMap<String,String>();
-
-        // Parse method map (format: owner#name(desc)ret -> owner#name(desc)ret [score=...])
-        Map<MethodRef, MethodRef> methodMap = new LinkedHashMap<MethodRef, MethodRef>();
-        int total=0;
-        for (String line : Files.readAllLines(methodMapPath)) {
-            if (line == null) continue;
-            line = line.trim();
-            if (line.isEmpty() || line.startsWith("#")) continue;
-            int arrow = line.indexOf("->");
-            if (arrow < 0) continue;
-            String left = line.substring(0, arrow).trim();
-            String right = line.substring(arrow+2).trim();
-
-            MethodRef mo = parseMethodRef(left);
-            MethodRef mn = parseMethodRef(right);
-            if (mo == null || mn == null) continue;
-            methodMap.put(mo, mn);
-            classMap.put(mo.owner, mn.owner);
-            total++;
-        }
-        System.out.println("Loaded method pairs: " + total + " (owners imply " + classMap.size() + " class mappings)");
+    // >>> AUTOGEN: BYTECODEMAPPER CLI FieldMatch use MethodMapParser BEGIN
+    // Parse method map (tolerant to multiple formats)
+    MethodMapParser.Parsed parsed = MethodMapParser.parse(methodMapPath);
+    Map<MethodRef, MethodRef> methodMap = parsed.methodMap;
+    Map<String,String> classMap = parsed.classMap;
+    System.out.println("Loaded method pairs: " + methodMap.size() + " (owners imply " + classMap.size() + " class mappings)");
+    // <<< AUTOGEN: BYTECODEMAPPER CLI FieldMatch use MethodMapParser END
 
         // Load classes deterministically
         final List<ClassNode> oldList = new ArrayList<ClassNode>();
@@ -91,26 +78,6 @@ public final class FieldMatch {
         }
 
         System.out.println("Field matching complete. matched=" + matched + " abstained=" + abstained);
-    }
-
-    private static MethodRef parseMethodRef(String side) {
-        if (side == null) return null;
-        side = side.trim();
-        // cut trailing tokens after desc
-        int scoreIdx = side.indexOf(" score=");
-        if (scoreIdx > 0) side = side.substring(0, scoreIdx).trim();
-        int hash = side.indexOf('#');
-        if (hash < 0) return null;
-        String owner = side.substring(0, hash).trim();
-        String rest = side.substring(hash+1).trim();
-        int par = rest.indexOf('(');
-        if (par < 0) return null;
-        String name = rest.substring(0, par);
-        String desc = rest.substring(par).trim();
-        // remove trailing annotation after desc if any
-        int sp = desc.indexOf(' ');
-        if (sp >= 0) desc = desc.substring(0, sp).trim();
-        return new MethodRef(owner, name, desc);
     }
 
     private static Map<String,ClassNode> indexByName(List<ClassNode> list) {

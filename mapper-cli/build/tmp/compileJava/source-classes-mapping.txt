@@ -42,12 +42,12 @@ io/bytecodemapper/cli/MethodMatch.java
 io/bytecodemapper/cli/field/FieldMatcher.java
  io.bytecodemapper.cli.field.FieldMatcher
  io.bytecodemapper.cli.field.FieldMatcher$VoteAgg
+io/bytecodemapper/cli/util/MethodMapParser.java
+ io.bytecodemapper.cli.util.MethodMapParser
+ io.bytecodemapper.cli.util.MethodMapParser$Parsed
 io/bytecodemapper/cli/FieldMatch.java
  io.bytecodemapper.cli.FieldMatch
  io.bytecodemapper.cli.FieldMatch$1
  io.bytecodemapper.cli.FieldMatch$2
 io/bytecodemapper/cli/Main.java
  io.bytecodemapper.cli.Main
-io/bytecodemapper/cli/util/MethodMapParser.java
- io.bytecodemapper.cli.util.MethodMapParser
- io.bytecodemapper.cli.util.MethodMapParser$Parsed
