@@ -73,8 +73,6 @@ io/bytecodemapper/cli/util/DebugNormalizedDump.java
  io.bytecodemapper.cli.util.DebugNormalizedDump
  io.bytecodemapper.cli.util.DebugNormalizedDump$1
  io.bytecodemapper.cli.util.DebugNormalizedDump$2
-io/bytecodemapper/cli/Main.java
- io.bytecodemapper.cli.Main
 io/bytecodemapper/cli/MapOldNew.java
  io.bytecodemapper.cli.MapOldNew
  io.bytecodemapper.cli.MapOldNew$1
@@ -83,3 +81,13 @@ io/bytecodemapper/cli/MapOldNew.java
  io.bytecodemapper.cli.MapOldNew$4
  io.bytecodemapper.cli.MapOldNew$5
  io.bytecodemapper.cli.MapOldNew$6
+io/bytecodemapper/core/match/MethodMatcher.java
+ io.bytecodemapper.core.match.MethodMatcher
+ io.bytecodemapper.core.match.MethodMatcher$1
+ io.bytecodemapper.core.match.MethodMatcher$MethodMatchResult
+ io.bytecodemapper.core.match.MethodMatcher$Pair
+io/bytecodemapper/cli/Main.java
+ io.bytecodemapper.cli.Main
+io/bytecodemapper/core/match/ClassMatcher.java
+ io.bytecodemapper.core.match.ClassMatcher
+ io.bytecodemapper.core.match.ClassMatcher$ClassMatchResult
