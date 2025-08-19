@@ -11,6 +11,10 @@ public final class MethodFeatures {
     public final boolean leaf;
     public final boolean recursive;
     public final int[] opcodeHistogram; // [0..199]
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORM HIST BEGIN
+    /** Generalized normalized opcode histogram (dense [0..199]) */
+    public final int[] normOpcodeHistogram;
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORM HIST END
     public final List<String> callBagNormalized; // owner-normalized to new-space
     public final List<String> stringBag;
     // >>> AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORMALIZED FIELDS BEGIN
@@ -21,7 +25,8 @@ public final class MethodFeatures {
     // <<< AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORMALIZED FIELDS END
 
     public MethodFeatures(MethodRef ref, long wlSignature, BitSet microBits, boolean leaf, boolean recursive,
-                          int[] opcodeHistogram, List<String> callBagNormalized, List<String> stringBag,
+                          int[] opcodeHistogram, int[] normOpcodeHistogram,
+                          List<String> callBagNormalized, List<String> stringBag,
                           String normalizedDescriptor, String normalizedFingerprint) {
         this.ref = ref;
         this.wlSignature = wlSignature;
@@ -29,6 +34,9 @@ public final class MethodFeatures {
         this.leaf = leaf;
         this.recursive = recursive;
         this.opcodeHistogram = opcodeHistogram;
+        // >>> AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORM HIST INIT BEGIN
+        this.normOpcodeHistogram = normOpcodeHistogram;
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORM HIST INIT END
         this.callBagNormalized = callBagNormalized;
         this.stringBag = stringBag;
         // >>> AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORMALIZED FIELDS INIT BEGIN

@@ -51,7 +51,9 @@ public final class MethodFeatureExtractor {
     // Opcode histogram and strings from NormalizedMethod (post-normalization)
     // >>> AUTOGEN: BYTECODEMAPPER CLI MethodFeatureExtractor NORMALIZED BUILD BEGIN
     NormalizedMethod nm = new NormalizedMethod(owner.name, norm.method, java.util.Collections.<Integer>emptySet());
-    int[] hist = NormalizedAdapters.toDense200(nm.opcodeHistogram);
+    int[] normHist = NormalizedAdapters.toDense200(nm.opcodeHistogram);
+    // Keep legacy histogram for optional compatibility scoring
+    int[] legacyHist = io.bytecodemapper.signals.opcode.OpcodeFeatures.opcodeHistogram(norm.method);
     // Prefer normalized string set (excludes wrapper signature noise)
     java.util.List<String> strBag = new java.util.ArrayList<String>(nm.stringConstants);
     // <<< AUTOGEN: BYTECODEMAPPER CLI MethodFeatureExtractor NORMALIZED BUILD END
@@ -72,7 +74,7 @@ public final class MethodFeatureExtractor {
         }
 
         MethodRef ref = new MethodRef(owner.name, mn.name, mn.desc);
-    return new MethodFeatures(ref, wl, bits, leaf, recursive, hist, callBag, strBag,
+    return new MethodFeatures(ref, wl, bits, leaf, recursive, legacyHist, normHist, callBag, strBag,
         nm.normalizedDescriptor, nm.fingerprint);
     }
 

@@ -2,7 +2,6 @@
 package io.bytecodemapper.cli.method;
 
 import io.bytecodemapper.signals.calls.CallBagTfidf;
-import io.bytecodemapper.signals.opcode.OpcodeFeatures;
 import io.bytecodemapper.signals.strings.StringTfidf;
 import io.bytecodemapper.signals.tfidf.TfIdfModel;
 import io.bytecodemapper.signals.micro.MicroScoringService;
@@ -17,6 +16,15 @@ public final class MethodScorer {
     public static final double W_OPCODE= 0.15;
     public static final double W_STR   = 0.10;
     public static final double W_FIELDS= 0.05; // stubbed 0.0 for now
+
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MethodScorer NORM WEIGHTS BEGIN
+    // New: normalized histogram weight (generalized)
+    public static double W_NORM = 0.10;
+
+    // Legacy opcode histogram remains available but OFF by default
+    public static boolean LEGACY_OPCODE_ENABLED = false;
+    public static double W_OPCODE_LEGACY = 0.05;
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MethodScorer NORM WEIGHTS END
 
     public static final double ALPHA_MP   = 0.60; // blend inside micropatterns
     public static final double TAU_ACCEPT = 0.60; // final acceptance threshold
@@ -55,11 +63,22 @@ public final class MethodScorer {
             MethodFeatures t = cands.get(i);
             double sCalls = CallBagTfidf.cosineSimilarity(callsModel, src.callBagNormalized, t.callBagNormalized);
             double sMicro = microSvc.similarity(src.microBits, t.microBits, ALPHA_MP);
-            double sOpc   = OpcodeFeatures.cosineHistogram(src.opcodeHistogram, t.opcodeHistogram);
+            // >>> AUTOGEN: BYTECODEMAPPER CLI MethodScorer NORM COMPOSITION BEGIN
+            double sNorm = io.bytecodemapper.signals.normalized.NormalizedAdapters.cosineDense(src.normOpcodeHistogram, t.normOpcodeHistogram);
+            double sOpcLegacy = 0.0;
+            if (LEGACY_OPCODE_ENABLED) {
+                sOpcLegacy = io.bytecodemapper.signals.opcode.OpcodeFeatures.cosineHistogram(src.opcodeHistogram, t.opcodeHistogram);
+            }
             double sStr   = StringTfidf.cosineSimilarity(strModel, src.stringBag, t.stringBag);
             double sFields= 0.0; // stub
 
-            double s = W_CALLS*sCalls + W_MICRO*sMicro + W_OPCODE*sOpc + W_STR*sStr + W_FIELDS*sFields;
+        double s = W_CALLS*sCalls
+            + W_MICRO*sMicro
+            + W_NORM*sNorm
+            + (LEGACY_OPCODE_ENABLED ? (W_OPCODE_LEGACY*sOpcLegacy) : 0.0)
+            + W_STR*sStr
+            + W_FIELDS*sFields;
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MethodScorer NORM COMPOSITION END
             if (src.leaf != t.leaf) s -= PEN_LEAF_MISMATCH;
             if (src.recursive != t.recursive) s -= PEN_RECUR_MISMATCH;
 
@@ -95,11 +114,20 @@ public final class MethodScorer {
         for (MethodFeatures t : cands) {
             double sCalls = CallBagTfidf.cosineSimilarity(callsModel, src.callBagNormalized, t.callBagNormalized);
             double sMicro = microSvc.similarity(src.microBits, t.microBits, ALPHA_MP);
-            double sOpc   = OpcodeFeatures.cosineHistogram(src.opcodeHistogram, t.opcodeHistogram);
+            double sNorm = io.bytecodemapper.signals.normalized.NormalizedAdapters.cosineDense(src.normOpcodeHistogram, t.normOpcodeHistogram);
+            double sOpcLegacy = 0.0;
+            if (LEGACY_OPCODE_ENABLED) {
+                sOpcLegacy = io.bytecodemapper.signals.opcode.OpcodeFeatures.cosineHistogram(src.opcodeHistogram, t.opcodeHistogram);
+            }
             double sStr   = StringTfidf.cosineSimilarity(strModel, src.stringBag, t.stringBag);
             double sFields= 0.0; // stub
 
-            double s = W_CALLS*sCalls + W_MICRO*sMicro + W_OPCODE*sOpc + W_STR*sStr + W_FIELDS*sFields;
+            double s = W_CALLS*sCalls
+                    + W_MICRO*sMicro
+                    + W_NORM*sNorm
+                    + (LEGACY_OPCODE_ENABLED ? (W_OPCODE_LEGACY*sOpcLegacy) : 0.0)
+                    + W_STR*sStr
+                    + W_FIELDS*sFields;
 
             // smart filters: penalties
             if (src.leaf != t.leaf) s -= PEN_LEAF_MISMATCH;
@@ -108,7 +136,7 @@ public final class MethodScorer {
             if (s > best) {
                 second = best;
                 best = s; bestM = t;
-                bestCalls=sCalls; bestMicro=sMicro; bestOpc=sOpc; bestStr=sStr;
+                bestCalls=sCalls; bestMicro=sMicro; bestOpc=(LEGACY_OPCODE_ENABLED? sOpcLegacy : sNorm); bestStr=sStr;
             } else if (s > second) {
                 second = s;
             }
