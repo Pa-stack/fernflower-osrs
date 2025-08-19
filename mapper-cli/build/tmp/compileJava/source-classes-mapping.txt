@@ -59,7 +59,9 @@ io/bytecodemapper/cli/MapOldNew.java
  io.bytecodemapper.cli.MapOldNew$2
  io.bytecodemapper.cli.MapOldNew$3
  io.bytecodemapper.cli.MapOldNew$4
-io/bytecodemapper/cli/Main.java
- io.bytecodemapper.cli.Main
 io/bytecodemapper/cli/ApplyMappings.java
  io.bytecodemapper.cli.ApplyMappings
+io/bytecodemapper/cli/TinyStats.java
+ io.bytecodemapper.cli.TinyStats
+io/bytecodemapper/cli/Main.java
+ io.bytecodemapper.cli.Main

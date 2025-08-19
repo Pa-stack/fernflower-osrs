@@ -46,6 +46,14 @@ public final class Main {
             MapOldNew.run(args);
             return;
         }
+        // >>> AUTOGEN: BYTECODEMAPPER CLI Main tinyStats DISPATCH BEGIN
+        if ("tinyStats".equalsIgnoreCase(args[0])) {
+            String[] tail = new String[Math.max(0, args.length - 1)];
+            if (tail.length > 0) System.arraycopy(args, 1, tail, 0, tail.length);
+            io.bytecodemapper.cli.TinyStats.run(tail);
+            return;
+        }
+        // <<< AUTOGEN: BYTECODEMAPPER CLI Main tinyStats DISPATCH END
         // >>> AUTOGEN: BYTECODEMAPPER CLI Main applyMappings DISPATCH BEGIN
         if ("applyMappings".equalsIgnoreCase(args[0])) {
             String[] tail = new String[Math.max(0, args.length - 1)];
