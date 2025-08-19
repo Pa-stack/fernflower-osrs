@@ -4,7 +4,6 @@ package io.bytecodemapper.cli;
 import io.bytecodemapper.io.remap.AsmJarRemapper;
 import io.bytecodemapper.io.tiny.TinyV2Mappings;
 
-import java.nio.file.Path;
 import java.util.Locale;
 
 public final class ApplyMappings {
@@ -31,9 +30,12 @@ public final class ApplyMappings {
             return;
         }
 
-    Path inPath  = io.bytecodemapper.cli.util.CliPaths.resolveInput(inJar);
-    Path mapPath = io.bytecodemapper.cli.util.CliPaths.resolveInput(mappings);
-    Path outPath = io.bytecodemapper.cli.util.CliPaths.resolveOutput(outJar);
+    // >>> AUTOGEN: BYTECODEMAPPER CLI ApplyMappings PATHUTIL→CLIPATHS BEGIN
+    // Using resolveMaybeModuleRelative for idempotency; method is deprecated by design.
+    java.nio.file.Path inPath  = io.bytecodemapper.cli.util.CliPaths.resolveMaybeModuleRelative(inJar);
+    java.nio.file.Path mapPath = io.bytecodemapper.cli.util.CliPaths.resolveMaybeModuleRelative(mappings);
+    java.nio.file.Path outPath = io.bytecodemapper.cli.util.CliPaths.resolveOutput(outJar);
+    // <<< AUTOGEN: BYTECODEMAPPER CLI ApplyMappings PATHUTIL→CLIPATHS END
 
         if (!"tiny2".equalsIgnoreCase(format)) {
             throw new IllegalArgumentException("Only tiny2 is supported in this build.");
