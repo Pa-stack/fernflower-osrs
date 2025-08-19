@@ -15,8 +15,16 @@ public final class BenchCommand {
 
     public static int run(Map<String,String> args) {
         try {
+            // >>> AUTOGEN: BYTECODEMAPPER CLI BenchCommand INDIR HARDEN BEGIN
             Path inDir  = CliPaths.resolveInput(nonEmpty(args.get("--in"), "missing --in"));
+            inDir = inDir.toAbsolutePath().normalize();
+            if (!Files.isDirectory(inDir)) {
+                System.err.println("[bench] Input dir not found: " + inDir);
+                System.err.println("[bench] Tip: stage jars under 'data/weeks' at repo root or 'mapper-cli/data/weeks'.");
+                return 2;
+            }
             Path out    = CliPaths.resolveOutput(nonEmpty(args.get("--out"), "missing --out"));
+            // <<< AUTOGEN: BYTECODEMAPPER CLI BenchCommand INDIR HARDEN END
             String ablateCsv = args.get("--ablate"); // e.g. "calls,micro,opcode,strings,fields,norm"
             Set<String> ablate = parseAblate(ablateCsv);
 
@@ -31,10 +39,10 @@ public final class BenchCommand {
             // Optional: honor idf/cache flags if the user passes them through Bench
             String cacheDir = args.get("--cacheDir");
             if (cacheDir != null) base = OrchestratorOptions.defaults(
-                CliPaths.resolveMaybeModuleRelative(cacheDir), base.idfPath);
+                CliPaths.resolveOutput(cacheDir), base.idfPath);
             String idf = args.get("--idf");
             if (idf != null) base = OrchestratorOptions.defaults(
-                base.cacheDir, CliPaths.resolveMaybeModuleRelative(idf));
+                base.cacheDir, CliPaths.resolveInput(idf));
 
             // Apply ablations (zero out signals in scoring)
             applyAblations(base, ablate);
@@ -50,7 +58,7 @@ public final class BenchCommand {
                 BenchPairs.BenchPair p = pairs.get(i);
 
                 long t0 = System.nanoTime();
-                long memBefore = usedBytes();
+                // track memory after run for peak; before value is unnecessary here
 
                 Orchestrator.BenchPairResult r = orch.mapPairForBench(p.oldJar, p.newJar, base);
 
