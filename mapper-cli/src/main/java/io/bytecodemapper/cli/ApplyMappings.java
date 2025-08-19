@@ -13,6 +13,8 @@ public final class ApplyMappings {
         String format = "tiny2"; // tiny2 default
         String ns = "obf,deobf"; // reserved for future use (two namespaces only)
         String remapper = "asm";  // asm (default), other options in future (tinyremapper,specialsource)
+        // >>> AUTOGEN: BYTECODEMAPPER CLI ApplyMappings VERIFY BEGIN
+        boolean verify = false;
 
         for (int i=0;i<args.length;i++) {
             String a = args[i];
@@ -22,6 +24,7 @@ public final class ApplyMappings {
             else if ("--format".equals(a) && i+1<args.length) format = args[++i];
             else if ("--ns".equals(a) && i+1<args.length) ns = args[++i];
             else if ("--remapper".equals(a) && i+1<args.length) remapper = args[++i];
+            else if ("--verifyRemap".equals(a)) verify = true;
         }
 
         if (inJar == null || mappings == null || outJar == null) {
@@ -55,8 +58,29 @@ public final class ApplyMappings {
     // >>> AUTOGEN: BYTECODEMAPPER CLI ApplyMappings LOG NOTE BEGIN
     System.out.println("(Note) Class entry names are renamed to match remapped internal names.");
     // <<< AUTOGEN: BYTECODEMAPPER CLI ApplyMappings LOG NOTE END
+    if (verify) {
+        int inClasses  = countClasses(inPath);
+        int outClasses = countClasses(outPath);
+        String sample  = firstClass(outPath);
+        System.out.println("[verify] classes in=" + inClasses + " out=" + outClasses + " sample=" + sample);
+    }
+    // <<< AUTOGEN: BYTECODEMAPPER CLI ApplyMappings VERIFY END
     }
 
     private ApplyMappings(){}
+
+    // >>> AUTOGEN: BYTECODEMAPPER CLI ApplyMappings VERIFY BEGIN
+    private static int countClasses(java.nio.file.Path jar) throws Exception {
+        int n=0;
+        java.util.jar.JarInputStream jin = new java.util.jar.JarInputStream(java.nio.file.Files.newInputStream(jar));
+        for (java.util.zip.ZipEntry e; (e=jin.getNextJarEntry())!=null; ) if (!e.isDirectory() && e.getName().endsWith(".class")) n++;
+        jin.close(); return n;
+    }
+    private static String firstClass(java.nio.file.Path jar) throws Exception {
+        java.util.jar.JarInputStream jin = new java.util.jar.JarInputStream(java.nio.file.Files.newInputStream(jar));
+        for (java.util.zip.ZipEntry e; (e=jin.getNextJarEntry())!=null; ) if (!e.isDirectory() && e.getName().endsWith(".class")) { jin.close(); return e.getName(); }
+        jin.close(); return "<none>";
+    }
+    // <<< AUTOGEN: BYTECODEMAPPER CLI ApplyMappings VERIFY END
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI ApplyMappings END
