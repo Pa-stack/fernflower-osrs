@@ -39,3 +39,8 @@ io/bytecodemapper/cli/MethodMatch.java
  io.bytecodemapper.cli.MethodMatch$2
  io.bytecodemapper.cli.MethodMatch$3
  io.bytecodemapper.cli.MethodMatch$4
+io/bytecodemapper/cli/field/FieldMatcher.java
+ io.bytecodemapper.cli.field.FieldMatcher
+ io.bytecodemapper.cli.field.FieldMatcher$VoteAgg
+io/bytecodemapper/cli/field/FieldRef.java
+ io.bytecodemapper.cli.field.FieldRef
