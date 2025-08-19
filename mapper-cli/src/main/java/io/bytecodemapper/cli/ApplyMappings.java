@@ -47,9 +47,12 @@ public final class ApplyMappings {
             System.out.println("Warning: --ns=" + ns + " is not supported in this build; assuming obf,deobf");
         }
 
-        TinyV2Mappings t = TinyV2Mappings.read(mapPath);
-        AsmJarRemapper.remapJar(inPath, outPath, t);
-        System.out.println("Remapped jar written to: " + outPath);
+    TinyV2Mappings t = TinyV2Mappings.read(mapPath);
+    AsmJarRemapper.remapJar(inPath, outPath, t);
+    System.out.println("Remapped jar written to: " + outPath);
+    // >>> AUTOGEN: BYTECODEMAPPER CLI ApplyMappings LOG NOTE BEGIN
+    System.out.println("(Note) Class entry names are renamed to match remapped internal names.");
+    // <<< AUTOGEN: BYTECODEMAPPER CLI ApplyMappings LOG NOTE END
     }
 
     private ApplyMappings(){}
