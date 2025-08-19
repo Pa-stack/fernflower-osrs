@@ -53,6 +53,9 @@ final class MapOldNew {
         double marginMethods = 0.05;
     // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY BEGIN
     boolean includeIdentity = false;
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY BEGIN
+    int demoCount = 0;            // 0 = off
+    String demoPrefix = null;     // e.g., "zz/demo"
 
         for (int i = 0; i < args.length; i++) {
             String a = args[i];
@@ -74,6 +77,10 @@ final class MapOldNew {
                 try { marginMethods = Double.parseDouble(args[++i]); } catch (NumberFormatException ignore) {}
             } else if ("--includeIdentity".equals(a)) {
                 includeIdentity = true;
+            } else if ("--demoRemapCount".equals(a) && i+1<args.length) {
+                try { demoCount = Integer.parseInt(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--demoRemapPrefix".equals(a) && i+1<args.length) {
+                demoPrefix = args[++i];
             }
         }
         // Apply method matching thresholds (global static for this run)
@@ -81,6 +88,7 @@ final class MapOldNew {
         io.bytecodemapper.cli.method.MethodScorer.setMinMargin(marginMethods);
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS END
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY END
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY END
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG FLAGS SCOPE END
 
         // Read classes deterministically
@@ -179,6 +187,20 @@ final class MapOldNew {
             }
         }
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew INCLUDE IDENTITY END
+        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY BEGIN
+        if (demoCount > 0 && demoPrefix != null) {
+            java.util.List<String> obfSorted = new java.util.ArrayList<String>(oldClasses.size());
+            for (org.objectweb.asm.tree.ClassNode cn : oldClasses) obfSorted.add(cn.name);
+            java.util.Collections.sort(obfSorted);
+            int applied = Math.min(demoCount, obfSorted.size());
+            for (int i = 0; i < applied; i++) {
+                String obf = obfSorted.get(i);
+                String neo = demoPrefix + "/" + obf; // deterministically prefixed
+                tinyClasses.put(obf, neo);
+            }
+            System.out.println("Demo overlay: renamed " + applied + " classes with prefix " + demoPrefix);
+        }
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEMO RENAME OVERLAY END
 
         java.util.List<TinyV2Writer.MethodEntry> tinyMethods = new java.util.ArrayList<TinyV2Writer.MethodEntry>();
         for (java.util.Map.Entry<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef> e : methodPairs.entrySet()) {
