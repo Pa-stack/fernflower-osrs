@@ -26,6 +26,50 @@ public final class MethodScorer {
     public static final double PEN_LEAF_MISMATCH = 0.05;
     public static final double PEN_RECUR_MISMATCH= 0.03;
 
+    /**
+     * Compute S_total per candidate, aligned with cands order. Uses the same
+     * models and penalties as {@link #scoreOne} but does not apply acceptance
+     * logic. Deterministic given inputs.
+     */
+    public static double[] scoreVector(MethodFeatures src, List<MethodFeatures> cands, IdfStore microIdf) {
+        if (cands.isEmpty()) return new double[0];
+
+        // Build TF-IDF models per source set for determinism
+        // calls
+        List<List<String>> callDocs = new ArrayList<List<String>>(cands.size()+1);
+        callDocs.add(src.callBagNormalized);
+        for (MethodFeatures m : cands) callDocs.add(m.callBagNormalized);
+        TfIdfModel callsModel = CallBagTfidf.buildModel(callDocs);
+
+        // strings
+        List<List<String>> strDocs = new ArrayList<List<String>>(cands.size()+1);
+        strDocs.add(src.stringBag);
+        for (MethodFeatures m : cands) strDocs.add(m.stringBag);
+        TfIdfModel strModel = StringTfidf.buildModel(strDocs);
+
+        // micro
+        MicroScoringService microSvc = new MicroScoringService().setIdf(microIdf.computeIdf());
+
+        double[] out = new double[cands.size()];
+        for (int i=0;i<cands.size();i++) {
+            MethodFeatures t = cands.get(i);
+            double sCalls = CallBagTfidf.cosineSimilarity(callsModel, src.callBagNormalized, t.callBagNormalized);
+            double sMicro = microSvc.similarity(src.microBits, t.microBits, ALPHA_MP);
+            double sOpc   = OpcodeFeatures.cosineHistogram(src.opcodeHistogram, t.opcodeHistogram);
+            double sStr   = StringTfidf.cosineSimilarity(strModel, src.stringBag, t.stringBag);
+            double sFields= 0.0; // stub
+
+            double s = W_CALLS*sCalls + W_MICRO*sMicro + W_OPCODE*sOpc + W_STR*sStr + W_FIELDS*sFields;
+            if (src.leaf != t.leaf) s -= PEN_LEAF_MISMATCH;
+            if (src.recursive != t.recursive) s -= PEN_RECUR_MISMATCH;
+
+            // clip to [0,1] for downstream stability
+            if (s < 0) s = 0; else if (s > 1) s = 1;
+            out[i] = s;
+        }
+        return out;
+    }
+
     /** Score source method against candidate targets from the same class pair. */
     public static Result scoreOne(MethodFeatures src, List<MethodFeatures> cands, IdfStore microIdf) {
         if (cands.isEmpty()) return Result.abstain("no candidates");

@@ -20,13 +20,14 @@ import java.util.*;
 final class MethodMatch {
 
     static void run(String[] args) throws Exception {
-        Path oldArg=null, newArg=null, classMapArg=null, outArg=null;
+        Path oldArg=null, newArg=null, classMapArg=null, outArg=null; boolean doRefine=false;
         for (int i=0;i<args.length;i++) {
             String a = args[i];
             if ("--old".equals(a) && i+1<args.length) oldArg = Paths.get(args[++i]);
             else if ("--new".equals(a) && i+1<args.length) newArg = Paths.get(args[++i]);
             else if ("--classMap".equals(a) && i+1<args.length) classMapArg = Paths.get(args[++i]);
             else if ("--out".equals(a) && i+1<args.length) outArg = Paths.get(args[++i]);
+            else if ("--refine".equals(a)) doRefine = true;
             else System.err.println("Unknown or incomplete arg: " + a);
         }
         if (oldArg==null || newArg==null || classMapArg==null || outArg==null) {
@@ -114,27 +115,70 @@ final class MethodMatch {
                 // Build candidate index (same target class)
                 List<MethodFeatures> targetList = new ArrayList<MethodFeatures>(newFeats.values());
 
-                for (MethodFeatures src : oldFeats.values()) {
-                    total++;
-                    List<MethodFeatures> cands = CandidateGenerator.topKByWl(src, targetList, CandidateGenerator.DEFAULT_TOPK);
-                    MethodScorer.Result r = MethodScorer.scoreOne(src, cands, microIdf);
+                // >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch refine block BEGIN
+                if (doRefine) {
+                    // Build per-source candidate sets and base scores
+                    Map<MethodRef, io.bytecodemapper.cli.method.CallGraphRefiner.CandidateSet> candMap = new LinkedHashMap<MethodRef, io.bytecodemapper.cli.method.CallGraphRefiner.CandidateSet>();
+                    for (MethodFeatures src : oldFeats.values()) {
+                        List<MethodFeatures> cands = CandidateGenerator.topKByWl(src, targetList, CandidateGenerator.DEFAULT_TOPK);
+                        double[] base = MethodScorer.scoreVector(src, cands, microIdf);
+                        candMap.put(src.ref, new io.bytecodemapper.cli.method.CallGraphRefiner.CandidateSet(cands, base));
+                    }
 
-                    if (r.accepted && r.best != null) {
-                        matched++;
-                        pw.println(src.ref.toString() + " -> " + r.best.ref.toString() +
-                                " score=" + String.format(java.util.Locale.ROOT, "%.4f", r.scoreBest));
-                    } else {
-                        abstained++;
-                        // For audit, write top candidate if present
-                        if (r.best != null) {
-                            pw.println("# abstain " + r.abstainReason + " | " + src.ref.toString() + " -> " + r.best.ref.toString() +
-                                    " score=" + String.format(java.util.Locale.ROOT, "%.4f", r.scoreBest) +
-                                    " second=" + String.format(java.util.Locale.ROOT, "%.4f", r.scoreSecond));
+                    // Intra-class graphs
+                    Map<MethodRef, java.util.Set<MethodRef>> gOld = io.bytecodemapper.cli.method.AppCallGraph.buildIntraClassGraph(oldCn);
+                    Map<MethodRef, java.util.Set<MethodRef>> gNew = io.bytecodemapper.cli.method.AppCallGraph.buildIntraClassGraph(newCn);
+
+                    io.bytecodemapper.cli.method.CallGraphRefiner.Result rr = io.bytecodemapper.cli.method.CallGraphRefiner.refine(candMap, gOld, gNew,
+                            io.bytecodemapper.cli.method.CallGraphRefiner.DEFAULT_LAMBDA, io.bytecodemapper.cli.method.CallGraphRefiner.DEFAULT_MAX_ITERS);
+
+                    // Emit refined results deterministically by source name/desc
+                    List<MethodRef> srcOrder = new ArrayList<MethodRef>(rr.mapping.keySet());
+                    Collections.sort(srcOrder, new Comparator<MethodRef>() {
+                        public int compare(MethodRef a, MethodRef b) {
+                            int c = a.name.compareTo(b.name); return c!=0?c:a.desc.compareTo(b.desc);
+                        }
+                    });
+                    for (MethodRef u : srcOrder) {
+                        MethodRef v = rr.mapping.get(u);
+                        Double s = rr.bestScore.get(u);
+                        total++;
+                        if (v != null && s != null && s.doubleValue() >= io.bytecodemapper.cli.method.MethodScorer.TAU_ACCEPT) {
+                            matched++;
+                            pw.println(u.toString() + " -> " + v.toString() + " score=" + String.format(java.util.Locale.ROOT, "%.4f", s.doubleValue()) + " [refined]");
                         } else {
-                            pw.println("# abstain " + r.abstainReason + " | " + src.ref.toString());
+                            abstained++;
+                            pw.println("# abstain refine | " + u.toString() + (s!=null? (" score=" + String.format(java.util.Locale.ROOT, "%.4f", s.doubleValue())) : ""));
+                        }
+                    }
+                    // brief stats
+                    pw.println(String.format(java.util.Locale.ROOT, "# refine stats iters=%d lastFlips=%d lastMaxDelta=%.5f",
+                            rr.stats.iters, rr.stats.flipsPerIter[rr.stats.flipsPerIter.length-1], rr.stats.maxDeltaPerIter[rr.stats.maxDeltaPerIter.length-1]));
+
+                } else {
+                    for (MethodFeatures src : oldFeats.values()) {
+                        total++;
+                        List<MethodFeatures> cands = CandidateGenerator.topKByWl(src, targetList, CandidateGenerator.DEFAULT_TOPK);
+                        MethodScorer.Result r = MethodScorer.scoreOne(src, cands, microIdf);
+
+                        if (r.accepted && r.best != null) {
+                            matched++;
+                            pw.println(src.ref.toString() + " -> " + r.best.ref.toString() +
+                                    " score=" + String.format(java.util.Locale.ROOT, "%.4f", r.scoreBest));
+                        } else {
+                            abstained++;
+                            // For audit, write top candidate if present
+                            if (r.best != null) {
+                                pw.println("# abstain " + r.abstainReason + " | " + src.ref.toString() + " -> " + r.best.ref.toString() +
+                                        " score=" + String.format(java.util.Locale.ROOT, "%.4f", r.scoreBest) +
+                                        " second=" + String.format(java.util.Locale.ROOT, "%.4f", r.scoreSecond));
+                            } else {
+                                pw.println("# abstain " + r.abstainReason + " | " + src.ref.toString());
+                            }
                         }
                     }
                 }
+                // <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch refine block END
             }
         } finally {
             pw.close();
