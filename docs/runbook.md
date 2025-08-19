@@ -402,3 +402,21 @@ or to the path supplied after `--debug-normalized <path>`.
 	- Any change in normalization that can affect CFG/DF/TDF/WL, or feature extraction ordering → bump `NormalizerFingerprint.NORMALIZER_VERSION`.
 	- Any change in reduced-CFG construction options (e.g., linear-chain merge policy) → update `ReducedCfgFingerprint` content.
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook cache-fingerprint END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook cache-ir-fingerprint BEGIN -->
+### IR cache fingerprint (Normalizer + CFG)
+
+Cache keys include a composite **IR fingerprint**:
+
+
+owner#name(desc)#normalizedBodyHash#<normalizerFp||cfgFp>
+
+- **normalizerFp:** versioned options string (e.g., `v=1;opaque=true;unwrapRTE=true;detectFlatten=true`)
+- **cfgFp:** versioned CFG options string (e.g., `cv=1;excEdges=LOOSE;mergeLinear=true`)
+
+**When to bump versions:**
+- `NORMALIZER_VERSION` — any normalization change that can affect IR/CFG shape.
+- `CFG_VERSION` — any ReducedCFG change (e.g., exception edge policy) that affects DF/TDF/WL or micropatterns.
+
+This ensures caches invalidate when either **Normalizer** or **CFG** behavior changes.
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook cache-ir-fingerprint END -->

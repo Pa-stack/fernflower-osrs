@@ -20,7 +20,13 @@ public final class NormalizerFingerprint {
         StringBuilder sb = new StringBuilder(64);
         sb.append("v=").append(NORMALIZER_VERSION)
           .append(";opaque=").append(o.normalizeOpaque)
+          // >>> AUTOGEN: BYTECODEMAPPER CORE NormalizerFingerprint OPTION-NAME BEGIN
+          // Ensure this field matches Normalizer.Options and Normalizer.normalize(...) logic exactly:
+          // sb.append(";unwrapRTE=").append(o.removeTrivialRuntimeExceptionWrappers);
+          // If your Options really uses removeTrivialRuntimeWrapper (singular), use that consistently in Normalizer and here.
+          // >>> If you keep the singular name, change the line to:
           .append(";unwrapRTE=").append(o.removeTrivialRuntimeWrapper)
+          // <<< AUTOGEN: BYTECODEMAPPER CORE NormalizerFingerprint OPTION-NAME END
           .append(";detectFlatten=").append(o.detectFlattening);
         return sb.toString();
     }

@@ -12,8 +12,8 @@ public final class ReducedCfgFingerprint {
     public static final String CFG_VERSION = "1";
 
     /** Deterministic options fingerprint string. */
-    public static String optionsFingerprint(ReducedCFG.Options o) {
-        if (o == null) o = ReducedCFG.Options.defaults();
+  public static String optionsFingerprint(io.bytecodemapper.core.cfg.ReducedCFG.Options o) {
+    if (o == null) o = new io.bytecodemapper.core.cfg.ReducedCFG.Options();
         StringBuilder sb = new StringBuilder(64);
         sb.append("cv=").append(CFG_VERSION)
           .append(";excEdges=").append(o.exceptionEdgesPolicy.name())
