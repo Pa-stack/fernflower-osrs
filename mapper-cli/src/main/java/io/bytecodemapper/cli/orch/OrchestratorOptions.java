@@ -14,6 +14,15 @@ public final class OrchestratorOptions {
     public final boolean debugNormalized; // dump normalized sample in mapOldNew (already exists)
     public final int debugNormalizedSample;
 
+    // >>> AUTOGEN: BYTECODEMAPPER CLI OrchestratorOptions ABLATE BEGIN
+    // Weights already exist; add ablation/toggles if missing.
+    public boolean useNormalizedHistogram = true;
+    // bench ablations are realized by zeroing weights and/or toggles above.
+
+    // Defaults remain: calls=0.45, micro=0.25, opcode=0.15, strings=0.10, fields=0.05.
+    // Ensure your scoring code consults these weights & toggles.
+    // <<< AUTOGEN: BYTECODEMAPPER CLI OrchestratorOptions ABLATE END
+
     public OrchestratorOptions(
             boolean deterministic,
             Path cacheDir,

@@ -420,3 +420,48 @@ owner#name(desc)#normalizedBodyHash#<normalizerFp||cfgFp>
 
 This ensures caches invalidate when either **Normalizer** or **CFG** behavior changes.
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook cache-ir-fingerprint END -->
+
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook bench BEGIN -->
+## Bench harness
+
+Evaluate stability over consecutive builds (weekly, monthly, etc.) laid out in `--in`:
+
+```text
+data/weeks/osrs-1.jar
+data/weeks/osrs-2.jar
+...
+data/weeks/osrs-232.jar
+```
+Pairs are built by sorting ascending and forming adjacent pairs: `(1→2), (2→3), ...`.
+
+**Run:**
+
+```bash
+./gradlew :mapper-cli:run --args="bench --in data/weeks --out build/bench.json"
+```
+
+**Ablation:**
+
+```bash
+# turn off calls + micropatterns
+./gradlew :mapper-cli:run --args="bench --in data/weeks --out build/bench.calls_off.json --ablate calls,micro"
+```
+
+**Metrics written:**
+
+- `churnJaccard` — Jaccard of method-coverage on the shared middle jar vs previous pair.
+- `osc3Coverage` — symmetric-diff rate of middle-jar coverage across a triple (proxy for 3-period flip).
+- `ambiguousPairF1` — `null` unless ground-truth is provided; `ambiguousCount` is emitted for scale.
+- `acceptedMethods`, `abstainedMethods`, `acceptedClasses`, `elapsedMs`, `usedMB`.
+
+The top-level JSON also includes `totalMs`, `peakMB`, and the `ablate` list.
+
+**Windows / PowerShell:**
+
+```powershell
+./gradlew :mapper-cli:run --args="bench --in data/weeks --out build/bench.json"
+Get-Content build/bench.json -TotalCount 1
+```
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook bench END -->

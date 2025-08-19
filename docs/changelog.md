@@ -168,3 +168,11 @@ Compatibility / minor adjustments from prompt:
 - Updated orchestrator to include `#IRfp` in cache keys and write both normalizer and reduced-CFG option fingerprints into per-jar cache metadata.
 - Runbook updated: cache key now `owner#name(desc)#normalizedBodyHash#IRfp`; determinism acceptance snippet for Windows/PowerShell added.
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component13 END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component13 BEGIN -->
+## [2025-08-19] Component 13 — Bench harness & metrics
+
+- Added `bench` CLI to run mapping over consecutive jar pairs and emit JSON metrics (`churnJaccard`, `osc3Coverage`, runtimes, memory).
+- Supports ablation of tie-breaker signals via `--ablate calls,micro,opcode,strings,fields,norm`.
+- Deterministic by default; honors `--cacheDir` and `--idf`.
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component13 END -->
