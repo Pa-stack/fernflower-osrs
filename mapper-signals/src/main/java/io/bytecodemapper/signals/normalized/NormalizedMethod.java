@@ -156,7 +156,18 @@ public final class NormalizedMethod implements Opcodes {
 
         InsnList cleaned = new InsnList();
         Map<LabelNode, LabelNode> map = new LinkedHashMap<LabelNode, LabelNode>();
-        for (AbstractInsnNode insn : inner) cleaned.add(insn.clone(map));
+        // First pass: create label mappings
+        for (AbstractInsnNode insn : inner) {
+            if (insn instanceof LabelNode) {
+                LabelNode ln = (LabelNode) insn;
+                if (!map.containsKey(ln)) map.put(ln, new LabelNode());
+            }
+        }
+        // Second pass: clone with map
+        for (AbstractInsnNode insn : inner) {
+            AbstractInsnNode cloned = insn.clone(map);
+            if (cloned != null) cleaned.add(cloned);
+        }
         return cleaned;
     }
 
@@ -265,8 +276,14 @@ public final class NormalizedMethod implements Opcodes {
     private static boolean isObfuscationCatchWrapper(TryCatchBlockNode tcb, MethodNode mn) {
         AbstractInsnNode cur = tcb.handler;
 
-        if (cur instanceof VarInsnNode && cur.getOpcode() == ASTORE) cur = cur.getNext();
+        // Skip non-opcode nodes at handler start
         while (cur != null && cur.getOpcode() < 0) cur = cur.getNext();
+        // Optional: initial ASTORE of the caught exception
+        if (cur instanceof VarInsnNode && cur.getOpcode() == ASTORE) {
+            cur = cur.getNext();
+            while (cur != null && cur.getOpcode() < 0) cur = cur.getNext();
+        }
+        // Expect ALOAD of the stored exception
         if (!(cur instanceof VarInsnNode && cur.getOpcode() == ALOAD)) return false; cur = cur.getNext();
 
         while (cur != null && cur.getOpcode() < 0) cur = cur.getNext();

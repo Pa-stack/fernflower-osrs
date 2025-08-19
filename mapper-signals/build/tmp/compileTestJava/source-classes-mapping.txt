@@ -12,3 +12,5 @@ io/bytecodemapper/signals/calls/CallBagTfidfTest.java
  io.bytecodemapper.signals.calls.CallBagTfidfTest
 io/bytecodemapper/signals/opcode/OpcodeFeaturesTest.java
  io.bytecodemapper.signals.opcode.OpcodeFeaturesTest
+io/bytecodemapper/signals/normalized/NormalizedMethodTest.java
+ io.bytecodemapper.signals.normalized.NormalizedMethodTest

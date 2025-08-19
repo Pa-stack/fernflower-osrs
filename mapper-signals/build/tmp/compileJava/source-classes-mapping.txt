@@ -34,8 +34,8 @@ io/bytecodemapper/signals/fields/FieldUsageExtractor.java
  io.bytecodemapper.signals.fields.FieldUsageExtractor
  io.bytecodemapper.signals.fields.FieldUsageExtractor$FieldUse
  io.bytecodemapper.signals.fields.FieldUsageExtractor$RWCounts
+io/bytecodemapper/signals/normalized/NormalizedAdapters.java
+ io.bytecodemapper.signals.normalized.NormalizedAdapters
 io/bytecodemapper/signals/normalized/NormalizedMethod.java
  io.bytecodemapper.signals.normalized.NormalizedMethod
  io.bytecodemapper.signals.normalized.NormalizedMethod$MethodKey
-io/bytecodemapper/signals/normalized/NormalizedAdapters.java
- io.bytecodemapper.signals.normalized.NormalizedAdapters
