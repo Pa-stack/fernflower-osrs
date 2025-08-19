@@ -297,6 +297,51 @@ Prefer the application distribution launcher:
 # Run CLI
 mapper-cli/build/install/mapper-cli/bin/mapper-cli.bat mapOldNew `
     --old testData/jars/old.jar `
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook verification-workflow BEGIN -->
+## Verifying mappings and remaps
+
+When `mappings.tiny` is header-only (no `c/f/m` lines), the remapper has nothing to rename. Use these tools to diagnose:
+
+1. **Stats**
+``bash
+./gradlew :mapper-cli:run --args="tinyStats --in build/mappings.tiny"
+./gradlew :mapper-cli:run --args="mapOldNew --old old.jar --new new.jar --out build/mappings.tiny --debug-stats"
+``
+
+Tune acceptance thresholds (methods)
+``bash
+./gradlew :mapper-cli:run --args="mapOldNew --old old.jar --new new.jar --out build/mappings.tiny --tauAcceptMethods 0.50 --marginMethods 0.02 --debug-stats"
+``
+
+Smoke options
+
+Include identity class lines:
+``bash
+./gradlew :mapper-cli:run --args="mapOldNew --old old.jar --new new.jar --out build/mappings.tiny --includeIdentity"
+``
+
+Force a small demo rename (visual remap):
+``bash
+./gradlew :mapper-cli:run --args="mapOldNew --old old.jar --new new.jar --out build/mappings.tiny --demoRemapCount 3 --demoRemapPrefix zz/demo"
+``
+
+Apply & verify remap
+``bash
+./gradlew :mapper-cli:run --args="applyMappings --inJar new.jar --mappings build/mappings.tiny --out build/new-mapped.jar --verifyRemap"
+# Inspect entries
+jar tf mapper-cli/build/new-mapped.jar | head -n 20
+``
+
+Windows/PowerShell:
+Use the installed launcher to avoid --args quirks:
+``powershell
+./gradlew :mapper-cli:installDist
+mapper-cli/build/install/mapper-cli/bin/mapper-cli.bat mapOldNew `
+	--old old.jar --new new.jar --out build/mappings.tiny --debug-stats
+mapper-cli/build/install/mapper-cli/bin/mapper-cli.bat applyMappings `
+	--inJar new.jar --mappings build/mappings.tiny --out build/new-mapped.jar --verifyRemap
+``
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook verification-workflow END -->
     --new testData/jars/new.jar `
     --out build/mappings.tiny `
     --debug-normalized

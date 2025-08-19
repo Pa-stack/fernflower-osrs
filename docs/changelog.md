@@ -136,3 +136,13 @@ Compatibility / minor adjustments from prompt:
 + Removed an unused import/variable in FieldMatcher after initial stub to satisfy Java 8 compilation.
 ```
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component10 END -->
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component11 BEGIN -->
+## [2025-08-19] Component 11 — Verification utilities & stats
+
+- Added `--verifyRemap` to `applyMappings` to print pre/post class counts and a sample renamed entry for quick smoke checks.
+- New CLI `tinyStats --in <mappings.tiny>` prints counts of classes/fields/methods and header namespaces.
+- `mapOldNew` now supports `--debug-stats` to emit an accept/abstain summary and totals.
+- Exposed method acceptance thresholds via flags: `--tauAcceptMethods`, `--marginMethods`.
+- Optional smoke helpers: `--includeIdentity` to emit class identity lines and `--demoRemapCount/--demoRemapPrefix` to force a tiny visual rename overlay.
+- Docs updated (runbook) with a verification workflow and PowerShell-friendly commands.
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component11 END -->
