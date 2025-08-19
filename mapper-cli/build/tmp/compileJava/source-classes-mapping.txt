@@ -31,8 +31,8 @@ io/bytecodemapper/cli/method/CandidateGenerator.java
  io.bytecodemapper.cli.method.CandidateGenerator$Scored
 io/bytecodemapper/cli/method/MethodFeatures.java
  io.bytecodemapper.cli.method.MethodFeatures
-io/bytecodemapper/cli/Main.java
- io.bytecodemapper.cli.Main
+io/bytecodemapper/cli/field/FieldRef.java
+ io.bytecodemapper.cli.field.FieldRef
 io/bytecodemapper/cli/MethodMatch.java
  io.bytecodemapper.cli.MethodMatch
  io.bytecodemapper.cli.MethodMatch$1
@@ -42,5 +42,9 @@ io/bytecodemapper/cli/MethodMatch.java
 io/bytecodemapper/cli/field/FieldMatcher.java
  io.bytecodemapper.cli.field.FieldMatcher
  io.bytecodemapper.cli.field.FieldMatcher$VoteAgg
-io/bytecodemapper/cli/field/FieldRef.java
- io.bytecodemapper.cli.field.FieldRef
+io/bytecodemapper/cli/FieldMatch.java
+ io.bytecodemapper.cli.FieldMatch
+ io.bytecodemapper.cli.FieldMatch$1
+ io.bytecodemapper.cli.FieldMatch$2
+io/bytecodemapper/cli/Main.java
+ io.bytecodemapper.cli.Main
