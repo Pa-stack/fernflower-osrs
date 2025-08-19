@@ -1,20 +1,115 @@
-// >>> AUTOGEN: BYTECODEMAPPER VSCode TASKS BEGIN
 {
+  // VS Code tasks. Keep user tasks; AUTOGEN block is safe to re-run.
   "version": "2.0.0",
+  // >>> AUTOGEN: BYTECODEMAPPER VSCode tasks BEGIN
   "tasks": [
     {
-      "label": "Mapper: build",
+      "label": "Mapper: installDist",
       "type": "shell",
-      "command": "./gradlew build",
+      "command": "./gradlew",
+      "args": [":mapper-cli:installDist"],
+      "problemMatcher": [],
       "group": "build",
-      "problemMatcher": []
+      "windows": {
+        "command": "gradlew.bat"
+      }
     },
+
     {
       "label": "Mapper: mapOldNew",
       "type": "shell",
-      "command": "./gradlew :mapper-cli:run --args=\"mapOldNew --old testData/jars/old.jar --new testData/jars/new.jar --out build/mappings.tiny\"",
-      "problemMatcher": []
+      "dependsOn": "Mapper: installDist",
+      "command": "${workspaceFolder}/mapper-cli/build/install/mapper-cli/bin/mapper-cli",
+      "args": [
+        "mapOldNew",
+        "--old", "${input:oldJar}",
+        "--new", "${input:newJar}",
+        "--out", "mapper-cli/build/mappings.tiny",
+        "--deterministic",
+        "--cacheDir", "mapper-cli/build/cache",
+        "--idf", "mapper-cli/build/idf.properties",
+        "--debug-stats"
+      ],
+      "problemMatcher": [],
+      "windows": {
+        "command": "${workspaceFolder}\\mapper-cli\\build\\install\\mapper-cli\\bin\\mapper-cli.bat"
+      }
+    },
+
+    {
+      "label": "Mapper: applyMappings",
+      "type": "shell",
+      "dependsOn": "Mapper: installDist",
+      "command": "${workspaceFolder}/mapper-cli/build/install/mapper-cli/bin/mapper-cli",
+      "args": [
+        "applyMappings",
+        "--inJar", "${input:applyInJar}",
+        "--mappings", "mapper-cli/build/mappings.tiny",
+        "--out", "mapper-cli/build/new-mapped.jar",
+        "--verifyRemap"
+      ],
+      "problemMatcher": [],
+      "windows": {
+        "command": "${workspaceFolder}\\mapper-cli\\build\\install\\mapper-cli\\bin\\mapper-cli.bat"
+      }
+    },
+
+    {
+      "label": "Mapper: bench",
+      "type": "shell",
+      "dependsOn": "Mapper: installDist",
+      "command": "${workspaceFolder}/mapper-cli/build/install/mapper-cli/bin/mapper-cli",
+      "args": [
+        "bench",
+        "--in", "${input:benchDir}",
+        "--out", "mapper-cli/build/bench.json"
+      ],
+      "problemMatcher": [],
+      "windows": {
+        "command": "${workspaceFolder}\\mapper-cli\\build\\install\\mapper-cli\\bin\\mapper-cli.bat"
+      }
+    },
+
+    {
+      "label": "Mapper: printIdf",
+      "type": "shell",
+      "dependsOn": "Mapper: installDist",
+      "command": "${workspaceFolder}/mapper-cli/build/install/mapper-cli/bin/mapper-cli",
+      "args": [
+        "printIdf",
+        "--out", "mapper-cli/build/idf.properties"
+      ],
+      "problemMatcher": [],
+      "windows": {
+        "command": "${workspaceFolder}\\mapper-cli\\build\\install\\mapper-cli\\bin\\mapper-cli.bat"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "oldJar",
+      "type": "promptString",
+      "description": "Path to OLD jar (e.g., data/weeks/osrs-231.jar)",
+      "default": "data/weeks/osrs-231.jar"
+    },
+    {
+      "id": "newJar",
+      "type": "promptString",
+      "description": "Path to NEW jar (e.g., data/weeks/osrs-232.jar)",
+      "default": "data/weeks/osrs-232.jar"
+    },
+    {
+      "id": "applyInJar",
+      "type": "promptString",
+      "description": "Jar to remap (usually the NEW jar you just mapped)",
+      "default": "data/weeks/osrs-232.jar"
+    },
+    {
+      "id": "benchDir",
+      "type": "promptString",
+      "description": "Bench input dir (pairs under here)",
+      "default": "data/weeks"
     }
   ]
+  // <<< AUTOGEN: BYTECODEMAPPER VSCode tasks END
 }
-// <<< AUTOGEN: BYTECODEMAPPER VSCode TASKS END
