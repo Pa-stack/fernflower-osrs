@@ -18,10 +18,10 @@ public class CallGraphRefinerMissingNeighborTest {
         MethodRef v2 = new MethodRef("B","m2","()V");
 
     // >>> AUTOGEN: BYTECODEMAPPER TEST update MethodFeatures ctor BEGIN
-    MethodFeatures mfv1 = new MethodFeatures(v1,0L,new java.util.BitSet(),false,false,new int[200],
+    MethodFeatures mfv1 = new MethodFeatures(v1,0L,new java.util.BitSet(),false,false,new int[200], new int[200],
         java.util.Collections.<String>emptyList(),java.util.Collections.<String>emptyList(),
         v1.desc, "");
-    MethodFeatures mfv2 = new MethodFeatures(v2,0L,new java.util.BitSet(),false,false,new int[200],
+    MethodFeatures mfv2 = new MethodFeatures(v2,0L,new java.util.BitSet(),false,false,new int[200], new int[200],
         java.util.Collections.<String>emptyList(),java.util.Collections.<String>emptyList(),
         v2.desc, "");
     // <<< AUTOGEN: BYTECODEMAPPER TEST update MethodFeatures ctor END
