@@ -31,3 +31,6 @@ io/bytecodemapper/cli/MethodMatch.java
  io.bytecodemapper.cli.MethodMatch$2
  io.bytecodemapper.cli.MethodMatch$3
  io.bytecodemapper.cli.MethodMatch$4
+io/bytecodemapper/cli/method/AppCallGraph.java
+ io.bytecodemapper.cli.method.AppCallGraph
+ io.bytecodemapper.cli.method.AppCallGraph$1
