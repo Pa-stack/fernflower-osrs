@@ -6,3 +6,5 @@ io/bytecodemapper/cli/DeterminismSmokeTest.java
  io.bytecodemapper.cli.DeterminismSmokeTest
 io/bytecodemapper/cli/MapOldNewDebugFlagsTest.java
  io.bytecodemapper.cli.MapOldNewDebugFlagsTest
+io/bytecodemapper/cli/MapOldNewSmokeTest.java
+ io.bytecodemapper.cli.MapOldNewSmokeTest
