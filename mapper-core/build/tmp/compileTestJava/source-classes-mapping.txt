@@ -12,3 +12,7 @@ io/bytecodemapper/core/NormalizerTest.java
  io.bytecodemapper.core.NormalizerTest
 io/bytecodemapper/core/ExtendedDomDfCfgTest.java
  io.bytecodemapper.core.ExtendedDomDfCfgTest
+io/bytecodemapper/core/DfIdfCorrectnessTest.java
+ io.bytecodemapper.core.DfIdfCorrectnessTest
+io/bytecodemapper/core/WLSignatureSmokeTest.java
+ io.bytecodemapper.core.WLSignatureSmokeTest

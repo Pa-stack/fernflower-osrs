@@ -1,3 +1,11 @@
-'[DF] iterateToFixpoint start, nodes=5
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
+'[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
