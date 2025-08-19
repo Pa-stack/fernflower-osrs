@@ -227,3 +227,25 @@ The CLI accepts either of the following per-line formats (comments `#` ignored):
 
 Any trailing `score=…` token is ignored during parsing.
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook methodmap-format END -->
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook windows-launcher BEGIN -->
+### Windows / PowerShell note
+
+When invoking `:mapper-cli:run` on PowerShell, Gradle may swallow `--old/--new/...` arguments.
+Prefer the application distribution launcher:
+
+```powershell
+# Build launcher
+./gradlew :mapper-cli:installDist
+
+# Run CLI
+mapper-cli/build/install/mapper-cli/bin/mapper-cli.bat mapOldNew `
+    --old testData/jars/old.jar `
+    --new testData/jars/new.jar `
+    --out build/mappings.tiny `
+    --debug-normalized
+```
+
+The debug dump is written to `mapper-cli/build/normalized_debug.txt` by default,
+or to the path supplied after `--debug-normalized <path>`.
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook windows-launcher END -->
