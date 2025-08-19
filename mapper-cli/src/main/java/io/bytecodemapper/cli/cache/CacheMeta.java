@@ -21,6 +21,12 @@ public final class CacheMeta {
         Properties props = new Properties();
         props.setProperty("normalizerVersion", normalizerVersion != null ? normalizerVersion : "0");
         props.setProperty("optionsFingerprint", optionsFp != null ? optionsFp : "");
+        // >>> AUTOGEN: BYTECODEMAPPER CACHE FINGERPRINT BEGIN
+        // Record WL_K/cache header to make mismatches visible in tooling
+    props.setProperty("wl.iterations", String.valueOf(io.bytecodemapper.core.wl.WLRefinement.DEFAULT_K));
+    // Keep this literal in sync with MethodFeatureCache.MAGIC; only used for visibility/debugging
+    props.setProperty("cache.magic", "BMAP:MFC:2-wlK4-20250819\n");
+        // <<< AUTOGEN: BYTECODEMAPPER CACHE FINGERPRINT END
         try (OutputStream out = Files.newOutputStream(p)) {
             props.store(out, "BytecodeMapper cache metadata");
         }

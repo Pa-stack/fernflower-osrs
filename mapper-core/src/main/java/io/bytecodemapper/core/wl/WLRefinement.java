@@ -29,6 +29,11 @@ public final class WLRefinement {
 
     private WLRefinement(){}
 
+    // >>> AUTOGEN: BYTECODEMAPPER WL_K STANDARDIZATION BEGIN
+    /** Default WL iterations (K) for signature compute helpers. */
+    public static final int DEFAULT_K = 4;
+    // <<< AUTOGEN: BYTECODEMAPPER WL_K STANDARDIZATION END
+
     /** Container for method-level signature. */
     public static final class MethodSignature {
         public final long hash;

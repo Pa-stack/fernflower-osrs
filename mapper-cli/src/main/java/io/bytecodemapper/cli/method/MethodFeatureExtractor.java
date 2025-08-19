@@ -40,7 +40,9 @@ public final class MethodFeatureExtractor {
         ReducedCFG cfg = ReducedCFG.build(norm.method);
         Dominators dom = Dominators.compute(cfg);
 
-        WLRefinement.MethodSignature ms = WLRefinement.computeSignature(cfg, dom, 4);
+    // >>> AUTOGEN: BYTECODEMAPPER WL_K STANDARDIZATION BEGIN
+    WLRefinement.MethodSignature ms = WLRefinement.computeSignature(cfg, dom, WLRefinement.DEFAULT_K);
+    // <<< AUTOGEN: BYTECODEMAPPER WL_K STANDARDIZATION END
         long wl = ms.hash;
 
         // Micropatterns

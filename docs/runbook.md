@@ -7,6 +7,8 @@
 - **Persistent caches:** Per-jar method-feature caches live under `build/cache/<jarSHA>.methods.ser`, keyed by `owner#name(desc)#normalizedBodyHash#IRfp`. Each entry contains WL signature, micropattern bitset, generalized opcode histogram, filtered strings, call-bag, normalized descriptor, and the IR fingerprint.
 - **Determinism:** When `--deterministic` is set, the pipeline avoids parallelism and imposes explicit sorting before hashing/serialization. Two identical runs must produce **byte-identical** `mappings.tiny`.
 
+- **WL iterations (K):** Standardized at **WL_K=4** for WL signatures. Cache header bumped to `BMAP:MFC:2-wlK4-20250819` to invalidate stale entries.
+
 **CLI flags:**
 --deterministic
 --cacheDir <dir> (default: build/cache)
@@ -401,6 +403,7 @@ or to the path supplied after `--debug-normalized <path>`.
 - **When to bump:**
 	- Any change in normalization that can affect CFG/DF/TDF/WL, or feature extraction ordering → bump `NormalizerFingerprint.NORMALIZER_VERSION`.
 	- Any change in reduced-CFG construction options (e.g., linear-chain merge policy) → update `ReducedCfgFingerprint` content.
+	- Any change to WL iterations (**WL_K**) → cache header bump and meta token `wl.iterations` updated.
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook cache-fingerprint END -->
 
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook cache-ir-fingerprint BEGIN -->
@@ -409,12 +412,16 @@ or to the path supplied after `--debug-normalized <path>`.
 Cache keys include a composite **IR fingerprint**:
 
 
+```text
 owner#name(desc)#normalizedBodyHash#<normalizerFp||cfgFp>
+```
 
 - **normalizerFp:** versioned options string (e.g., `v=1;opaque=true;unwrapRTE=true;detectFlatten=true`)
 - **cfgFp:** versioned CFG options string (e.g., `cv=1;excEdges=LOOSE;mergeLinear=true`)
 
 **When to bump versions:**
+
+
 - `NORMALIZER_VERSION` — any normalization change that can affect IR/CFG shape.
 - `CFG_VERSION` — any ReducedCFG change (e.g., exception edge policy) that affects DF/TDF/WL or micropatterns.
 
@@ -472,25 +479,18 @@ Get-Content build/bench.json -TotalCount 1
 ### Weekly workflow
 
 1. Obtain `old.jar` and `new.jar`.
-2. Run mapping in deterministic mode:
+1. Run mapping in deterministic mode:
 
-		 ```bash
-		 ./gradlew :mapper-cli:installDist
-		 mapper-cli/build/install/mapper-cli/bin/mapper-cli mapOldNew \
-			 --old data/weeks/osrs-231.jar --new data/weeks/osrs-232.jar \
-			 --out mapper-cli/build/mappings.tiny \
-			 --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties \
-			 --refine --lambda 0.7 --refineIters 5 --debug-stats
-		 ```
+```bash
+./gradlew :mapper-cli:installDist
+mapper-cli/build/install/mapper-cli/bin/mapper-cli mapOldNew --old data/weeks/osrs-231.jar --new data/weeks/osrs-232.jar --out mapper-cli/build/mappings.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties --refine --lambda 0.7 --refineIters 5 --debug-stats
+```
 
-3. Optionally remap:
+1. Optionally remap:
 
-		 ```bash
-		 mapper-cli/build/install/mapper-cli/bin/mapper-cli applyMappings \
-			 --inJar data/weeks/osrs-232.jar \
-			 --mappings mapper-cli/build/mappings.tiny \
-			 --out mapper-cli/build/new-mapped.jar --verifyRemap
-		 ```
+```bash
+mapper-cli/build/install/mapper-cli/bin/mapper-cli applyMappings --inJar data/weeks/osrs-232.jar --mappings mapper-cli/build/mappings.tiny --out mapper-cli/build/new-mapped.jar --verifyRemap
+```
 
 ### Cache hygiene
 
@@ -509,9 +509,10 @@ Get-Content build/bench.json -TotalCount 1
 
 - To probe signal impact:
 
-		```bash
-		./gradlew :mapper-cli:run --args="bench --in data/weeks --out mapper-cli/build/bench.calls_off.json --ablate calls"
-		```
+```bash
+./gradlew :mapper-cli:run --args="bench --in data/weeks --out mapper-cli/build/bench.calls_off.json --ablate calls"
+```
+
 - Compare churn/oscillation vs. baseline to guide weight tuning.
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook weekly-ops END -->
@@ -530,6 +531,7 @@ The repo includes VS Code tasks and launchers to run common flows without typing
 - **Mapper: printIdf** — writes `mapper-cli/build/idf.properties`.
 
 > Tips:
+>
 > - Place week jars under `data/weeks` at repo root.
 > - On Windows/PowerShell, tasks use the installed launcher (`mapper-cli.bat`).
 
