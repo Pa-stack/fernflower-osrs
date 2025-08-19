@@ -30,3 +30,7 @@ io/bytecodemapper/signals/opcode/OpcodeFeatures.java
  io.bytecodemapper.signals.opcode.OpcodeFeatures
 io/bytecodemapper/signals/micro/MicroPatternProviderImpl.java
  io.bytecodemapper.signals.micro.MicroPatternProviderImpl
+io/bytecodemapper/signals/fields/FieldUsageExtractor.java
+ io.bytecodemapper.signals.fields.FieldUsageExtractor
+ io.bytecodemapper.signals.fields.FieldUsageExtractor$FieldUse
+ io.bytecodemapper.signals.fields.FieldUsageExtractor$RWCounts
