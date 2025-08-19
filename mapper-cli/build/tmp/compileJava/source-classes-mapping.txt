@@ -77,3 +77,7 @@ io/bytecodemapper/cli/orch/Orchestrator.java
  io.bytecodemapper.cli.orch.Orchestrator$Result
 io/bytecodemapper/cli/orch/OrchestratorOptions.java
  io.bytecodemapper.cli.orch.OrchestratorOptions
+io/bytecodemapper/cli/cache/MethodFeatureCacheEntry.java
+ io.bytecodemapper.cli.cache.MethodFeatureCacheEntry
+io/bytecodemapper/cli/cache/MethodFeatureCache.java
+ io.bytecodemapper.cli.cache.MethodFeatureCache
