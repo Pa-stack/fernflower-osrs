@@ -1,4 +1,4 @@
-// >>> AUTOGEN: BYTECODEMAPPER mapper-IO BUILD BEGIN
+// >>> AUTOGEN: BYTECODEMAPPER mapper-io build.gradle asm-commons BEGIN
 plugins {
     id "java"
 }
@@ -6,8 +6,19 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
+    // Keep local modules first for clarity; external ASM pinned to 7.3.1 (Java 8 safe)
     implementation project(":mapper-core")
     implementation project(":mapper-signals")
+
+    implementation "org.ow2.asm:asm:7.3.1"
+    implementation "org.ow2.asm:asm-tree:7.3.1"
+    implementation "org.ow2.asm:asm-commons:7.3.1"
+
+    testImplementation "junit:junit:4.13.2"
 }
-// <<< AUTOGEN: BYTECODEMAPPER mapper-IO BUILD END
+// >>> AUTOGEN: BYTECODEMAPPER mapper-io build.gradle asm-commons END
