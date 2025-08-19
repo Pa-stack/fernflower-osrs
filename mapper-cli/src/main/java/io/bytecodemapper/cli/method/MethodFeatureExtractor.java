@@ -8,8 +8,11 @@ import io.bytecodemapper.core.wl.WLRefinement;
 import io.bytecodemapper.signals.micro.MicroPatternExtractor;
 import io.bytecodemapper.signals.micro.MicroPatternProviderImpl;
 import io.bytecodemapper.signals.calls.CallBagExtractor;
-import io.bytecodemapper.signals.opcode.OpcodeFeatures;
 import io.bytecodemapper.signals.strings.StringBagExtractor;
+// >>> AUTOGEN: BYTECODEMAPPER CLI MethodFeatureExtractor use NormalizedMethod BEGIN
+import io.bytecodemapper.signals.normalized.NormalizedAdapters;
+import io.bytecodemapper.signals.normalized.NormalizedMethod;
+// <<< AUTOGEN: BYTECODEMAPPER CLI MethodFeatureExtractor use NormalizedMethod END
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -45,8 +48,13 @@ public final class MethodFeatureExtractor {
         boolean leaf = bits != null && bits.get(MicroPatternExtractor.LEAF);
         boolean recursive = bits != null && bits.get(MicroPatternExtractor.RECURSIVE);
 
-        // Opcode histogram
-        int[] hist = OpcodeFeatures.opcodeHistogram(norm.method);
+    // Opcode histogram and strings from NormalizedMethod (post-normalization)
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MethodFeatureExtractor NORMALIZED BUILD BEGIN
+    NormalizedMethod nm = new NormalizedMethod(owner.name, norm.method, java.util.Collections.<Integer>emptySet());
+    int[] hist = NormalizedAdapters.toDense200(nm.opcodeHistogram);
+    // Prefer normalized string set (excludes wrapper signature noise)
+    java.util.List<String> strBag = new java.util.ArrayList<String>(nm.stringConstants);
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MethodFeatureExtractor NORMALIZED BUILD END
 
         // Calls (owner-normalized to new-space)
         CallBagExtractor.OwnerNormalizer normalizer = new CallBagExtractor.OwnerNormalizer() {
@@ -58,11 +66,14 @@ public final class MethodFeatureExtractor {
         };
         List<String> callBag = CallBagExtractor.extract(owner.name, norm.method, normalizer);
 
-        // Strings
-        List<String> strBag = StringBagExtractor.extract(norm.method);
+        // Strings legacy fallback (kept for ABI): if normalized set empty, fall back to legacy extractor deterministically
+        if (strBag.isEmpty()) {
+            strBag = StringBagExtractor.extract(norm.method);
+        }
 
         MethodRef ref = new MethodRef(owner.name, mn.name, mn.desc);
-        return new MethodFeatures(ref, wl, bits, leaf, recursive, hist, callBag, strBag);
+    return new MethodFeatures(ref, wl, bits, leaf, recursive, hist, callBag, strBag,
+        nm.normalizedDescriptor, nm.fingerprint);
     }
 
     private static final class IdentityMapper implements ClassOwnerMapper {

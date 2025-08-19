@@ -1,7 +1,7 @@
 # BytecodeMapper Method Map
 # S_total = 0.45*calls + 0.25*micro + 0.15*opcode + 0.10*strings + 0.05*fields
 # abstain if (best-second) < 0.05 or best < 0.60
-# abstain refined | ob#<clinit>()V -> ob#<clinit>()V score=0.1605 second=0.0726
+# abstain refined | ob#<clinit>()V -> ob#<clinit>()V score=0.1605 second=0.0734
 # abstain refined | ob#<init>()V -> ob#<init>()V score=0.5000 second=0.2357
 # abstain refined | ob#an(Ltp;Ljava/lang/Object;IIB)I -> ob#ah(Lbv;Lru;Lru;I)V score=0.2895 second=0.2755
 # abstain refined | oo#<clinit>()V -> oo#<clinit>()V score=0.2468 second=0.1137
@@ -194,8 +194,8 @@ org/bouncycastle/asn1/ASN1ObjectIdentifier$OidHandle#<init>([B)V -> org/bouncyca
 # abstain refined | org/bouncycastle/asn1/ASN1ObjectIdentifier$OidHandle#gt(Ljava/lang/Object;)Z -> org/bouncycastle/asn1/ASN1ObjectIdentifier$OidHandle#equals(Ljava/lang/Object;)Z score=0.8500 second=0.8500
 # abstain refined | org/bouncycastle/asn1/ASN1ObjectIdentifier$OidHandle#hashCode()I -> org/bouncycastle/asn1/ASN1ObjectIdentifier$OidHandle#aon()I score=0.4000 second=0.4000
 # abstain refined | org/bouncycastle/asn1/ASN1OctetString#<init>([B)V -> org/bouncycastle/asn1/ASN1OctetString#getOctetStream()Ljava/io/InputStream; score=0.1701 second=0.1345
-# abstain refined | org/bouncycastle/asn1/ASN1OctetString#aoe()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1OctetString#aoq()Ljava/lang/String; score=0.8500 second=0.8500
-# abstain refined | org/bouncycastle/asn1/ASN1OctetString#aom()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1OctetString#aoq()Ljava/lang/String; score=0.8500 second=0.8500
+# abstain refined | org/bouncycastle/asn1/ASN1OctetString#aoe()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1OctetString#aoq()Ljava/lang/String; score=0.9500 second=0.9500
+# abstain refined | org/bouncycastle/asn1/ASN1OctetString#aom()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1OctetString#aoq()Ljava/lang/String; score=0.9500 second=0.9500
 org/bouncycastle/asn1/ASN1OctetString#aoq()I -> org/bouncycastle/asn1/ASN1OctetString#aon()I score=0.8500
 org/bouncycastle/asn1/ASN1OctetString#aow()I -> org/bouncycastle/asn1/ASN1OctetString#aon()I score=0.8500
 # abstain refined | org/bouncycastle/asn1/ASN1OctetString#asn1Equals(Lorg/bouncycastle/asn1/ASN1Primitive;)Z -> org/bouncycastle/asn1/ASN1OctetString#getInstance(Lorg/bouncycastle/asn1/ASN1TaggedObject;Z)Lorg/bouncycastle/asn1/ASN1OctetString; score=0.2654 second=0.1809
@@ -208,7 +208,7 @@ org/bouncycastle/asn1/ASN1OctetString#hashCode()I -> org/bouncycastle/asn1/ASN1O
 # abstain refined | org/bouncycastle/asn1/ASN1OctetString#parser()Lorg/bouncycastle/asn1/ASN1OctetStringParser; -> org/bouncycastle/asn1/ASN1OctetString#getOctets()[B score=0.3319 second=0.2716
 # abstain refined | org/bouncycastle/asn1/ASN1OctetString#toDERObject()Lorg/bouncycastle/asn1/ASN1Primitive; -> org/bouncycastle/asn1/ASN1OctetString#getOctetStream()Ljava/io/InputStream; score=0.4000 second=0.3322
 # abstain refined | org/bouncycastle/asn1/ASN1OctetString#toDLObject()Lorg/bouncycastle/asn1/ASN1Primitive; -> org/bouncycastle/asn1/ASN1OctetString#getOctetStream()Ljava/io/InputStream; score=0.4000 second=0.3322
-# abstain refined | org/bouncycastle/asn1/ASN1OctetString#toString()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1OctetString#aoq()Ljava/lang/String; score=0.8163 second=0.8163
+# abstain refined | org/bouncycastle/asn1/ASN1OctetString#toString()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1OctetString#aoq()Ljava/lang/String; score=0.9163 second=0.9163
 # abstain refined | org/bouncycastle/asn1/ASN1OutputStream#<init>(Ljava/io/OutputStream;)V -> org/bouncycastle/asn1/ASN1OutputStream#<init>(Ljava/io/OutputStream;)V score=0.4000 second=0.2566
 # abstain refined | org/bouncycastle/asn1/ASN1OutputStream#close()V -> org/bouncycastle/asn1/ASN1OutputStream#close()V score=0.4000 second=0.4000
 # abstain refined | org/bouncycastle/asn1/ASN1OutputStream#flush()V -> org/bouncycastle/asn1/ASN1OutputStream#close()V score=0.4000 second=0.4000
@@ -308,8 +308,8 @@ org/bouncycastle/asn1/ASN1StreamParser#readTaggedObject(ZI)Lorg/bouncycastle/asn
 org/bouncycastle/asn1/ASN1StreamParser#readVector()Lorg/bouncycastle/asn1/ASN1EncodableVector; -> org/bouncycastle/asn1/ASN1StreamParser#readVector()Lorg/bouncycastle/asn1/ASN1EncodableVector; score=0.8493
 org/bouncycastle/asn1/ASN1StreamParser#set00Check(Z)V -> org/bouncycastle/asn1/ASN1StreamParser#set00Check(Z)V score=0.8500
 # abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#<init>(ZILorg/bouncycastle/asn1/ASN1Encodable;)V -> org/bouncycastle/asn1/ASN1TaggedObject#asn1Equals(Lorg/bouncycastle/asn1/ASN1Primitive;)Z score=0.5326 second=0.1276
-# abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#aoe()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1TaggedObject#aoq()Ljava/lang/String; score=0.4000 second=0.4000
-# abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#aom()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1TaggedObject#aoq()Ljava/lang/String; score=0.4000 second=0.4000
+# abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#aoe()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1TaggedObject#aoq()Ljava/lang/String; score=0.5000 second=0.5000
+# abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#aom()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1TaggedObject#aoq()Ljava/lang/String; score=0.5000 second=0.5000
 # abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#aoq()I -> org/bouncycastle/asn1/ASN1TaggedObject#aoq()Ljava/lang/String; score=0.2104 second=0.2104
 # abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#aow()I -> org/bouncycastle/asn1/ASN1TaggedObject#aoq()Ljava/lang/String; score=0.2104 second=0.2104
 org/bouncycastle/asn1/ASN1TaggedObject#asn1Equals(Lorg/bouncycastle/asn1/ASN1Primitive;)Z -> org/bouncycastle/asn1/ASN1TaggedObject#asn1Equals(Lorg/bouncycastle/asn1/ASN1Primitive;)Z score=0.8500
@@ -324,7 +324,7 @@ org/bouncycastle/asn1/ASN1TaggedObject#getLoadedObject()Lorg/bouncycastle/asn1/A
 # abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#isExplicit()Z -> org/bouncycastle/asn1/ASN1TaggedObject#getTagNo()I score=0.4000 second=0.4000
 org/bouncycastle/asn1/ASN1TaggedObject#toDERObject()Lorg/bouncycastle/asn1/ASN1Primitive; -> org/bouncycastle/asn1/ASN1TaggedObject#toDERObject()Lorg/bouncycastle/asn1/ASN1Primitive; score=0.8500
 # abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#toDLObject()Lorg/bouncycastle/asn1/ASN1Primitive; -> org/bouncycastle/asn1/ASN1TaggedObject#toDERObject()Lorg/bouncycastle/asn1/ASN1Primitive; score=0.4000 second=0.3299
-# abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#toString()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1TaggedObject#aoq()Ljava/lang/String; score=0.3663 second=0.3663
+# abstain refined | org/bouncycastle/asn1/ASN1TaggedObject#toString()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1TaggedObject#aoq()Ljava/lang/String; score=0.4663 second=0.4663
 org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/lang/String;)V -> org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/lang/String;)V score=0.9500
 # abstain refined | org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/util/Date;)V -> org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/util/Date;)V score=0.9500 second=0.9494
 # abstain refined | org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/util/Date;Ljava/util/Locale;)V -> org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/util/Date;Ljava/util/Locale;)V score=0.9500 second=0.9494
@@ -336,7 +336,7 @@ org/bouncycastle/asn1/ASN1UTCTime#aow()I -> org/bouncycastle/asn1/ASN1UTCTime#ao
 org/bouncycastle/asn1/ASN1UTCTime#asn1Equals(Lorg/bouncycastle/asn1/ASN1Primitive;)Z -> org/bouncycastle/asn1/ASN1UTCTime#asn1Equals(Lorg/bouncycastle/asn1/ASN1Primitive;)Z score=0.8500
 org/bouncycastle/asn1/ASN1UTCTime#encode(Lorg/bouncycastle/asn1/ASN1OutputStream;)V -> org/bouncycastle/asn1/ASN1UTCTime#encode(Lorg/bouncycastle/asn1/ASN1OutputStream;)V score=0.8500
 org/bouncycastle/asn1/ASN1UTCTime#encodedLength()I -> org/bouncycastle/asn1/ASN1UTCTime#encodedLength()I score=0.8500
-# abstain refined | org/bouncycastle/asn1/ASN1UTCTime#getAdjustedDate()Ljava/util/Date; -> org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/util/Date;)V score=0.2951 second=0.2923
+# abstain refined | org/bouncycastle/asn1/ASN1UTCTime#getAdjustedDate()Ljava/util/Date; -> org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/util/Date;)V score=0.3334 second=0.3306
 # abstain refined | org/bouncycastle/asn1/ASN1UTCTime#getAdjustedTime()Ljava/lang/String; -> org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/util/Date;)V score=0.2361 second=0.2336
 # abstain refined | org/bouncycastle/asn1/ASN1UTCTime#getDate()Ljava/util/Date; -> org/bouncycastle/asn1/ASN1UTCTime#<init>(Ljava/util/Date;)V score=0.2885 second=0.2870
 org/bouncycastle/asn1/ASN1UTCTime#getInstance(Ljava/lang/Object;)Lorg/bouncycastle/asn1/ASN1UTCTime; -> org/bouncycastle/asn1/ASN1UTCTime#getInstance(Ljava/lang/Object;)Lorg/bouncycastle/asn1/ASN1UTCTime; score=0.9500
@@ -2223,7 +2223,7 @@ org/bouncycastle/crypto/tls/AbstractTlsSigner#generateRawSignature(Lorg/bouncyca
 org/bouncycastle/crypto/tls/AbstractTlsSigner#verifyRawSignature([BLorg/bouncycastle/crypto/params/AsymmetricKeyParameter;[B)Z -> org/bouncycastle/crypto/tls/AbstractTlsSigner#verifyRawSignature([BLorg/bouncycastle/crypto/params/AsymmetricKeyParameter;[B)Z score=0.8500
 # abstain refined | org/bouncycastle/crypto/tls/AlertDescription#<init>()V -> org/bouncycastle/crypto/tls/AlertDescription#<init>()V score=0.4000 second=0.1318
 # abstain refined | org/bouncycastle/crypto/tls/AlertDescription#getName(S)Ljava/lang/String; -> org/bouncycastle/crypto/tls/AlertDescription#getName(S)Ljava/lang/String; score=0.5000 second=0.0810
-org/bouncycastle/crypto/tls/AlertDescription#getText(S)Ljava/lang/String; -> org/bouncycastle/crypto/tls/AlertDescription#getText(S)Ljava/lang/String; score=0.8500
+org/bouncycastle/crypto/tls/AlertDescription#getText(S)Ljava/lang/String; -> org/bouncycastle/crypto/tls/AlertDescription#getText(S)Ljava/lang/String; score=0.9500
 org/bouncycastle/crypto/tls/ByteQueue#<init>()V -> org/bouncycastle/crypto/tls/ByteQueue#<init>()V score=0.8500
 # abstain refined | org/bouncycastle/crypto/tls/ByteQueue#<init>(I)V -> org/bouncycastle/crypto/tls/ByteQueue#<init>(I)V score=0.4000 second=0.2223
 org/bouncycastle/crypto/tls/ByteQueue#addData([BII)V -> org/bouncycastle/crypto/tls/ByteQueue#addData([BII)V score=0.8500
@@ -2368,7 +2368,7 @@ org/bouncycastle/crypto/tls/DigitallySigned#parse(Lorg/bouncycastle/crypto/tls/T
 # abstain refined | org/bouncycastle/crypto/tls/ECBasisType#isValid(S)Z -> org/bouncycastle/crypto/tls/ECBasisType#isValid(S)Z score=0.3868 second=0.0154
 # abstain refined | org/bouncycastle/crypto/tls/HashAlgorithm#<init>()V -> org/bouncycastle/crypto/tls/HashAlgorithm#<init>()V score=0.4000 second=0.1318
 # abstain refined | org/bouncycastle/crypto/tls/HashAlgorithm#getName(S)Ljava/lang/String; -> org/bouncycastle/crypto/tls/HashAlgorithm#getName(S)Ljava/lang/String; score=0.5000 second=0.2547
-org/bouncycastle/crypto/tls/HashAlgorithm#getText(S)Ljava/lang/String; -> org/bouncycastle/crypto/tls/HashAlgorithm#getText(S)Ljava/lang/String; score=0.8500
+org/bouncycastle/crypto/tls/HashAlgorithm#getText(S)Ljava/lang/String; -> org/bouncycastle/crypto/tls/HashAlgorithm#getText(S)Ljava/lang/String; score=0.9500
 # abstain refined | org/bouncycastle/crypto/tls/HashAlgorithm#isPrivate(S)Z -> org/bouncycastle/crypto/tls/HashAlgorithm#isPrivate(S)Z score=0.3985 second=0.2554
 org/bouncycastle/crypto/tls/HeartbeatExtension#<init>(S)V -> org/bouncycastle/crypto/tls/HeartbeatExtension#<init>(S)V score=0.9464
 org/bouncycastle/crypto/tls/HeartbeatExtension#encode(Ljava/io/OutputStream;)V -> org/bouncycastle/crypto/tls/HeartbeatExtension#encode(Ljava/io/OutputStream;)V score=0.8500
@@ -3423,8 +3423,8 @@ org/bouncycastle/math/ec/ScaleXPointMap#map(Lorg/bouncycastle/math/ec/ECPoint;)L
 # abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#add(Ljava/math/BigInteger;)Lorg/bouncycastle/math/ec/SimpleBigDecimal; -> org/bouncycastle/math/ec/SimpleBigDecimal#add(Ljava/math/BigInteger;)Lorg/bouncycastle/math/ec/SimpleBigDecimal; score=0.8500 second=0.8477
 # abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#add(Lorg/bouncycastle/math/ec/SimpleBigDecimal;)Lorg/bouncycastle/math/ec/SimpleBigDecimal; -> org/bouncycastle/math/ec/SimpleBigDecimal#add(Lorg/bouncycastle/math/ec/SimpleBigDecimal;)Lorg/bouncycastle/math/ec/SimpleBigDecimal; score=0.8500 second=0.8147
 org/bouncycastle/math/ec/SimpleBigDecimal#adjustScale(I)Lorg/bouncycastle/math/ec/SimpleBigDecimal; -> org/bouncycastle/math/ec/SimpleBigDecimal#add(Ljava/math/BigInteger;)Lorg/bouncycastle/math/ec/SimpleBigDecimal; score=0.7072
-# abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#aoe()Ljava/lang/String; -> org/bouncycastle/math/ec/SimpleBigDecimal#aoq()Ljava/lang/String; score=0.8498 second=0.8497
-# abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#aom()Ljava/lang/String; -> org/bouncycastle/math/ec/SimpleBigDecimal#aoq()Ljava/lang/String; score=0.8500 second=0.8499
+# abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#aoe()Ljava/lang/String; -> org/bouncycastle/math/ec/SimpleBigDecimal#aoq()Ljava/lang/String; score=0.9498 second=0.9497
+# abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#aom()Ljava/lang/String; -> org/bouncycastle/math/ec/SimpleBigDecimal#aoq()Ljava/lang/String; score=0.9500 second=0.9499
 # abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#aoq()I -> org/bouncycastle/math/ec/SimpleBigDecimal#aon()I score=0.4000 second=0.3036
 # abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#aow()I -> org/bouncycastle/math/ec/SimpleBigDecimal#aon()I score=0.4000 second=0.3036
 # abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#checkScale(Lorg/bouncycastle/math/ec/SimpleBigDecimal;)V -> org/bouncycastle/math/ec/SimpleBigDecimal#checkScale(Lorg/bouncycastle/math/ec/SimpleBigDecimal;)V score=0.5000 second=0.2814
@@ -3448,7 +3448,7 @@ org/bouncycastle/math/ec/SimpleBigDecimal#compareTo(Lorg/bouncycastle/math/ec/Si
 # abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#shiftLeft(I)Lorg/bouncycastle/math/ec/SimpleBigDecimal; -> org/bouncycastle/math/ec/SimpleBigDecimal#divide(Ljava/math/BigInteger;)Lorg/bouncycastle/math/ec/SimpleBigDecimal; score=0.8417 second=0.8396
 # abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#subtract(Ljava/math/BigInteger;)Lorg/bouncycastle/math/ec/SimpleBigDecimal; -> org/bouncycastle/math/ec/SimpleBigDecimal#add(Ljava/math/BigInteger;)Lorg/bouncycastle/math/ec/SimpleBigDecimal; score=0.8500 second=0.8477
 # abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#subtract(Lorg/bouncycastle/math/ec/SimpleBigDecimal;)Lorg/bouncycastle/math/ec/SimpleBigDecimal; -> org/bouncycastle/math/ec/SimpleBigDecimal#compareTo(Lorg/bouncycastle/math/ec/SimpleBigDecimal;)I score=0.2657 second=0.2636
-# abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#toString()Ljava/lang/String; -> org/bouncycastle/math/ec/SimpleBigDecimal#toString()Ljava/lang/String; score=0.8500 second=0.8276
+# abstain refined | org/bouncycastle/math/ec/SimpleBigDecimal#toString()Ljava/lang/String; -> org/bouncycastle/math/ec/SimpleBigDecimal#toString()Ljava/lang/String; score=0.9500 second=0.9276
 org/bouncycastle/math/ec/Tnaf#<clinit>()V -> org/bouncycastle/math/ec/Tnaf#<clinit>()V score=0.8500
 # abstain refined | org/bouncycastle/math/ec/Tnaf#<init>()V -> org/bouncycastle/math/ec/Tnaf#<init>()V score=0.4000 second=0.1677
 org/bouncycastle/math/ec/Tnaf#approximateDivisionByN(Ljava/math/BigInteger;Ljava/math/BigInteger;Ljava/math/BigInteger;BII)Lorg/bouncycastle/math/ec/SimpleBigDecimal; -> org/bouncycastle/math/ec/Tnaf#approximateDivisionByN(Ljava/math/BigInteger;Ljava/math/BigInteger;Ljava/math/BigInteger;BII)Lorg/bouncycastle/math/ec/SimpleBigDecimal; score=0.8493
@@ -5805,8 +5805,8 @@ org/json/JSONArray#<init>(Ljava/lang/String;)V -> org/json/JSONArray#<init>(Ljav
 # abstain refined | org/json/JSONArray#<init>(Ljava/util/Collection;)V -> org/json/JSONArray#<init>()V score=0.3551 second=0.2842
 # abstain refined | org/json/JSONArray#<init>(Ljava/util/Collection;Z)V -> org/json/JSONArray#join(Ljava/lang/String;)Ljava/lang/String; score=0.3074 second=0.2910
 # abstain refined | org/json/JSONArray#<init>(Lorg/json/JSONTokener;)V -> org/json/JSONArray#put(ILjava/lang/Object;)Lorg/json/JSONArray; score=0.3081 second=0.3031
-# abstain refined | org/json/JSONArray#aoe()Ljava/lang/String; -> org/json/JSONArray#aoq()Ljava/lang/String; score=0.8500 second=0.8359
-# abstain refined | org/json/JSONArray#aom()Ljava/lang/String; -> org/json/JSONArray#aoq()Ljava/lang/String; score=0.8500 second=0.8359
+# abstain refined | org/json/JSONArray#aoe()Ljava/lang/String; -> org/json/JSONArray#aoq()Ljava/lang/String; score=0.9500 second=0.9359
+# abstain refined | org/json/JSONArray#aom()Ljava/lang/String; -> org/json/JSONArray#aoq()Ljava/lang/String; score=0.9500 second=0.9359
 # abstain refined | org/json/JSONArray#get(I)Ljava/lang/Object; -> org/json/JSONArray#isNull(I)Z score=0.4756 second=0.4469
 # abstain refined | org/json/JSONArray#getBoolean(I)Z -> org/json/JSONArray#<init>(Ljava/lang/Object;Z)V score=0.3724 second=0.3698
 org/json/JSONArray#getDouble(I)D -> org/json/JSONArray#getDouble(I)D score=0.9500
@@ -5846,7 +5846,7 @@ org/json/JSONArray#put(ILjava/lang/Object;)Lorg/json/JSONArray; -> org/json/JSON
 # abstain refined | org/json/JSONArray#put(Ljava/util/Map;)Lorg/json/JSONArray; -> org/json/JSONArray#<init>(Ljava/lang/String;)V score=0.2818 second=0.2684
 # abstain refined | org/json/JSONArray#put(Z)Lorg/json/JSONArray; -> org/json/JSONArray#opt(I)Ljava/lang/Object; score=0.2991 second=0.1894
 # abstain refined | org/json/JSONArray#toJSONObject(Lorg/json/JSONArray;)Lorg/json/JSONObject; -> org/json/JSONArray#put(ILjava/lang/Object;)Lorg/json/JSONArray; score=0.4378 second=0.3989
-# abstain refined | org/json/JSONArray#toString()Ljava/lang/String; -> org/json/JSONArray#toString()Ljava/lang/String; score=0.8500 second=0.8163
+# abstain refined | org/json/JSONArray#toString()Ljava/lang/String; -> org/json/JSONArray#toString()Ljava/lang/String; score=0.9500 second=0.9163
 # abstain refined | org/json/JSONArray#toString(I)Ljava/lang/String; -> org/json/JSONArray#optBoolean(I)Z score=0.3700 second=0.3700
 org/json/JSONArray#toString(II)Ljava/lang/String; -> org/json/JSONArray#toString(II)Ljava/lang/String; score=0.9488
 org/json/JSONArray#write(Ljava/io/Writer;)Ljava/io/Writer; -> org/json/JSONArray#write(Ljava/io/Writer;)Ljava/io/Writer; score=0.8500
@@ -5864,8 +5864,8 @@ org/json/JSONObject#<init>(Ljava/lang/String;)V -> org/json/JSONObject#<init>(Lj
 org/json/JSONObject#<init>(Lorg/json/JSONObject;[Ljava/lang/String;)V -> org/json/JSONObject#<init>(Lorg/json/JSONObject;[Ljava/lang/String;)V score=0.8424
 # abstain refined | org/json/JSONObject#<init>(Lorg/json/JSONTokener;)V -> org/json/JSONObject#quote(Ljava/lang/String;)Ljava/lang/String; score=0.2725 second=0.2399
 # abstain refined | org/json/JSONObject#accumulate(Ljava/lang/String;Ljava/lang/Object;)Lorg/json/JSONObject; -> org/json/JSONObject#optJSONArray(Ljava/lang/String;)Lorg/json/JSONArray; score=0.3926 second=0.3570
-# abstain refined | org/json/JSONObject#aoe()Ljava/lang/String; -> org/json/JSONObject#aoq()Ljava/lang/String; score=0.8495 second=0.8459
-# abstain refined | org/json/JSONObject#aom()Ljava/lang/String; -> org/json/JSONObject#aot()Ljava/lang/String; score=0.8500 second=0.8482
+# abstain refined | org/json/JSONObject#aoe()Ljava/lang/String; -> org/json/JSONObject#aoq()Ljava/lang/String; score=0.9495 second=0.9459
+# abstain refined | org/json/JSONObject#aom()Ljava/lang/String; -> org/json/JSONObject#aot()Ljava/lang/String; score=0.9500 second=0.9482
 org/json/JSONObject#append(Ljava/lang/String;Ljava/lang/Object;)Lorg/json/JSONObject; -> org/json/JSONObject#append(Ljava/lang/String;Ljava/lang/Object;)Lorg/json/JSONObject; score=0.9492
 # abstain refined | org/json/JSONObject#doubleToString(D)Ljava/lang/String; -> org/json/JSONObject#doubleToString(D)Ljava/lang/String; score=0.4979 second=0.3177
 # abstain refined | org/json/JSONObject#get(Ljava/lang/String;)Ljava/lang/Object; -> org/json/JSONObject#put(Ljava/lang/String;Ljava/lang/Object;)Lorg/json/JSONObject; score=0.3758 second=0.3138
@@ -5911,12 +5911,12 @@ org/json/JSONObject#populateInternalMap(Ljava/lang/Object;Z)V -> org/json/JSONOb
 # abstain refined | org/json/JSONObject#quote(Ljava/lang/String;)Ljava/lang/String; -> org/json/JSONObject#numberToString(Ljava/lang/Number;)Ljava/lang/String; score=0.3342 second=0.2916
 # abstain refined | org/json/JSONObject#remove(Ljava/lang/String;)Ljava/lang/Object; -> org/json/JSONObject#has(Ljava/lang/String;)Z score=0.3277 second=0.2402
 # abstain refined | org/json/JSONObject#sortedKeys()Ljava/util/Iterator; -> org/json/JSONObject#<init>()V score=0.2506 second=0.2476
-# abstain refined | org/json/JSONObject#stringToValue(Ljava/lang/String;)Ljava/lang/Object; -> org/json/JSONObject#stringToValue(Ljava/lang/String;)Ljava/lang/Object; score=0.5000 second=0.2834
+# abstain refined | org/json/JSONObject#stringToValue(Ljava/lang/String;)Ljava/lang/Object; -> org/json/JSONObject#stringToValue(Ljava/lang/String;)Ljava/lang/Object; score=0.5000 second=0.2685
 org/json/JSONObject#testValidity(Ljava/lang/Object;)V -> org/json/JSONObject#testValidity(Ljava/lang/Object;)V score=0.9461
 # abstain refined | org/json/JSONObject#toJSONArray(Lorg/json/JSONArray;)Lorg/json/JSONArray; -> org/json/JSONObject#get(Ljava/lang/String;)Ljava/lang/Object; score=0.3692 second=0.3256
-# abstain refined | org/json/JSONObject#toString()Ljava/lang/String; -> org/json/JSONObject#toString()Ljava/lang/String; score=0.8500 second=0.8207
+# abstain refined | org/json/JSONObject#toString()Ljava/lang/String; -> org/json/JSONObject#toString()Ljava/lang/String; score=0.9500 second=0.9207
 # abstain refined | org/json/JSONObject#toString(I)Ljava/lang/String; -> org/json/JSONObject#getString(Ljava/lang/String;)Ljava/lang/String; score=0.2935 second=0.2347
-# abstain refined | org/json/JSONObject#toString(II)Ljava/lang/String; -> org/json/JSONObject#toString()Ljava/lang/String; score=0.4368 second=0.4065
+# abstain refined | org/json/JSONObject#toString(II)Ljava/lang/String; -> org/json/JSONObject#toString()Ljava/lang/String; score=0.4711 second=0.4408
 org/json/JSONObject#valueToString(Ljava/lang/Object;)Ljava/lang/String; -> org/json/JSONObject#valueToString(Ljava/lang/Object;)Ljava/lang/String; score=0.9500
 org/json/JSONObject#valueToString(Ljava/lang/Object;II)Ljava/lang/String; -> org/json/JSONObject#valueToString(Ljava/lang/Object;II)Ljava/lang/String; score=0.9500
 org/json/JSONObject#write(Ljava/io/Writer;)Ljava/io/Writer; -> org/json/JSONObject#write(Ljava/io/Writer;)Ljava/io/Writer; score=0.8500
@@ -5955,7 +5955,7 @@ org/json/JSONTokener#syntaxError(Ljava/lang/String;)Lorg/json/JSONException; -> 
 # abstain refined | sf#<init>()V -> sf#<init>()V score=0.5000 second=0.2229
 # abstain refined | sf#aoe()Ljava/lang/String; -> sf#aot()Ljava/lang/String; score=0.4999 second=0.4999
 # abstain refined | sf#aom()Ljava/lang/String; -> sf#aoq()Ljava/lang/String; score=0.4999 second=0.4993
-# abstain refined | sf#toString()Ljava/lang/String; -> sf#toString()Ljava/lang/String; score=0.4997 second=0.4344
+# abstain refined | sf#toString()Ljava/lang/String; -> sf#toString()Ljava/lang/String; score=0.4997 second=0.4261
 # abstain refined | tw#<init>()V -> tw#<init>()V score=0.5000 second=0.0000
 # abstain refined | tw#bz(IB)I -> tw#<init>()V score=0.2888 second=0.0000
 # abstain refined | uk#<init>(J)V -> uk#<init>(J)V score=0.3216 second=0.0000

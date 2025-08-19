@@ -13,9 +13,16 @@ public final class MethodFeatures {
     public final int[] opcodeHistogram; // [0..199]
     public final List<String> callBagNormalized; // owner-normalized to new-space
     public final List<String> stringBag;
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORMALIZED FIELDS BEGIN
+    /** Normalized descriptor after opaque-param policy (stub: identical to desc when not used). */
+    public final String normalizedDescriptor;
+    /** Stable SHA-256 fingerprint over normalized features (descriptor+opcodes+invoked+strings). */
+    public final String normalizedFingerprint;
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORMALIZED FIELDS END
 
     public MethodFeatures(MethodRef ref, long wlSignature, BitSet microBits, boolean leaf, boolean recursive,
-                          int[] opcodeHistogram, List<String> callBagNormalized, List<String> stringBag) {
+                          int[] opcodeHistogram, List<String> callBagNormalized, List<String> stringBag,
+                          String normalizedDescriptor, String normalizedFingerprint) {
         this.ref = ref;
         this.wlSignature = wlSignature;
         this.microBits = microBits;
@@ -24,6 +31,10 @@ public final class MethodFeatures {
         this.opcodeHistogram = opcodeHistogram;
         this.callBagNormalized = callBagNormalized;
         this.stringBag = stringBag;
+        // >>> AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORMALIZED FIELDS INIT BEGIN
+        this.normalizedDescriptor = normalizedDescriptor;
+        this.normalizedFingerprint = normalizedFingerprint;
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MethodFeatures NORMALIZED FIELDS INIT END
     }
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI MethodFeatures END

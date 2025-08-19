@@ -18,8 +18,14 @@ public class CallGraphRefinerSmokeTest {
         MethodRef v1 = new MethodRef("B","m1","()V");
         MethodRef v2 = new MethodRef("B","m2","()V");
 
-        MethodFeatures mfv1 = new MethodFeatures(v1,0L,new java.util.BitSet(),false,false,new int[200],java.util.Collections.<String>emptyList(),java.util.Collections.<String>emptyList());
-        MethodFeatures mfv2 = new MethodFeatures(v2,0L,new java.util.BitSet(),false,false,new int[200],java.util.Collections.<String>emptyList(),java.util.Collections.<String>emptyList());
+    // >>> AUTOGEN: BYTECODEMAPPER TEST update MethodFeatures ctor BEGIN
+    MethodFeatures mfv1 = new MethodFeatures(v1,0L,new java.util.BitSet(),false,false,new int[200],
+        java.util.Collections.<String>emptyList(),java.util.Collections.<String>emptyList(),
+        v1.desc, "");
+    MethodFeatures mfv2 = new MethodFeatures(v2,0L,new java.util.BitSet(),false,false,new int[200],
+        java.util.Collections.<String>emptyList(),java.util.Collections.<String>emptyList(),
+        v2.desc, "");
+    // <<< AUTOGEN: BYTECODEMAPPER TEST update MethodFeatures ctor END
 
         Map<MethodRef, CallGraphRefiner.CandidateSet> cand = new LinkedHashMap<MethodRef, CallGraphRefiner.CandidateSet>();
         cand.put(u1, new CallGraphRefiner.CandidateSet(java.util.Arrays.asList(mfv1, mfv2), new double[]{0.60, 0.59}));
