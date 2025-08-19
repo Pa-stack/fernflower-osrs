@@ -1,3 +1,24 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook orchestrator-caches BEGIN -->
+## Orchestrator, caches, and deterministic mode
+
+**Flow:** `Normalize → CFG → Dominators/DF/TDF → WL → Class match → Method match (+Refine) → Field match → Write Tiny v2`.
+
+- **Normalization:** All downstream features (WL, micropatterns, normalized histogram/strings/calls) are computed from the **analysis CFG** after minimal normalization.
+- **Persistent caches:** Per-jar method-feature caches live under `build/cache/<jarSHA>.methods.ser`, keyed by `owner#name(desc)#normalizedBodyHash`. Each entry contains WL signature, micropattern bitset, generalized opcode histogram, filtered strings, call-bag, normalized descriptor, and the normalized fingerprint.
+- **Determinism:** When `--deterministic` is set, the pipeline avoids parallelism and imposes explicit sorting before hashing/serialization. Two identical runs must produce **byte-identical** `mappings.tiny`.
+
+**CLI flags:**
+--deterministic
+--cacheDir <dir> (default: build/cache)
+--idf <path> (default: build/idf.properties)
+--refine --lambda L --refineIters N
+--debug-stats
+--debug-normalized [path] --debug-sample N
+
+
+**Determinism check:**
+Run `mapOldNew` twice with the same flags and compare `mappings.tiny` bytes; caches and IDF are reused across runs.
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook orchestrator-caches END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook mapping-io-remap BEGIN -->
 ## Mapping I/O and Remapping (Tiny v2 default)
 

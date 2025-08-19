@@ -1,3 +1,11 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component12 BEGIN -->
+## [2025-08-19] Component 12 — Orchestrator, caches, deterministic mode
+
+- Introduced an end-to-end **Orchestrator** that runs Normalize → CFG → Dom/DF/TDF → WL → Class → Method (+Refine) → Field → Write (Tiny v2).
+- Added persistent **method-feature caches** keyed by normalized body hash; stored under `build/cache`.
+- CLI flags: `--deterministic`, `--cacheDir`, `--idf` now supported in `mapOldNew`.
+- Determinism acceptance: two runs with identical inputs produce **byte-identical** mappings.
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component12 END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component9 BEGIN -->
 ## [2025-08-19] Component 9 — Phase-3 Call-graph refinement
 - Added app-only intra-class call graphs and IsoRank-style damped refinement (λ in [0.6, 0.8]).
