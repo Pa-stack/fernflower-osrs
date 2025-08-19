@@ -85,20 +85,25 @@ The meaning of each method should be clear from naming: toBeRenamed determine wh
 provide new names for classes, methods and fields respectively.
 
 <!-- >>> AUTOGEN: BYTECODEMAPPER README CLI BEGIN -->
+
 ## Mapper CLI quickstart
 
 Build:
+
 ```bash
 ./gradlew build
 ```
 
 Map two jars (placeholder mapping):
+
 ```bash
 ./gradlew :mapper-cli:run --args="mapOldNew --old path/to/old.jar --new path/to/new.jar --out build/mappings.tiny"
 ```
 
 Apply mappings (stub: copy in→out):
+
 ```bash
 ./gradlew :mapper-cli:run --args="applyMappings --inJar path/to/new.jar --mappings build/mappings.tiny --out build/new-mapped.jar"
 ```
+
 <!-- <<< AUTOGEN: BYTECODEMAPPER README CLI END -->

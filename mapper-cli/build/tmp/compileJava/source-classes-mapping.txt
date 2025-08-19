@@ -48,3 +48,6 @@ io/bytecodemapper/cli/FieldMatch.java
  io.bytecodemapper.cli.FieldMatch$2
 io/bytecodemapper/cli/Main.java
  io.bytecodemapper.cli.Main
+io/bytecodemapper/cli/util/MethodMapParser.java
+ io.bytecodemapper.cli.util.MethodMapParser
+ io.bytecodemapper.cli.util.MethodMapParser$Parsed
