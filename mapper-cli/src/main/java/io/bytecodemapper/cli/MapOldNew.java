@@ -7,7 +7,9 @@ import io.bytecodemapper.cli.method.MethodRef;
 import io.bytecodemapper.cli.util.CliPaths;
 import io.bytecodemapper.cli.util.DebugNormalizedDump;
 import io.bytecodemapper.core.fingerprint.ClasspathScanner;
-import io.bytecodemapper.io.TinyLikeWriter;
+// >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 BEGIN
+import io.bytecodemapper.io.tiny.TinyV2Writer;
+// <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 END
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -103,11 +105,42 @@ final class MapOldNew {
     }
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG DUMP CALL END
 
-        // For now, emit a tiny-like stub mapping (deterministic dummy line)
-        List<String[]> pairs = new ArrayList<String[]>();
-        pairs.add(new String[]{"a/A", "deob/A"});
-        TinyLikeWriter.writeClasses(out, pairs);
-        System.out.println("Wrote mappings: " + out.getAbsolutePath());
+        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 BEGIN
+        // Build TinyV2 inputs from computed maps
+        // Expect these maps to exist after phases:
+        //   classMap: Map<String,String>  (obfOwner -> deobfOwner)
+        //   methodPairs: Map<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef>
+        //   fieldPairs:  Map<io.bytecodemapper.cli.field.FieldRef,  io.bytecodemapper.cli.field.FieldRef>
+        // If your variables differ, adapt accordingly.
+
+        // Placeholders for now; pipeline phases should populate these before this point.
+        Map<String,String> classMap = new LinkedHashMap<String,String>();
+        Map<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef> methodPairs = new LinkedHashMap<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef>();
+        Map<io.bytecodemapper.cli.field.FieldRef,  io.bytecodemapper.cli.field.FieldRef>  fieldPairs  = new LinkedHashMap<io.bytecodemapper.cli.field.FieldRef,  io.bytecodemapper.cli.field.FieldRef>();
+
+        Map<String,String> tinyClasses = new java.util.LinkedHashMap<String,String>(classMap);
+
+        java.util.List<TinyV2Writer.MethodEntry> tinyMethods = new java.util.ArrayList<TinyV2Writer.MethodEntry>();
+        for (java.util.Map.Entry<io.bytecodemapper.cli.method.MethodRef, io.bytecodemapper.cli.method.MethodRef> e : methodPairs.entrySet()) {
+            io.bytecodemapper.cli.method.MethodRef obf = e.getKey();
+            io.bytecodemapper.cli.method.MethodRef neo = e.getValue();
+            tinyMethods.add(new TinyV2Writer.MethodEntry(obf.owner, obf.name, obf.desc, neo.name));
+        }
+
+        java.util.List<TinyV2Writer.FieldEntry> tinyFields = new java.util.ArrayList<TinyV2Writer.FieldEntry>();
+        if (fieldPairs != null) {
+            for (java.util.Map.Entry<io.bytecodemapper.cli.field.FieldRef, io.bytecodemapper.cli.field.FieldRef> e : fieldPairs.entrySet()) {
+                io.bytecodemapper.cli.field.FieldRef obf = e.getKey();
+                io.bytecodemapper.cli.field.FieldRef neo = e.getValue();
+                tinyFields.add(new TinyV2Writer.FieldEntry(obf.owner, obf.name, obf.desc, neo.name));
+            }
+        }
+
+        // Write tiny v2
+        java.nio.file.Path outTiny = outPath; // already resolved output path
+        io.bytecodemapper.io.tiny.TinyV2Writer.writeTiny2(outTiny, tinyClasses, tinyMethods, tinyFields);
+        System.out.println("Wrote Tiny v2 to: " + outTiny);
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 END
     }
 
     // Deterministic filtered method list (skip abstract/native)
