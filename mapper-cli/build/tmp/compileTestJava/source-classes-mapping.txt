@@ -2,3 +2,5 @@ io/bytecodemapper/cli/DeterminismSmokeTest.java
  io.bytecodemapper.cli.DeterminismSmokeTest
 io/bytecodemapper/cli/CallGraphRefinerSmokeTest.java
  io.bytecodemapper.cli.CallGraphRefinerSmokeTest
+io/bytecodemapper/cli/CallGraphRefinerMissingNeighborTest.java
+ io.bytecodemapper.cli.CallGraphRefinerMissingNeighborTest

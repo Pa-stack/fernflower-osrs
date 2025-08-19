@@ -9,6 +9,11 @@ public final class CallGraphRefiner {
     public static final int    DEFAULT_MAX_ITERS = 5;
     public static final double EPS = 1e-4;
 
+    // >>> AUTOGEN: BYTECODEMAPPER CLI CallGraphRefiner LAMBDA CLAMP BEGIN
+    public static final double LAMBDA_MIN = 0.60;
+    public static final double LAMBDA_MAX = 0.80;
+    // <<< AUTOGEN: BYTECODEMAPPER CLI CallGraphRefiner LAMBDA CLAMP END
+
     // caps relative to S0
     public static final double CAP_DOWN = 0.05; // max decrease
     public static final double CAP_UP   = 0.10; // max increase
@@ -47,8 +52,12 @@ public final class CallGraphRefiner {
             Map<MethodRef, Set<MethodRef>> adjNewIntra,          // new-class intra graph
             double lambda, int maxIters) {
 
-        if (lambda < 0.0 || lambda > 1.0) lambda = DEFAULT_LAMBDA;
+        // >>> AUTOGEN: BYTECODEMAPPER CLI CallGraphRefiner LAMBDA CLAMP BEGIN
+        // normalize parameters
         if (maxIters <= 0) maxIters = DEFAULT_MAX_ITERS;
+        if (lambda < LAMBDA_MIN) lambda = LAMBDA_MIN;
+        if (lambda > LAMBDA_MAX) lambda = LAMBDA_MAX;
+        // <<< AUTOGEN: BYTECODEMAPPER CLI CallGraphRefiner LAMBDA CLAMP END
 
         Map<MethodRef, double[]> scores = new LinkedHashMap<MethodRef, double[]>();
         Map<MethodRef, Integer>  bestIdx = new LinkedHashMap<MethodRef, Integer>();
@@ -91,19 +100,25 @@ public final class CallGraphRefiner {
                     MethodRef v = cs.targets.get(i).ref;
 
                     double nScore = 0.0;
+                    // >>> AUTOGEN: BYTECODEMAPPER CLI CallGraphRefiner GUARD NEIGHBORS BEGIN
                     if (degU > 0) {
                         int agree = 0;
                         Set<MethodRef> neighV = adjNewIntra.get(v);
                         if (neighV != null && !neighV.isEmpty()) {
                             for (MethodRef uN : neighU) {
-                                Integer idx = bestIdx.get(uN);
-                                if (idx == null || idx.intValue() < 0) continue;
-                                MethodRef vN = candidates.get(uN).targets.get(idx.intValue()).ref;
+                                Integer idxObj = bestIdx.get(uN);
+                                if (idxObj == null) continue;
+                                int idx = idxObj.intValue();
+                                CallGraphRefiner.CandidateSet csN = candidates.get(uN);
+                                if (csN == null) continue;                // neighbor not in candidate sets
+                                if (idx < 0 || idx >= csN.targets.size()) continue; // stale index
+                                MethodRef vN = csN.targets.get(idx).ref;
                                 if (neighV.contains(vN)) agree++;
                             }
                         }
                         nScore = agree / (double) degU;
                     }
+                    // <<< AUTOGEN: BYTECODEMAPPER CLI CallGraphRefiner GUARD NEIGHBORS END
 
                     double sOld = s[i];
                     double s0   = cs.baseScores[i];

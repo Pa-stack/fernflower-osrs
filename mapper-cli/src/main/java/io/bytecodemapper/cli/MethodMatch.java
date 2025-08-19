@@ -71,6 +71,17 @@ final class MethodMatch {
     }
 // <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch REFINE ANNOUNCE END
 
+// >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch LAMBDA ANNOUNCE BEGIN
+        if (refine) {
+            double lShow = (lambdaArg==null? io.bytecodemapper.cli.method.CallGraphRefiner.DEFAULT_LAMBDA : lambdaArg.doubleValue());
+            boolean clamped = (lShow < io.bytecodemapper.cli.method.CallGraphRefiner.LAMBDA_MIN) || (lShow > io.bytecodemapper.cli.method.CallGraphRefiner.LAMBDA_MAX);
+            System.out.println("Call-graph refinement ON: lambda=" +
+                    String.format(java.util.Locale.ROOT, "%.2f", lShow) +
+                    (clamped ? " (will be clamped to policy range 0.60–0.80)" : "") +
+                    " maxIters=" + (refineIters==null? io.bytecodemapper.cli.method.CallGraphRefiner.DEFAULT_MAX_ITERS: refineIters.intValue()));
+        }
+// <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch LAMBDA ANNOUNCE END
+
         // Read classes deterministically
         final List<ClassNode> oldClasses = new ArrayList<ClassNode>();
         final List<ClassNode> newClasses = new ArrayList<ClassNode>();
