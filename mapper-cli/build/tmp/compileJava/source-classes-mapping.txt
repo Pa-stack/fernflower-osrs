@@ -9,8 +9,8 @@ io/bytecodemapper/cli/field/FieldMatcher.java
 io/bytecodemapper/cli/util/MethodMapParser.java
  io.bytecodemapper.cli.util.MethodMapParser
  io.bytecodemapper.cli.util.MethodMapParser$Parsed
-io/bytecodemapper/cli/Main.java
- io.bytecodemapper.cli.Main
+io/bytecodemapper/cli/method/MethodRef.java
+ io.bytecodemapper.cli.method.MethodRef
 io/bytecodemapper/cli/MethodMatch.java
  io.bytecodemapper.cli.MethodMatch
  io.bytecodemapper.cli.MethodMatch$1
@@ -49,5 +49,8 @@ io/bytecodemapper/cli/field/FieldRef.java
  io.bytecodemapper.cli.field.FieldRef
 io/bytecodemapper/cli/method/MethodFeatures.java
  io.bytecodemapper.cli.method.MethodFeatures
-io/bytecodemapper/cli/method/MethodRef.java
- io.bytecodemapper.cli.method.MethodRef
+io/bytecodemapper/cli/Main.java
+ io.bytecodemapper.cli.Main
+ io.bytecodemapper.cli.Main$1
+ io.bytecodemapper.cli.Main$2
+ io.bytecodemapper.cli.Main$3

@@ -1,3 +1,20 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook NormalizedMethod BEGIN -->
+## NormalizedMethod feature (analysis CFG aligned)
+
+`NormalizedMethod` runs on **post-normalization** bytecode to stay aligned with DF/TDF + WL:
+
+- Unwraps whole-method `RuntimeException` wrappers where detectable.
+- Excludes wrapper handler strings and known opaque-guard early-exit blocks.
+- Produces:
+	- **generalized opcode histogram** (sparse → dense[200] for scoring),
+	- **string constants** (wrapper-noise filtered),
+	- **invoked signatures** (`owner.name(desc)`, `indy:name(desc)`),
+	- **normalized descriptor** (opaque-param drop, stub OK),
+	- **SHA-256 fingerprint** over descriptor + sorted sets.
+- CLI flag `--debug-normalized` writes `mapper-cli/build/normalized_debug.txt` with descriptor, top opcodes, strings, and fingerprint for a deterministic sample.
+
+These signals **augment** (and may replace) legacy opcode histograms in method scoring.
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook NormalizedMethod END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook refine BEGIN -->
 ## Phase-3 Call-graph Refinement (optional)
 
