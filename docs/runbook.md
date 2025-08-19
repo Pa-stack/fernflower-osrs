@@ -1,3 +1,60 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook mapping-io-remap BEGIN -->
+## Mapping I/O and Remapping (Tiny v2 default)
+
+This project emits **Tiny v2** mappings with two namespaces: **`obf` → `deobf`** and performs a real bytecode remap using **ASM ClassRemapper** by default (Java 8 safe). You can later extend `applyMappings` to use TinyRemapper or SpecialSource if needed.
+
+### Tiny v2 layout
+
+Header:
+`tiny\t2\t0\tobf\tdeobf`
+
+Body lines:
+- Class:  `c  <owner_obf>  <owner_deobf>`
+- Field:  `f  <owner_obf>  <desc>  <name_obf>  <name_deobf>`
+- Method: `m  <owner_obf>  <desc>  <name_obf>  <name_deobf>`
+
+Entries are written in a **deterministic order** (sorted) to keep outputs stable across runs.
+
+### CLI usage
+
+**Generate mappings (Tiny v2):**
+``bash
+./gradlew :mapper-cli:run --args="mapOldNew --old old.jar --new new.jar --out build/mappings.tiny"
+``
+
+**Apply mappings (ASM remapper):**
+``bash
+./gradlew :mapper-cli:run --args="applyMappings --inJar new.jar --mappings build/mappings.tiny --out build/new-mapped.jar"
+``
+
+Supported flags:
+
+* `--format tiny2|enigma` (current build supports **tiny2**)
+* `--ns obf,deobf` (reserved; default `obf,deobf`)
+* `--remapper asm` (default; future: `tinyremapper|specialsource`)
+* `--deterministic`, `--verbose`, `--quiet` (standard behavior)
+* `--debug-normalized [path]` to dump normalized-method features during `mapOldNew`
+
+### Windows / PowerShell
+
+Prefer the installed launcher to avoid `--args` quirks:
+
+``powershell
+./gradlew :mapper-cli:installDist
+mapper-cli/build/install/mapper-cli/bin/mapper-cli.bat mapOldNew `
+	--old old.jar `
+	--new new.jar `
+	--out build/mappings.tiny
+
+mapper-cli/build/install/mapper-cli/bin/mapper-cli.bat applyMappings `
+	--inJar new.jar `
+	--mappings build/mappings.tiny `
+	--out build/new-mapped.jar
+``
+
+The remapped jar is written to `mapper-cli/build/new-mapped.jar`. Use `jar tf` to inspect renamed classes.
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook mapping-io-remap END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook NormalizedMethod BEGIN -->
 ## NormalizedMethod feature (analysis CFG aligned)
 
