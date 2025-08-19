@@ -29,11 +29,8 @@ io/bytecodemapper/core/fingerprint/GreedyClassMatcher.java
  io.bytecodemapper.core.fingerprint.GreedyClassMatcher$Pair
 io/bytecodemapper/core/fingerprint/MicroPatternProvider.java
  io.bytecodemapper.core.fingerprint.MicroPatternProvider
-io/bytecodemapper/core/fingerprint/ClasspathScanner.java
- io.bytecodemapper.core.fingerprint.ClasspathScanner
- io.bytecodemapper.core.fingerprint.ClasspathScanner$1
- io.bytecodemapper.core.fingerprint.ClasspathScanner$2
- io.bytecodemapper.core.fingerprint.ClasspathScanner$Sink
+io/bytecodemapper/core/normalize/NormalizerFingerprint.java
+ io.bytecodemapper.core.normalize.NormalizerFingerprint
 io/bytecodemapper/core/cfg/ReducedCFG.java
  io.bytecodemapper.core.cfg.ReducedCFG
  io.bytecodemapper.core.cfg.ReducedCFG$1
@@ -44,3 +41,8 @@ io/bytecodemapper/core/hash/StableHash64.java
 io/bytecodemapper/core/fingerprint/FingerprintBuilder.java
  io.bytecodemapper.core.fingerprint.FingerprintBuilder
  io.bytecodemapper.core.fingerprint.FingerprintBuilder$1
+io/bytecodemapper/core/fingerprint/ClasspathScanner.java
+ io.bytecodemapper.core.fingerprint.ClasspathScanner
+ io.bytecodemapper.core.fingerprint.ClasspathScanner$1
+ io.bytecodemapper.core.fingerprint.ClasspathScanner$2
+ io.bytecodemapper.core.fingerprint.ClasspathScanner$Sink

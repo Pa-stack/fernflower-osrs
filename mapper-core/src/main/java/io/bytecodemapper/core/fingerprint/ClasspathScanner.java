@@ -50,7 +50,15 @@ public final class ClasspathScanner {
         Collections.sort(files, new Comparator<File>() {
             public int compare(File a, File b) { return a.getPath().compareTo(b.getPath()); }
         });
-        for (File f : files) if (f.getName().endsWith(".class")) readClass(f, sink);
+        // >>> AUTOGEN: BYTECODEMAPPER core ClasspathScanner DETERMINISTIC FILTERS BEGIN
+        for (File f : files) {
+            String path = f.getPath().replace('\\', '/');
+            if (!f.getName().endsWith(".class")) continue;                // class-only
+            if (path.endsWith("/module-info.class")) continue;            // ignore JPMS descriptor
+            if (path.contains("/META-INF/")) continue;                    // ignore META-INF (signatures, multi-release)
+            readClass(f, sink);
+        }
+        // <<< AUTOGEN: BYTECODEMAPPER core ClasspathScanner DETERMINISTIC FILTERS END
     }
 
     private static void collect(File dir, List<File> out) {
@@ -72,7 +80,10 @@ public final class ClasspathScanner {
             });
             for (JarEntry je : entries) {
                 if (je.isDirectory()) continue;
-                if (!je.getName().endsWith(".class")) continue;
+                String name = je.getName();
+                if (!name.endsWith(".class")) continue;          // class-only
+                if (name.equals("module-info.class")) continue;   // ignore JPMS
+                if (name.startsWith("META-INF/")) continue;       // ignore signatures and multi-release content
                 InputStream in = jf.getInputStream(je);
                 try {
                     ClassReader cr = new ClassReader(in);

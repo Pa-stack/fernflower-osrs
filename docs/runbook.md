@@ -380,3 +380,14 @@ or to the path supplied after `--debug-normalized <path>`.
 - **MANIFEST first:** If present, `META-INF/MANIFEST.MF` is emitted first; all other entries follow in stable order.
 - **Identity mappings:** `tinyStats` now reports **identity vs non-identity** counts and prints a few sample pairs. If you see only identity pairs, the remapper will not rename entries (expected).
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook remap-order-identity END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook cache-fingerprint BEGIN -->
+### Cache key & invalidation policy
+
+- **Key structure:** `owner#name(desc)#normalizedBodyHash#normalizerOptionsFp`
+	- `normalizedBodyHash`: SHA-256 over normalized (post-normalization) opcodes/operands, ignoring labels/frames/line numbers.
+	- `normalizerOptionsFp`: compact string fingerprint of normalization options and a `normalizerVersion` bump when semantics change.
+- **Per-jar metadata:** For each input JAR, a `*.meta.properties` file is written under `--cacheDir` with:
+	- `normalizerVersion` and `optionsFingerprint`
+- **When to bump:** Any change in normalization that *can* affect CFG/DF/TDF/WL, or feature extraction ordering, should bump `NormalizerFingerprint.NORMALIZER_VERSION`.
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook cache-fingerprint END -->
