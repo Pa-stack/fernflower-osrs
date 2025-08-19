@@ -96,7 +96,10 @@ final class MethodMatch {
 
     // micro IDF is built per-src where needed in refine block
 
-        int matched=0, abstained=0, total=0;
+    int matched=0, abstained=0, total=0;
+// >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch BASELINE VS REFINED BEGIN
+    int baseAcceptSimulated = 0;
+// <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch BASELINE VS REFINED END
 
     PrintWriter pw = new PrintWriter(outFile, "UTF-8");
         try {
@@ -185,6 +188,23 @@ final class MethodMatch {
                 java.util.Map<MethodRef, MethodRef> finalMapForPair;
                 java.util.Map<MethodRef, Double>    finalScoreForPair;
 
+// >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch BASELINE COUNT BEGIN
+                if (refine) {
+                    for (java.util.Map.Entry<MethodRef, io.bytecodemapper.cli.method.CallGraphRefiner.CandidateSet> e2 : candidateSets.entrySet()) {
+                        io.bytecodemapper.cli.method.CallGraphRefiner.CandidateSet cs = e2.getValue();
+                        double best = -1.0, second = -1.0;
+                        for (int i=0;i<cs.baseScores.length;i++) {
+                            double s = cs.baseScores[i];
+                            if (s > best) { second = best; best = s; }
+                            else if (s > second) { second = s; }
+                        }
+                        boolean accept = (best - Math.max(0, second)) >= io.bytecodemapper.cli.method.MethodScorer.MIN_MARGIN
+                                && best >= io.bytecodemapper.cli.method.MethodScorer.TAU_ACCEPT;
+                        if (accept) baseAcceptSimulated++;
+                    }
+                }
+// <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch BASELINE COUNT END
+
                 if (refine) {
                     double lambda = (lambdaArg!=null? lambdaArg.doubleValue(): io.bytecodemapper.cli.method.CallGraphRefiner.DEFAULT_LAMBDA);
                     int maxIters  = (refineIters!=null? refineIters.intValue(): io.bytecodemapper.cli.method.CallGraphRefiner.DEFAULT_MAX_ITERS);
@@ -255,7 +275,14 @@ final class MethodMatch {
         } finally {
             pw.close();
         }
-        System.out.println("Method matching complete. matched=" + matched + " abstained=" + abstained + " total=" + total);
+    System.out.println("Method matching complete. matched=" + matched + " abstained=" + abstained + " total=" + total);
+// >>> AUTOGEN: BYTECODEMAPPER CLI MethodMatch BASELINE VS REFINED FOOTER BEGIN
+    if (refine) {
+        System.out.println("Baseline-accept(sim) vs refined-accept(actual): "
+            + baseAcceptSimulated + " -> " + matched
+            + " (Δ=" + (matched - baseAcceptSimulated) + ")");
+    }
+// <<< AUTOGEN: BYTECODEMAPPER CLI MethodMatch BASELINE VS REFINED FOOTER END
         System.out.println("Wrote method map: " + outFile.getAbsolutePath());
     }
 
