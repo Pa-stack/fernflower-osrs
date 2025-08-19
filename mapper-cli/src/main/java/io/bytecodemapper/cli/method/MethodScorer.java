@@ -27,8 +27,8 @@ public final class MethodScorer {
     // <<< AUTOGEN: BYTECODEMAPPER CLI MethodScorer NORM WEIGHTS END
 
     public static final double ALPHA_MP   = 0.60; // blend inside micropatterns
-    public static final double TAU_ACCEPT = 0.60; // final acceptance threshold
-    public static final double MIN_MARGIN = 0.05; // abstain if best - secondBest < MIN_MARGIN
+    public static double TAU_ACCEPT = 0.60; // final acceptance threshold (configurable)
+    public static double MIN_MARGIN = 0.05; // abstain if best - secondBest < MIN_MARGIN (configurable)
 
     // penalties (subtract)
     public static final double PEN_LEAF_MISMATCH = 0.05;
@@ -181,5 +181,18 @@ public final class MethodScorer {
     }
 
     private MethodScorer(){}
+
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MethodScorer CONFIG BEGIN
+    /** Configure acceptance threshold in [0,1]. */
+    public static void setTauAccept(double v) {
+        if (v < 0) v = 0; else if (v > 1) v = 1;
+        TAU_ACCEPT = v;
+    }
+    /** Configure minimum margin in [0,1]. */
+    public static void setMinMargin(double v) {
+        if (v < 0) v = 0; else if (v > 1) v = 1;
+        MIN_MARGIN = v;
+    }
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MethodScorer CONFIG END
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI MethodScorer END

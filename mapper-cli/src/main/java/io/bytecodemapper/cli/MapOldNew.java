@@ -48,6 +48,9 @@ final class MapOldNew {
         String debugNormalizedPath = null;
         int debugSample = 50;
         boolean debugStats = false;
+        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS BEGIN
+        double tauAcceptMethods = 0.60;
+        double marginMethods = 0.05;
 
         for (int i = 0; i < args.length; i++) {
             String a = args[i];
@@ -63,8 +66,16 @@ final class MapOldNew {
                 }
             } else if ("--debug-stats".equals(a)) {
                 debugStats = true;
+            } else if ("--tauAcceptMethods".equals(a) && i+1<args.length) {
+                try { tauAcceptMethods = Double.parseDouble(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--marginMethods".equals(a) && i+1<args.length) {
+                try { marginMethods = Double.parseDouble(args[++i]); } catch (NumberFormatException ignore) {}
             }
         }
+        // Apply method matching thresholds (global static for this run)
+        io.bytecodemapper.cli.method.MethodScorer.setTauAccept(tauAcceptMethods);
+        io.bytecodemapper.cli.method.MethodScorer.setMinMargin(marginMethods);
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS END
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG FLAGS SCOPE END
 
         // Read classes deterministically
