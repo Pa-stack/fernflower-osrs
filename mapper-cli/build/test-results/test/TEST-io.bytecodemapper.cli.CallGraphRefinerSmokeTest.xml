@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.CallGraphRefinerSmokeTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-19T08:49:50" hostname="PRAGMATIQPASCAL" time="0.001">
+<testsuite name="io.bytecodemapper.cli.CallGraphRefinerSmokeTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-19T08:53:26" hostname="PRAGMATIQPASCAL" time="0.001">
   <properties/>
   <testcase name="oscillationDecreasesAndCapsHold" classname="io.bytecodemapper.cli.CallGraphRefinerSmokeTest" time="0.001"/>
   <system-out><![CDATA[Refine iter=1 flips=0 maxDelta=0.10000 (prev flips=-)

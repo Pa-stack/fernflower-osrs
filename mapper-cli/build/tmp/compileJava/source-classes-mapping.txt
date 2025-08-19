@@ -49,12 +49,12 @@ io/bytecodemapper/cli/field/FieldRef.java
  io.bytecodemapper.cli.field.FieldRef
 io/bytecodemapper/cli/method/MethodFeatures.java
  io.bytecodemapper.cli.method.MethodFeatures
-io/bytecodemapper/cli/Main.java
- io.bytecodemapper.cli.Main
 io/bytecodemapper/cli/util/DebugNormalizedDump.java
  io.bytecodemapper.cli.util.DebugNormalizedDump
  io.bytecodemapper.cli.util.DebugNormalizedDump$1
  io.bytecodemapper.cli.util.DebugNormalizedDump$2
+io/bytecodemapper/cli/Main.java
+ io.bytecodemapper.cli.Main
 io/bytecodemapper/cli/MapOldNew.java
  io.bytecodemapper.cli.MapOldNew
  io.bytecodemapper.cli.MapOldNew$1

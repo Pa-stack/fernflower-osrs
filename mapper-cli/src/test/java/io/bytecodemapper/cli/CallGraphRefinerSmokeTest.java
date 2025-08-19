@@ -19,12 +19,10 @@ public class CallGraphRefinerSmokeTest {
         MethodRef v2 = new MethodRef("B","m2","()V");
 
     // >>> AUTOGEN: BYTECODEMAPPER TEST update MethodFeatures ctor BEGIN
-    MethodFeatures mfv1 = new MethodFeatures(v1,0L,new java.util.BitSet(),false,false,new int[200], new int[200],
-        java.util.Collections.<String>emptyList(),java.util.Collections.<String>emptyList(),
-        v1.desc, "");
-    MethodFeatures mfv2 = new MethodFeatures(v2,0L,new java.util.BitSet(),false,false,new int[200], new int[200],
-        java.util.Collections.<String>emptyList(),java.util.Collections.<String>emptyList(),
-        v2.desc, "");
+    // >>> AUTOGEN: BYTECODEMAPPER TEST use TestFixtures mf BEGIN
+    MethodFeatures mfv1 = TestFixtures.mf(v1);
+    MethodFeatures mfv2 = TestFixtures.mf(v2);
+    // <<< AUTOGEN: BYTECODEMAPPER TEST use TestFixtures mf END
     // <<< AUTOGEN: BYTECODEMAPPER TEST update MethodFeatures ctor END
 
         Map<MethodRef, CallGraphRefiner.CandidateSet> cand = new LinkedHashMap<MethodRef, CallGraphRefiner.CandidateSet>();

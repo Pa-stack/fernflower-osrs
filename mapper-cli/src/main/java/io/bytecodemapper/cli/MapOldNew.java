@@ -91,14 +91,16 @@ final class MapOldNew {
 
         // Debug dump (scoped to this command)
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG DUMP CALL BEGIN
-        if (debugNormalized) {
-            java.nio.file.Path outDbg = io.bytecodemapper.cli.util.CliPaths.resolveOutput(
-                    (debugNormalizedPath != null ? debugNormalizedPath : "mapper-cli/build/normalized_debug.txt"));
-            java.nio.file.Files.createDirectories(outDbg.getParent());
-            io.bytecodemapper.cli.util.DebugNormalizedDump.writeSample(
-                    oldJar, newJar, outDbg, debugSample, oldMf, newMf);
-            System.out.println("Wrote normalized debug to: " + outDbg);
-        }
+    if (debugNormalized) {
+        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG PATH RESOLUTION BEGIN
+        java.nio.file.Path dbgOutPath = io.bytecodemapper.cli.util.CliPaths.resolveOutput(
+            debugNormalizedPath != null ? debugNormalizedPath : "mapper-cli/build/normalized_debug.txt");
+        java.nio.file.Files.createDirectories(dbgOutPath.getParent());
+        io.bytecodemapper.cli.util.DebugNormalizedDump.writeSample(
+            oldJar, newJar, dbgOutPath, debugSample, oldMf, newMf);
+        System.out.println("Wrote normalized debug to: " + dbgOutPath);
+        // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG PATH RESOLUTION END
+    }
         // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DEBUG DUMP CALL END
 
         // For now, emit a tiny-like stub mapping (deterministic dummy line)
