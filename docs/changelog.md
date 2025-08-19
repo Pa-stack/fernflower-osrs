@@ -146,3 +146,9 @@ Compatibility / minor adjustments from prompt:
 - Optional smoke helpers: `--includeIdentity` to emit class identity lines and `--demoRemapCount/--demoRemapPrefix` to force a tiny visual rename overlay.
 - Docs updated (runbook) with a verification workflow and PowerShell-friendly commands.
 <!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component11 END -->
+<!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component11 polishing BEGIN -->
+### [2025-08-19] Component 11 — Polishing
+
+- Remapper now uses **case-sensitive** deterministic ordering and writes `META-INF/MANIFEST.MF` first when present.
+- `tinyStats` enhanced to display **identity vs non-identity** counts and sample pairs.
+<!-- <<< AUTOGEN: BYTECODEMAPPER CHANGELOG Component11 polishing END -->

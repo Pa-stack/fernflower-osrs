@@ -351,3 +351,11 @@ The debug dump is written to `mapper-cli/build/normalized_debug.txt` by default,
 or to the path supplied after `--debug-normalized <path>`.
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook windows-launcher END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook remap-order-identity BEGIN -->
+### Remap ordering & identity mappings
+
+- **Case-sensitive entry order:** The remapper writes jar entries in a deterministic, **case-sensitive** order. This prevents collisions that could occur with case-insensitive sorting on exotic inputs.
+- **MANIFEST first:** If present, `META-INF/MANIFEST.MF` is emitted first; all other entries follow in stable order.
+- **Identity mappings:** `tinyStats` now reports **identity vs non-identity** counts and prints a few sample pairs. If you see only identity pairs, the remapper will not rename entries (expected).
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook remap-order-identity END -->
