@@ -466,6 +466,56 @@ Get-Content build/bench.json -TotalCount 1
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook bench END -->
 
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook weekly-ops BEGIN -->
+## Weekly workflow & drift checklist
+
+### Weekly workflow
+
+1. Obtain `old.jar` and `new.jar`.
+2. Run mapping in deterministic mode:
+
+		 ```bash
+		 ./gradlew :mapper-cli:installDist
+		 mapper-cli/build/install/mapper-cli/bin/mapper-cli mapOldNew \
+			 --old data/weeks/osrs-231.jar --new data/weeks/osrs-232.jar \
+			 --out mapper-cli/build/mappings.tiny \
+			 --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties \
+			 --refine --lambda 0.7 --refineIters 5 --debug-stats
+		 ```
+
+3. Optionally remap:
+
+		 ```bash
+		 mapper-cli/build/install/mapper-cli/bin/mapper-cli applyMappings \
+			 --inJar data/weeks/osrs-232.jar \
+			 --mappings mapper-cli/build/mappings.tiny \
+			 --out mapper-cli/build/new-mapped.jar --verifyRemap
+		 ```
+
+### Cache hygiene
+
+- Caches live under `build/cache` (configurable via `--cacheDir`).
+- Normalizer fingerprint is embedded in cache keys; toggle Normalizer options → safe cache invalidation.
+- If in doubt, wipe only the affected jar cache files; avoid global wipes to preserve determinism.
+
+### If drift spikes
+
+- **Flattening detector:** check flagged methods; bypass WL/micro if dispatcher present.
+- **IDF health:** `printIdf` and inspect outliers; clamps `[0.5, 3.0]`.
+- **Abstentions:** inspect `unmapped.txt`; if many leaf methods, review `w_calls` and class anchoring.
+- **Normalization:** ensure opaque predicate strip and trivial RTE wrapper removal behaved as expected.
+
+### Ablations
+
+- To probe signal impact:
+
+		```bash
+		./gradlew :mapper-cli:run --args="bench --in data/weeks --out mapper-cli/build/bench.calls_off.json --ablate calls"
+		```
+- Compare churn/oscillation vs. baseline to guide weight tuning.
+
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook weekly-ops END -->
+
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC vscode-tasks-launch BEGIN -->
 ## VS Code tasks & launch
 

@@ -25,3 +25,22 @@ Defaults:
 
 Micropatterns are **tie-breakers**; DF/TDF+WL are primary.
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC scoring END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC scoring final-weights BEGIN -->
+## Final weights & thresholds
+
+Primary pillar: DF/TDF + WL refinement.
+
+Default tie-breaker blend:
+
+- Calls TF-IDF: **w_calls = 0.45**
+- Micropatterns: **w_micro = 0.25**
+- Opcode/normalized histogram: **w_opc = 0.15** (if split, e.g., `w_norm = 0.10`, `w_opc_legacy = 0.05`)
+- Strings TF-IDF: **w_str = 0.10**
+- Field-usage patterns: **w_fields = 0.05**
+
+Micropattern blend: **α_mp = 0.60**
+Acceptance threshold: **τ_accept = 0.60** (abstain if best < τ or margin < 0.05)
+
+**Tuning rules:** Grid-search weights quarterly or after obfuscation shifts. Keep precision ≥95% at ≥90% coverage on the validated subset. Prefer abstention over speculative matches.
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC scoring final-weights END -->
