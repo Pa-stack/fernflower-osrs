@@ -5,7 +5,6 @@ import io.bytecodemapper.cli.method.MethodFeatureExtractor;
 import io.bytecodemapper.cli.method.MethodFeatures;
 import io.bytecodemapper.cli.method.MethodRef;
 import io.bytecodemapper.cli.util.CliPaths;
-import io.bytecodemapper.cli.util.DebugNormalizedDump;
 import io.bytecodemapper.core.fingerprint.ClasspathScanner;
 // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 BEGIN
 // (Writer used through orchestrator path; no direct import needed here.)
@@ -203,6 +202,47 @@ final class MapOldNew {
     // Replaced by orchestrator path above. This block intentionally left minimal.
     // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew WRITE TINYV2 END
     }
+
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew PROGRAMMATIC BEGIN
+    public static final class Result {
+        public final int acceptedCount; public final int abstainedCount;
+        public Result(int a, int b){ this.acceptedCount=a; this.abstainedCount=b; }
+    }
+
+    public static Result runProgrammatic(String oldJar, String newJar, String outTiny, boolean deterministic, String[] extraArgs) throws Exception {
+        // Resolve IO via existing helpers
+        java.nio.file.Path oldPath = io.bytecodemapper.cli.util.CliPaths.resolveInput(oldJar);
+        java.nio.file.Path newPath = io.bytecodemapper.cli.util.CliPaths.resolveInput(newJar);
+        java.nio.file.Path outPath = io.bytecodemapper.cli.util.CliPaths.resolveOutput(outTiny);
+        if (outPath.getParent()!=null) java.nio.file.Files.createDirectories(outPath.getParent());
+
+        // Deterministic orchestrator options
+        io.bytecodemapper.cli.orch.OrchestratorOptions o = io.bytecodemapper.cli.orch.OrchestratorOptions.defaults(
+                io.bytecodemapper.cli.util.CliPaths.resolveOutput("mapper-cli/build/cache"),
+                io.bytecodemapper.cli.util.CliPaths.resolveOutput("mapper-cli/build/idf.properties"));
+    // orchestrator defaults to deterministic=true; flag preserved
+        // honor extraArgs for test throttling (e.g., --maxMethods N)
+        if (extraArgs != null) {
+            for (int i=0;i<extraArgs.length;i++) {
+                String a = extraArgs[i];
+                if ("--maxMethods".equals(a) && i+1<extraArgs.length) {
+                    try { o = new io.bytecodemapper.cli.orch.OrchestratorOptions(
+                        o.deterministic, o.cacheDir, o.idfPath, o.refine, o.lambda, o.refineIters,
+                        o.debugStats, o.debugNormalized, o.debugNormalizedSample, Integer.parseInt(extraArgs[++i])); } catch (NumberFormatException ignore) {}
+                }
+            }
+        }
+        io.bytecodemapper.cli.orch.Orchestrator orch = new io.bytecodemapper.cli.orch.Orchestrator();
+        io.bytecodemapper.cli.orch.Orchestrator.Result r = orch.run(oldPath, newPath, o);
+        // Write tiny output
+        io.bytecodemapper.io.tiny.TinyV2Writer.writeTiny2(outPath, r.classMap, r.methods, r.fields);
+
+    int accepted = r != null && r.methods != null ? r.methods.size() : 0;
+    // Approximate abstained as old-total minus accepted; acceptable for manifest bench metrics
+    int abstained = r != null ? Math.max(0, r.methodsOld - accepted) : 0;
+        return new Result(accepted, abstained);
+    }
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew PROGRAMMATIC END
 
     // Deterministic filtered method list (skip abstract/native)
     private static List<MethodNode> sortMethodsFiltered(ClassNode cn) {

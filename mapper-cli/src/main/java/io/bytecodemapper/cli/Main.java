@@ -39,21 +39,34 @@ public final class Main {
             MapOldNew.run(args);
             return;
         }
-        // >>> AUTOGEN: BYTECODEMAPPER CLI Main bench DISPATCH BEGIN
+        // >>> AUTOGEN: BYTECODEMAPPER CLI Main BENCH DISPATCH BEGIN
         if ("bench".equalsIgnoreCase(args[0])) {
-            // Parse simple --k=v style args into a map
-            java.util.Map<String,String> parsed = new java.util.LinkedHashMap<String,String>();
+            // If manifest provided, use manifest-based bench; otherwise fallback to directory bench
+            boolean hasManifest = false;
             for (int i=1;i<args.length;i++) {
-                String a = args[i];
-                int eq = a.indexOf('=');
-                if (a.startsWith("--") && eq>0) parsed.put(a.substring(0,eq), a.substring(eq+1));
-                else if (a.startsWith("--") && i+1<args.length && !args[i+1].startsWith("--")) { parsed.put(a, args[++i]); }
+                if ("--manifest".equals(args[i])) { hasManifest = true; break; }
             }
-            int rc = io.bytecodemapper.cli.bench.BenchCommand.run(parsed);
-            System.exit(rc);
-            return;
+            if (hasManifest) {
+                String[] tail = new String[Math.max(0, args.length - 1)];
+                if (tail.length > 0) System.arraycopy(args, 1, tail, 0, tail.length);
+                int rc = io.bytecodemapper.cli.Bench.run(tail);
+                System.exit(rc);
+                return;
+            } else {
+                // Legacy bench path that benchmarks a directory of weekly jars
+                java.util.Map<String,String> parsed = new java.util.LinkedHashMap<String,String>();
+                for (int i=1;i<args.length;i++) {
+                    String a = args[i];
+                    int eq = a.indexOf('=');
+                    if (a.startsWith("--") && eq>0) parsed.put(a.substring(0,eq), a.substring(eq+1));
+                    else if (a.startsWith("--") && i+1<args.length && !args[i+1].startsWith("--")) { parsed.put(a, args[++i]); }
+                }
+                int rc = io.bytecodemapper.cli.bench.BenchCommand.run(parsed);
+                System.exit(rc);
+                return;
+            }
         }
-        // <<< AUTOGEN: BYTECODEMAPPER CLI Main bench DISPATCH END
+        // <<< AUTOGEN: BYTECODEMAPPER CLI Main BENCH DISPATCH END
         // >>> AUTOGEN: BYTECODEMAPPER CLI Main tinyStats DISPATCH BEGIN
         if ("tinyStats".equalsIgnoreCase(args[0])) {
             String[] tail = new String[Math.max(0, args.length - 1)];
@@ -83,6 +96,10 @@ public final class Main {
         "           [--tauAcceptMethods <0..1>] [--marginMethods <0..1>]\n" +
         "           [--debug-stats] [--debug-normalized [path]] [--debug-sample <N>]");
     System.out.println("  applyMappings --inJar <in.jar> --mappings <mappings.tiny> --out <out.jar> [--format=tiny2|enigma] [--remapper=tiny|asm] [--verifyRemap] [--deterministic]");
+    // >>> AUTOGEN: BYTECODEMAPPER CLI Main BENCH USAGE BEGIN
+    // Bench using explicit manifest of pairs
+    System.out.println("  bench --manifest <pairs.json> [--outDir <dir>] [--metricsOut <metrics.json>] [--deterministic]");
+    // >>> AUTOGEN: BYTECODEMAPPER CLI Main BENCH USAGE END
         System.out.println("  tinyStats --in <mappings.tiny> [--list N]");
         System.out.println("  printIdf --out <path> [--from <existing.properties>] [--lambda 0.9]");
     }

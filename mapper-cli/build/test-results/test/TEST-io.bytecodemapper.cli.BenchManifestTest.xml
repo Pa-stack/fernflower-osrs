@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.bytecodemapper.cli.BenchManifestTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T05:30:52" hostname="PRAGMATIQPASCAL" time="35.24">
+  <properties/>
+  <testcase name="manifestBenchProducesMetrics" classname="io.bytecodemapper.cli.BenchManifestTest" time="35.24"/>
+  <system-out><![CDATA[[bench] Wrote metrics to C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\bench\metrics-test.json
+[bench] Wrote metrics to C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\bench\metrics-test2.json
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
