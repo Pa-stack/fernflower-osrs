@@ -85,6 +85,9 @@ public final class Bench {
 			agg.pairs = pairs.size();
 			agg.wallMs = System.currentTimeMillis() - t0; // measured but not emitted to keep determinism
 
+			// Optional console summary
+			System.out.println("[bench] pairs=" + agg.pairs + " totalAccepted=" + agg.totalAccepted + " totalAbstained=" + agg.totalAbstained);
+
 			// Write metrics JSON deterministically
 			if (metricsOut.getParentFile()!=null) metricsOut.getParentFile().mkdirs();
 			writeMetricsJson(metricsOut, agg);
