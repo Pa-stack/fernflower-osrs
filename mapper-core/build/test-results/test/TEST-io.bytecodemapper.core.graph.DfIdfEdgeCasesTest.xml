@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-20T06:33:00" hostname="PRAGMATIQPASCAL" time="0.103">
+  <properties/>
+  <testcase name="dfIdf_handles_loop" classname="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" time="0.098"/>
+  <testcase name="dfIdf_handles_trycatch_and_switch" classname="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" time="0.005"/>
+  <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=3
+[DF] iter=1, changed=false
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -20,3 +20,5 @@ io/bytecodemapper/core/match/MethodMatcherDistanceTest.java
  io.bytecodemapper.core.match.MethodMatcherDistanceTest
 io/bytecodemapper/cli/DeterminismSmokeTest.java
  io.bytecodemapper.cli.DeterminismSmokeTest
+io/bytecodemapper/cli/method/MethodScorerBoundaryTest.java
+ io.bytecodemapper.cli.method.MethodScorerBoundaryTest
