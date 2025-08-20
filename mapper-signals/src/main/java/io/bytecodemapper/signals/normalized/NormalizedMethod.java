@@ -19,7 +19,7 @@ import java.util.*;
  *  - stringConstants: string LDCs, excluding obfuscation wrapper signature strings
  *  - invokedSignatures: owner.name+desc for INVOKExxx; "indy:name desc" for INVOKEDYNAMIC
  *  - normalizedDescriptor: descriptor optionally filtered by opaque-parameter policy (stub OK)
- *  - fingerprint: SHA-256 over normalizedDescriptor + sorted opcode set + invoked + strings
+ *  - fingerprint: SHA-256 over norma lizedDescriptor + sorted opcode set + invoked + strings
  *
  * Owner must be plumbed explicitly (MethodNode doesn't carry it).
  */
