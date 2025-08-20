@@ -151,4 +151,132 @@ jobs:
               fi
             done
           } >> "$GITHUB_STEP_SUMMARY"
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE WINDOWS BEGIN
+  smoke_windows:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 8 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+          cache: gradle
+
+      - name: Show Java version (expect 1.8)
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          java -version
+
+      - name: Assert wrapper distributionUrl contains 6.9.4
+        shell: pwsh
+        run: |
+          Get-Content gradle/wrapper/gradle-wrapper.properties | Write-Host
+          (Get-Content gradle/wrapper/gradle-wrapper.properties) -match "6\.9\.4" | Out-Null
+          if (-not $?) { throw "Wrapper distributionUrl must contain 6.9.4" }
+
+      - name: "Preflight: check fixture jars"
+        id: preflight_win
+        shell: pwsh
+        run: |
+          $missing = 0
+          $paths = @("data/weeks/osrs-170.jar","data/weeks/osrs-171.jar")
+          foreach ($p in $paths) {
+            if (-not (Test-Path $p)) {
+              Write-Host "Missing: $p"
+              $missing = 1
+            }
+          }
+          echo "missing=$missing" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding ascii -Append
+
+      - name: Summarize skip (Windows)
+        if: steps.preflight_win.outputs.missing == '1'
+        shell: pwsh
+        run: |
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## Smoke (Windows) skipped"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Missing fixture jars under \`data/weeks\`"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- This is normal on forks/partial clones"
+
+      - name: Stop early (skip job)
+        if: steps.preflight_win.outputs.missing == '1'
+        shell: pwsh
+        run: exit 0
+
+      - name: Create CI init script to prove JVM & props
+        shell: pwsh
+        run: |
+          @"
+          println "[CI][WIN] env JAVA_HOME=" + System.getenv("JAVA_HOME")
+          println "[CI][WIN] sysprop org.gradle.java.home=" + System.getProperty("org.gradle.java.home")
+          println "[CI][WIN] sysprop java.home=" + System.getProperty("java.home")
+          "@ | Out-File -FilePath ci-init.gradle -Encoding ascii
+
+      - name: Gradle version (expect 6.9.4) with CI Java override
+        shell: pwsh
+        run: |
+          ./gradlew.bat -I ci-init.gradle -Dorg.gradle.java.home="$env:JAVA_HOME" -v | Tee-Object -FilePath gradle-version-win.txt
+          if (-not (Select-String -Path gradle-version-win.txt -Pattern "^Gradle 6\.9\.4$")) { throw "Expected Gradle 6.9.4" }
+
+      - name: Smoke (deterministic) with CI Java override
+        shell: pwsh
+        run: |
+          ./gradlew.bat -Dorg.gradle.java.home="$env:JAVA_HOME" :mapper-cli:smoke --no-daemon -Dorg.gradle.jvmargs="-Xmx2g"
+
+      - name: Show hashes (certutil)
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $files = @(
+            "mapper-cli/build/smoke/m1.tiny",
+            "mapper-cli/build/smoke/m2.tiny",
+            "mapper-cli/build/smoke/remap-tiny-a.jar",
+            "mapper-cli/build/smoke/remap-tiny-b.jar",
+            "mapper-cli/build/smoke/remap-asm-a.jar",
+            "mapper-cli/build/smoke/remap-asm-b.jar",
+            "mapper-cli/build/smoke/metrics1.json",
+            "mapper-cli/build/smoke/metrics2.json"
+          )
+          foreach ($f in $files) {
+            if (Test-Path $f) {
+              Write-Host "---- $f"
+              certutil -hashfile $f SHA256
+            }
+          }
+
+      - name: Upload smoke artifacts (Windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-artifacts-windows
+          retention-days: 7
+          path: |
+            ci-init.gradle
+            gradle-version-win.txt
+            mapper-cli/build/smoke/m1.tiny
+            mapper-cli/build/smoke/m2.tiny
+            mapper-cli/build/smoke/norm1.txt
+            mapper-cli/build/smoke/norm2.txt
+            mapper-cli/build/smoke/remap-tiny-a.jar
+            mapper-cli/build/smoke/remap-tiny-b.jar
+            mapper-cli/build/smoke/remap-asm-a.jar
+            mapper-cli/build/smoke/remap-asm-b.jar
+            mapper-cli/build/smoke/metrics1.json
+            mapper-cli/build/smoke/metrics2.json
+
+      - name: Job summary (Windows)
+        shell: pwsh
+        run: |
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## BytecodeMapper Smoke (Windows)"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          $jv = (java -version) 2>&1 | Select-Object -First 1
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ("- Java: `"${jv}`"")
+          $gv = Get-Content gradle-version-win.txt | Select-Object -First 1
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ("- Gradle: ${gv}")
+          $wrap = Get-Content gradle/wrapper/gradle-wrapper.properties | Select-String "distributionUrl"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ("- Wrapper: {0}" -f $wrap)
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE WINDOWS END
 # >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE HARDEN END
