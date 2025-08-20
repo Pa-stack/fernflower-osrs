@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.match.MethodMatcherDistanceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:43:23" hostname="PRAGMATIQPASCAL" time="0.001">
-  <properties/>
-  <testcase name="wlDistanceZeroForIdentical" classname="io.bytecodemapper.core.match.MethodMatcherDistanceTest" time="0.0"/>
-  <testcase name="wlDistanceOneForSingleTokenDiff" classname="io.bytecodemapper.core.match.MethodMatcherDistanceTest" time="0.001"/>
-  <testcase name="wlDistanceTwoForTwoTokenDiffs" classname="io.bytecodemapper.core.match.MethodMatcherDistanceTest" time="0.0"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

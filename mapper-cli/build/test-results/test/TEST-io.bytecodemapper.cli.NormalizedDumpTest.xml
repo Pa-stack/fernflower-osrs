@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.NormalizedDumpTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:43:15" hostname="PRAGMATIQPASCAL" time="0.014">
-  <properties/>
-  <testcase name="writerCreatesFilesDeterministically" classname="io.bytecodemapper.cli.NormalizedDumpTest" time="0.014"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

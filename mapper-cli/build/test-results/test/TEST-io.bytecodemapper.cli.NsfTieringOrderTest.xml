@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.NsfTieringOrderTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:43:15" hostname="PRAGMATIQPASCAL" time="1.498">
+<testsuite name="io.bytecodemapper.cli.NsfTieringOrderTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:53:20" hostname="PRAGMATIQPASCAL" time="1.32">
   <properties/>
-  <testcase name="nsfTierOrderFlagIsRecognizedAndDeterministic" classname="io.bytecodemapper.cli.NsfTieringOrderTest" time="1.498"/>
+  <testcase name="nsfTierOrderFlagIsRecognizedAndDeterministic" classname="io.bytecodemapper.cli.NsfTieringOrderTest" time="1.32"/>
   <system-out><![CDATA[Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-nsf-tier\tier-a.tiny
 Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-nsf-tier\tier-b.tiny
 ]]></system-out>

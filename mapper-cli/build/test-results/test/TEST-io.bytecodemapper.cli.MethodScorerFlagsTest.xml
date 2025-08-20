@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.MethodScorerFlagsTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:43:12" hostname="PRAGMATIQPASCAL" time="2.058">
+<testsuite name="io.bytecodemapper.cli.MethodScorerFlagsTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:53:18" hostname="PRAGMATIQPASCAL" time="2.215">
   <properties/>
-  <testcase name="weightsAndAlphaOverrideAreAcceptedAndStable" classname="io.bytecodemapper.cli.MethodScorerFlagsTest" time="2.058"/>
+  <testcase name="weightsAndAlphaOverrideAreAcceptedAndStable" classname="io.bytecodemapper.cli.MethodScorerFlagsTest" time="2.215"/>
   <system-out><![CDATA[Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-scorer-flags\map-a.tiny
 Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-scorer-flags\map-b.tiny
 Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-scorer-flags\map-b.tiny
