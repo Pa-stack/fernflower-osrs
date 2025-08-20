@@ -1,3 +1,28 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOCS CHANGELOG PHASES 1-3 BEGIN -->
+# Changelog
+
+## [Unreleased]
+
+### Added
+
+- **Method matcher (Phase 1):** WL-indexed candidates over DF/TDF; relaxed WL distance ≤ 1; composite scorer; abstention policy and optional refinement. Deterministic ordering.
+- **Remapping (Phase 2):** `applyMappings` with TinyRemapper (default) and ASM fallback; `--verifyRemap`; deterministic repack (sorted entries, fixed timestamps).
+- **Bench manifest (Phase 3):** `bench --manifest pairs.json` with deterministic metrics JSON.
+
+### Fixed/Improved
+
+- Hardened `MapOldNewSmokeTest`: CWD-independent I/O, explicit determinism and debug flags.
+- CLI help now includes `--maxMethods`, threshold flags, and remapper options.
+
+### Compatibility
+
+- Java 8, Gradle 6.4.9, ASM 7.3.1. Tiny v2 is canonical mapping format.
+
+### Notes
+
+- WL_K=4; caches fingerprinted accordingly.
+- ENIGMA format accepted as a flag but guarded at runtime (fail-fast).
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOCS CHANGELOG PHASES 1-3 END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER CHANGELOG Component12 BEGIN -->
 ## [2025-08-19] Component 12 — Orchestrator, caches, deterministic mode
 

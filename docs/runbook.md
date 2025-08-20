@@ -5,9 +5,9 @@
 
 1. **Feature extraction (old/new):** ReducedCFG → Dominators → DF → TDF (IDF) → WL (K=4).
 2. **Candidate gen:** WL index on new side, `(desc, wlSig)` exact bucket → relaxed (same owner+desc, WL multiset distance ≤ 1).
-3. **Scoring:** `S_total = 0.45 calls + 0.25 micro(α=0.60) + 0.15 opcode_norm + 0.10 strings + 0.05 fields`.
+3. **Scoring:** `S_total = 0.45 calls + 0.25 micro(α=0.60) + 0.10 opcode_norm + 0.10 strings + 0.05 fields`. Legacy opcode histogram is off by default; when enabled adds `+0.05`.
 4. **Accept/abstain:** Accept if `S_total ≥ 0.60` **and** `(best−second) ≥ 0.05`, else abstain. Deterministic tie-breaks only after margin.
-5. **(Optional) Refinement:** `--refine [--lambda <0..1>] [--refineIters N]`. Freezes high-confidence, rescored abstentions.
+5. **(Optional) Refinement:** `--refine [--lambda <0..1>] [--refineIters N]`. Defaults: `λ=0.70`, `refineIters=5`. Freezes high-confidence, rescored abstentions.
 6. **Mappings:** Emit Tiny v2 (deterministic ordering); apply via TinyRemapper (default) or ASM fallback.
 
 ## Determinism
@@ -30,7 +30,8 @@ mapOldNew --old <old.jar> --new <new\.jar> --out <mappings.tiny>
 ```
 
 - **Thresholds:** `--tauAcceptMethods` (default 0.60), `--marginMethods` (default 0.05).
-- **Micropattern α:** `--lambda` (default 0.60; bounds-checked).
+- **Refinement λ (call-graph):** `--lambda` (default 0.70; bounds [0.0,1.0]); `--refineIters` default 5.
+- **Micropattern α_mp:** default 0.60 (fixed unless internally tuned; no CLI flag).
 - **Debug:** `--debug-normalized` writes normalized feature samples; pair with `--debug-sample`.
 
 ### applyMappings
@@ -52,6 +53,8 @@ bench --manifest <pairs.json> [--outDir <dir>] [--metricsOut <metrics.json>] [--
 
 - Manifest schema: `{"pairs":[{"id"?,"old","new","note"?"}...]}`.
 - Metrics JSON keys (deterministic): `pairs`, `totalAccepted`, `totalAbstained`, `items[]` (`id,old,new,accepted,abstained,out,note`).
+
+Note on refinement iterations: help may show `--refineIters <0|1>`, but the CLI accepts any integer; default is 5.
 
 ## Troubleshooting quick wins
 
