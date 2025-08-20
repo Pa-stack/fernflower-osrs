@@ -35,3 +35,201 @@ tasks.withType(JavaExec).configureEach {
     jvmArgs "-Xmx1g"
 }
 // >>> AUTOGEN: BYTECODEMAPPER mapper-cli build.gradle IDF CLI END
+
+// >>> AUTOGEN: BYTECODEMAPPER SMOKE TASKS BEGIN
+import java.security.MessageDigest
+
+def smokeDir = file("$buildDir/smoke")
+def weeksDir = file("$rootDir/data/weeks")
+def oldJar = file("$weeksDir/osrs-170.jar")
+def newJar = file("$weeksDir/osrs-171.jar")
+def manifest = file("$projectDir/src/test/resources/bench/pairs.json")
+
+// tiny helpers
+def hashFile = { File f ->
+    MessageDigest md = MessageDigest.getInstance("SHA-256")
+    md.update(f.bytes)
+    return md.digest().collect { String.format("%02x", it) }.join()
+}
+def assertEqual = { File a, File b, String label ->
+    if (!a.exists() || !b.exists()) throw new GradleException("[${label}] missing files: ${a} | ${b}")
+    if (a.length() != b.length()) throw new GradleException("[${label}] size mismatch: ${a.length()} vs ${b.length()}")
+    def ha = hashFile(a); def hb = hashFile(b)
+    if (ha != hb) throw new GradleException("[${label}] hash mismatch: ${ha} vs ${hb}")
+    logger.lifecycle("[${label}] OK: ${ha}")
+}
+
+tasks.register("smokePrep") {
+    doLast {
+        smokeDir.mkdirs()
+        if (!oldJar.exists() || !newJar.exists()) {
+            throw new GradleException("Smoke jars missing: ${oldJar} / ${newJar}")
+        }
+        if (!manifest.exists()) {
+            throw new GradleException("Smoke manifest missing: ${manifest}")
+        }
+    }
+}
+
+tasks.register("smokeMapOldNew1", JavaExec) {
+    dependsOn "smokePrep", "compileJava"
+    group = "verification"
+    description = "mapOldNew run #1 (deterministic)"
+    classpath = sourceSets.main.runtimeClasspath
+    main = "io.bytecodemapper.cli.Main"
+    args "mapOldNew",
+         "--old", oldJar.absolutePath,
+         "--new", newJar.absolutePath,
+         "--out", new File(smokeDir, "m1.tiny").absolutePath,
+         "--deterministic",
+         "--debug-normalized", new File(smokeDir, "norm1.txt").absolutePath,
+         "--debug-sample", "16",
+         "--maxMethods", "300"
+}
+
+tasks.register("smokeMapOldNew2", JavaExec) {
+    dependsOn "smokePrep", "compileJava"
+    group = "verification"
+    description = "mapOldNew run #2 (deterministic)"
+    classpath = sourceSets.main.runtimeClasspath
+    main = "io.bytecodemapper.cli.Main"
+    args "mapOldNew",
+         "--old", oldJar.absolutePath,
+         "--new", newJar.absolutePath,
+         "--out", new File(smokeDir, "m2.tiny").absolutePath,
+         "--deterministic",
+         "--debug-normalized", new File(smokeDir, "norm2.txt").absolutePath,
+         "--debug-sample", "16",
+         "--maxMethods", "300"
+}
+
+tasks.register("smokeDiffMappings") {
+    dependsOn "smokeMapOldNew1", "smokeMapOldNew2"
+    group = "verification"
+    description = "compare m1.tiny vs m2.tiny and norm dumps"
+    doLast {
+        assertEqual new File(smokeDir, "m1.tiny"), new File(smokeDir, "m2.tiny"), "mappings.tiny"
+        assertEqual new File(smokeDir, "norm1.txt"), new File(smokeDir, "norm2.txt"), "normalized-debug"
+    }
+}
+
+tasks.register("smokeApplyTiny1", JavaExec) {
+    dependsOn "smokeMapOldNew1"
+    group = "verification"
+    description = "applyMappings (TinyRemapper) #1"
+    classpath = sourceSets.main.runtimeClasspath
+    main = "io.bytecodemapper.cli.Main"
+    args "applyMappings",
+         "--inJar", newJar.absolutePath,
+         "--mappings", new File(smokeDir, "m1.tiny").absolutePath,
+         "--out", new File(smokeDir, "remap-tiny-a.jar").absolutePath,
+         "--verifyRemap",
+         "--deterministic"
+}
+
+tasks.register("smokeApplyTiny2", JavaExec) {
+    dependsOn "smokeMapOldNew1"
+    group = "verification"
+    description = "applyMappings (TinyRemapper) #2"
+    classpath = sourceSets.main.runtimeClasspath
+    main = "io.bytecodemapper.cli.Main"
+    args "applyMappings",
+         "--inJar", newJar.absolutePath,
+         "--mappings", new File(smokeDir, "m1.tiny").absolutePath,
+         "--out", new File(smokeDir, "remap-tiny-b.jar").absolutePath,
+         "--verifyRemap",
+         "--deterministic"
+}
+
+tasks.register("smokeDiffTiny") {
+    dependsOn "smokeApplyTiny1", "smokeApplyTiny2"
+    group = "verification"
+    description = "compare TinyRemapper outputs"
+    doLast {
+        assertEqual new File(smokeDir, "remap-tiny-a.jar"), new File(smokeDir, "remap-tiny-b.jar"), "remap-tiny"
+    }
+}
+
+tasks.register("smokeApplyAsm1", JavaExec) {
+    dependsOn "smokeMapOldNew1"
+    group = "verification"
+    description = "applyMappings (ASM) #1"
+    classpath = sourceSets.main.runtimeClasspath
+    main = "io.bytecodemapper.cli.Main"
+    args "applyMappings",
+         "--inJar", newJar.absolutePath,
+         "--mappings", new File(smokeDir, "m1.tiny").absolutePath,
+         "--out", new File(smokeDir, "remap-asm-a.jar").absolutePath,
+         "--verifyRemap",
+         "--remapper=asm",
+         "--deterministic"
+}
+
+tasks.register("smokeApplyAsm2", JavaExec) {
+    dependsOn "smokeMapOldNew1"
+    group = "verification"
+    description = "applyMappings (ASM) #2"
+    classpath = sourceSets.main.runtimeClasspath
+    main = "io.bytecodemapper.cli.Main"
+    args "applyMappings",
+         "--inJar", newJar.absolutePath,
+         "--mappings", new File(smokeDir, "m1.tiny").absolutePath,
+         "--out", new File(smokeDir, "remap-asm-b.jar").absolutePath,
+         "--verifyRemap",
+         "--remapper=asm",
+         "--deterministic"
+}
+
+tasks.register("smokeDiffAsm") {
+    dependsOn "smokeApplyAsm1", "smokeApplyAsm2"
+    group = "verification"
+    description = "compare ASM outputs"
+    doLast {
+        assertEqual new File(smokeDir, "remap-asm-a.jar"), new File(smokeDir, "remap-asm-b.jar"), "remap-asm"
+    }
+}
+
+tasks.register("smokeBench1", JavaExec) {
+    dependsOn "smokePrep"
+    group = "verification"
+    description = "bench manifest #1"
+    classpath = sourceSets.main.runtimeClasspath
+    main = "io.bytecodemapper.cli.Main"
+    args "bench",
+         "--manifest", manifest.absolutePath,
+         "--outDir", new File(smokeDir, "bench1").absolutePath,
+         "--metricsOut", new File(smokeDir, "metrics1.json").absolutePath,
+         "--deterministic"
+}
+
+tasks.register("smokeBench2", JavaExec) {
+    dependsOn "smokePrep"
+    group = "verification"
+    description = "bench manifest #2"
+    classpath = sourceSets.main.runtimeClasspath
+    main = "io.bytecodemapper.cli.Main"
+    args "bench",
+         "--manifest", manifest.absolutePath,
+         "--outDir", new File(smokeDir, "bench2").absolutePath,
+         "--metricsOut", new File(smokeDir, "metrics2.json").absolutePath,
+         "--deterministic"
+}
+
+tasks.register("smokeDiffBench") {
+    dependsOn "smokeBench1", "smokeBench2"
+    group = "verification"
+    description = "compare bench metrics json"
+    doLast {
+        assertEqual new File(smokeDir, "metrics1.json"), new File(smokeDir, "metrics2.json"), "bench-metrics"
+    }
+}
+
+tasks.register("smoke") {
+    group = "verification"
+    description = "Run all deterministic smoke checks"
+    dependsOn "smokeDiffMappings", "smokeDiffTiny", "smokeDiffAsm", "smokeDiffBench"
+    doLast {
+        logger.lifecycle("[smoke] All deterministic checks passed.")
+    }
+}
+// >>> AUTOGEN: BYTECODEMAPPER SMOKE TASKS END
