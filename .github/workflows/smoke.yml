@@ -1,4 +1,4 @@
-# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE VERIFY BEGIN
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE HARDEN BEGIN
 name: Smoke
 
 on:
@@ -37,18 +37,13 @@ jobs:
       - name: Gradle wrapper permissions
         run: chmod +x ./gradlew
 
-      - name: Show pinned gradle.properties (if any)
+      - name: Assert wrapper distributionUrl contains 6.9.4
         run: |
           set -eux
-          if [ -f gradle.properties ]; then
-            echo "----- gradle.properties -----"
-            sed -n '1,200p' gradle.properties | sed 's/./&/g' | cat
-            echo "-----------------------------"
-          else
-            echo "No root gradle.properties found."
-          fi
+          cat gradle/wrapper/gradle-wrapper.properties
+          grep -E "distributionUrl=.*6\.9\.4" gradle/wrapper/gradle-wrapper.properties
 
-      - name: Create CI init script to print JVMs and properties
+      - name: Create CI init script to prove JVM & props
         run: |
           cat > ci-init.gradle <<'EOF'
           println "[CI] env JAVA_HOME=" + System.getenv("JAVA_HOME")
@@ -81,10 +76,11 @@ jobs:
             [ -f "$f" ] && sha256sum "$f" || true
           done
 
-      - name: Upload smoke artifacts
+      - name: Upload smoke artifacts (7-day retention)
         uses: actions/upload-artifact@v4
         with:
           name: smoke-artifacts
+          retention-days: 7
           path: |
             ci-init.gradle
             gradle-version.txt
@@ -98,4 +94,24 @@ jobs:
             mapper-cli/build/smoke/remap-asm-b.jar
             mapper-cli/build/smoke/metrics1.json
             mapper-cli/build/smoke/metrics2.json
-# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE VERIFY END
+
+      - name: Job summary
+        run: |
+          {
+            echo "## BytecodeMapper Smoke"
+            echo ""
+            echo "- Java: \`$(java -version 2>&1 | head -n1)\`"
+            echo "- Gradle:"; head -n1 gradle-version.txt
+            echo "- Wrapper:"; grep distributionUrl gradle/wrapper/gradle-wrapper.properties | sed 's/^/- /'
+            echo ""
+            echo "Hashes (pairs should match):"
+            for f in mapper-cli/build/smoke/m1.tiny mapper-cli/build/smoke/m2.tiny \
+                     mapper-cli/build/smoke/remap-tiny-a.jar mapper-cli/build/smoke/remap-tiny-b.jar \
+                     mapper-cli/build/smoke/remap-asm-a.jar mapper-cli/build/smoke/remap-asm-b.jar \
+                     mapper-cli/build/smoke/metrics1.json mapper-cli/build/smoke/metrics2.json; do
+              if [ -f "$f" ]; then
+                echo "  - $(sha256sum \"$f\")"
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE HARDEN END
