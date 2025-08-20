@@ -83,3 +83,212 @@ subprojects {
   }
 }
 // <<< AUTOGEN: BYTECODEMAPPER ROOT BUILD END
+
+// >>> AUTOGEN: BYTECODEMAPPER VERIFY TASK BEGIN
+
+def _readLines(File f) { f.exists() ? f.readLines('UTF-8') : [] }
+def _rel(File f) { project.rootProject.projectDir.toPath().relativize(f.toPath()).toString().replace('\\','/') }
+def _findFirstMatch(File f, String regex) {
+  int ln = 0
+  for (String line : _readLines(f)) {
+    ln++
+    if (line =~ regex) return [line, ln]
+  }
+  return [null, -1]
+}
+def _extractWrapperVersion(File f) {
+  def m = (_readLines(f).join('\n') =~ /distributionUrl=.*gradle-([0-9.]+)-bin\.zip/)
+  return m.find() ? m.group(1) : "UNKNOWN"
+}
+def _xmlFiles(String patternGlob) {
+  return fileTree(project.rootDir) {
+    include patternGlob
+  }.files.toList().sort { _rel(it) }
+}
+def _allBuildGradles() {
+  def files = []
+  files.add(new File(project.rootDir, "build.gradle"))
+  project.subprojects.each { sp -> files.add(new File(sp.projectDir, "build.gradle")) }
+  return files.findAll { it.exists() }.sort { _rel(it) }
+}
+def _settingsFile() { new File(project.rootDir, "settings.gradle") }
+def _boolIcon(boolean ok) { ok ? "✅" : "❌" }
+
+tasks.register("verifyEnvCliTests") {
+  group = "verification"
+  description = "Read-only audit of wrapper, Java compat, ASM deps, CLI surface, and test results; outputs build/verify/01_env_cli_tests.md"
+  dependsOn "clean", "build"
+  doLast {
+    File out = file("$buildDir/verify/01_env_cli_tests.md")
+    out.parentFile.mkdirs()
+
+    // ---- Checks ----
+    def checks = []
+    // 1) Wrapper
+    File wrapperProps = file("gradle/wrapper/gradle-wrapper.properties")
+    String wrapperVer = _extractWrapperVersion(wrapperProps)
+    boolean wrapperOk = wrapperVer.contains("6.4.9") // audit requirement; log exact value regardless
+    checks << [name: "Gradle wrapper version contains 6.4.9",
+           ok: wrapperOk,
+           detail: "distributionUrl → gradle-${wrapperVer}-bin.zip",
+           file: _rel(wrapperProps),
+           line: 0]
+
+    // 2) Java 1.8 in each build.gradle
+    _allBuildGradles().each { File bg ->
+      def srcMatch = _findFirstMatch(bg, /sourceCompatibility\s*=\s*('1\.8'|1\.8|JavaVersion\.VERSION_1_8)/)
+      def tgtMatch = _findFirstMatch(bg, /targetCompatibility\s*=\s*('1\.8'|1\.8|JavaVersion\.VERSION_1_8)/)
+      checks << [name: "sourceCompatibility==1.8", ok: srcMatch[0] != null,
+             detail: srcMatch[0] ?: "NOT FOUND", file: _rel(bg), line: (int)srcMatch[1]]
+      checks << [name: "targetCompatibility==1.8", ok: tgtMatch[0] != null,
+             detail: tgtMatch[0] ?: "NOT FOUND", file: _rel(bg), line: (int)tgtMatch[1]]
+    }
+
+    // 3) ASM deps (7.3.1) and asm-commons presence in :mapper-io
+    def asmFiles = _allBuildGradles()
+    def asmRegex = ~/["']org\.ow2\.asm:asm(?::tree)?:7\.3\.1["']/
+    def hasAsm = false, hasAsmTree = false
+    asmFiles.each { f ->
+      def txt = f.getText('UTF-8')
+      if (txt =~ /["']org\.ow2\.asm:asm:7\.3\.1["']/) hasAsm = true
+      if (txt =~ /["']org\.ow2\.asm:asm-tree:7\.3\.1["']/) hasAsmTree = true
+    }
+    checks << [name: "ASM 7.3.1 (asm)", ok: hasAsm, detail: hasAsm ? "found" : "missing", file: "(any build.gradle)", line: 0]
+    checks << [name: "ASM 7.3.1 (asm-tree)", ok: hasAsmTree, detail: hasAsmTree ? "found" : "missing", file: "(any build.gradle)", line: 0]
+
+    File mapperIoGradle = new File(project.rootDir, "mapper-io/build.gradle")
+    def mapperIoTxt = mapperIoGradle.exists() ? mapperIoGradle.getText('UTF-8') : ""
+    boolean hasAsmCommonsInIo = mapperIoTxt =~ /["']org\.ow2\.asm:asm-commons:7\.3\.1["']/
+    checks << [name: "asm-commons present in :mapper-io", ok: hasAsmCommonsInIo,
+           detail: hasAsmCommonsInIo ? "asm-commons:7.3.1 present" : "missing in mapper-io/build.gradle",
+           file: _rel(mapperIoGradle), line: 0]
+
+    // 4) settings.gradle includes modules
+    File settings = _settingsFile()
+    def settingsTxt = settings.exists() ? settings.getText('UTF-8') : ""
+    [":mapper-core", ":mapper-signals", ":mapper-io", ":mapper-cli"].each { p ->
+      boolean present = settingsTxt =~ /include\s+["']${java.util.regex.Pattern.quote(p)}["']/
+      checks << [name: "settings includes ${p}", ok: present,
+             detail: present ? "included" : "NOT included",
+             file: _rel(settings), line: 0]
+    }
+
+    // 5) CLI entry points (first match, file:line)
+    File cliRoot = new File(project.rootDir, "mapper-cli/src/main/java")
+    def cliCmds = ["mapOldNew","applyMappings","classMatch","methodMatch","fieldMatch","printIdf","tinyStats","bench"]
+    cliCmds.each { cmd ->
+      File foundFile = null; int foundLine = -1; String foundText = null
+      if (cliRoot.exists()) {
+        def files = fileTree(cliRoot) { include '**/*.java' }.files.toList().sort { _rel(it) }
+        boolean _done = false
+        for (File jf : files) {
+          if (_done) break
+          int ln = 0
+          for (String line : _readLines(jf)) {
+            ln++
+            if (line.contains(cmd)) { foundFile = jf; foundLine = ln; foundText = line.trim(); _done = true; break }
+          }
+        }
+      }
+      checks << [name: "CLI command: ${cmd}", ok: (foundFile != null),
+             detail: foundText ?: "NOT FOUND",
+             file: foundFile ? _rel(foundFile) : "(search)", line: foundLine]
+    }
+
+    // ---- Parse test results (after build) ----
+    def failing = []
+    _xmlFiles("**/build/test-results/test/*.xml").each { File xf ->
+      String xmlText = xf.getText('UTF-8')
+      def tcMatcher = (xmlText =~ /(?s)<testcase\b([^>]*)>(.*?)<\/testcase>/)
+      tcMatcher.each { m ->
+        String attrs = m[1]
+        String body  = m[2]
+        boolean hasFailure = (body =~ /<failure\b/).find()
+        boolean hasError   = (body =~ /<error\b/).find()
+        if (hasFailure || hasError) {
+          def clsM = (attrs =~ /\bclassname=\"([^\"]*)\"/)
+          def nameM = (attrs =~ /\bname=\"([^\"]*)\"/)
+          String cls = clsM.find() ? clsM.group(1) : "unknown"
+          String name = nameM.find() ? nameM.group(1) : "unknown"
+          // Extract first failure/error message or inner text
+          def feM = (body =~ /(?s)<(failure|error)\b[^>]*?(?:message=\"([^\"]*)\")?[^>]*>(.*?)<\/\1>/)
+          String msg = "no message"
+          if (feM.find()) {
+            msg = feM.group(2) ?: feM.group(3)?.trim()?.split('\n')?.first()
+            if (!msg) msg = "no message"
+          }
+          failing << [className: cls, testName: name, message: msg, xml: _rel(xf)]
+        }
+      }
+    }
+    failing = failing.sort { a, b -> (a.className <=> b.className) ?: (a.testName <=> b.testName) }
+
+    // Build map for report links per subproject
+    def htmlReports = fileTree(project.rootDir) {
+      include "**/build/reports/tests/test/index.html"
+    }.files.collect { f ->
+      def path = _rel(f)
+      def modulePath = path.replaceFirst(/\/build\/reports\/tests\/test\/index\.html$/, '')
+      [module: modulePath, path: path]
+    }
+    htmlReports = htmlReports.sort { a, b -> a.module <=> b.module }
+
+    // ---- Write report ----
+    def sb = new StringBuilder()
+    sb << "# Environment, Build, CLI Surface, and Test Baseline Audit\n\n"
+    sb << "_Read-only audit generated by Gradle task `verifyEnvCliTests`._\n\n"
+    sb << "## Summary Table\n\n"
+    sb << "| Check | Status | Detail | File:Line |\n"
+    sb << "|------|--------|--------|-----------|\n"
+    checks.each { c ->
+      sb << "| " << c.name.replace("|","\\|") << " | " << _boolIcon(c.ok) << " | "
+      sb << (c.detail?.toString()?.replace("|","\\|") ?: "") << " | "
+      sb << (c.file ?: "") << (c.line>0 ? (":" + c.line) : "") << " |\n"
+    }
+
+    sb << "\n## Test Failures\n\n"
+    if (failing.isEmpty()) {
+      sb << "- None ✅\n"
+    } else {
+      failing.each { f ->
+        sb << "- **" << f.className << "::" << f.testName << "** — " << f.message.replace("\n"," ").take(240) << "  \n"
+        sb << "  XML: " << f.xml << "\n"
+      }
+    }
+
+    sb << "\n## Test Report Links\n\n"
+    if (htmlReports.isEmpty()) {
+      sb << "- (no HTML reports found)\n"
+    } else {
+      htmlReports.each { r ->
+        sb << "- " << r.module << ": " << r.path << "\n"
+      }
+    }
+
+    // If any check failed, suggest next actions
+    def anyFailed = checks.any { !it.ok }
+    if (anyFailed) {
+      sb << "\n## Next actions\n\n"
+      checks.findAll { !it.ok }.each { c ->
+        if (c.name.contains("Gradle wrapper")) {
+          sb << "- Wrapper mismatch: expected contains `6.4.9`, found `" << wrapperVer << "`. If intentional, update audit policy; otherwise adjust `gradle/wrapper/gradle-wrapper.properties`.\n"
+        } else if (c.name.startsWith("sourceCompatibility") || c.name.startsWith("targetCompatibility")) {
+          sb << "- Enforce Java 8 in `" << c.file << "` (use `sourceCompatibility = '1.8'` and `targetCompatibility = '1.8'` or `JavaVersion.VERSION_1_8`).\n"
+        } else if (c.name.contains("ASM 7.3.1")) {
+          sb << "- Add/align ASM deps to `7.3.1` in the relevant `build.gradle`.\n"
+        } else if (c.name.contains("asm-commons")) {
+          sb << "- Ensure `org.ow2.asm:asm-commons:7.3.1` is declared in `mapper-io/build.gradle` for remapping.\n"
+        } else if (c.name.startsWith("settings includes")) {
+          sb << "- Include the missing module in `settings.gradle` via `include '" << c.name.split(' ').last() << "'`.\n"
+        } else if (c.name.startsWith("CLI command:")) {
+          sb << "- Could not locate CLI entry point `" << c.name.split(':')[1].trim() << "` in `mapper-cli/src/main/java`.\n"
+        }
+      }
+    }
+
+    out.text = sb.toString()
+    println "[verify] Wrote ${_rel(out)} (size=${out.length()} bytes)"
+    if (out.length() <= 0) throw new GradleException("verify report is empty")
+  }
+}
+// >>> AUTOGEN: BYTECODEMAPPER VERIFY TASK END
