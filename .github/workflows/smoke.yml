@@ -84,15 +84,19 @@ jobs:
           println "[CI] sysprop java.home=" + System.getProperty("java.home")
           EOF
 
+      # >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE JVM ARGS BEGIN
       - name: Gradle version (expect 6.9.4) with CI Java override
         run: |
           set -eux
+          GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.logging.level=lifecycle"
           ./gradlew -I ci-init.gradle -Dorg.gradle.java.home="$JAVA_HOME" -v | tee gradle-version.txt
-          echo "---- Asserting Gradle 6.9.4 ----"
           grep -E "^Gradle 6\.9\.4$" gradle-version.txt
 
       - name: Smoke (deterministic) with CI Java override
-        run: ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :mapper-cli:smoke --no-daemon -Dorg.gradle.jvmargs="-Xmx2g"
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.logging.level=lifecycle"
+        run: ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :mapper-cli:smoke --no-daemon
+      # >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE JVM ARGS END
 
       - name: Show hashes
         run: |
