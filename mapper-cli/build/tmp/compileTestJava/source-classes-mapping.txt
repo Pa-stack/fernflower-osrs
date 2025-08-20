@@ -1,5 +1,7 @@
 io/bytecodemapper/cli/CallGraphRefinerSmokeTest.java
  io.bytecodemapper.cli.CallGraphRefinerSmokeTest
+io/bytecodemapper/core/match/MethodMatcherRelaxedFilterTest.java
+ io.bytecodemapper.core.match.MethodMatcherRelaxedFilterTest
 io/bytecodemapper/cli/TestFixtures.java
  io.bytecodemapper.cli.TestFixtures
 io/bytecodemapper/cli/DeterminismEndToEndTest.java

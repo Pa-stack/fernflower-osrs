@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.MapOldNewSmokeTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-19T21:01:22" hostname="PRAGMATIQPASCAL" time="1.978">
+<testsuite name="io.bytecodemapper.cli.MapOldNewSmokeTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-19T21:07:27" hostname="PRAGMATIQPASCAL" time="2.317">
   <properties/>
-  <testcase name="runsMapOldNewAndWritesDebugDump" classname="io.bytecodemapper.cli.MapOldNewSmokeTest" time="1.978"/>
+  <testcase name="runsMapOldNewAndWritesDebugDump" classname="io.bytecodemapper.cli.MapOldNewSmokeTest" time="2.317"/>
   <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=1
 [DF] iter=1, changed=false
 [DF] iterateToFixpoint start, nodes=2

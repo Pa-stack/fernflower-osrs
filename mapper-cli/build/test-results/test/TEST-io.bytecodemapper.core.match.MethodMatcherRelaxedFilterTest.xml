@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.bytecodemapper.core.match.MethodMatcherRelaxedFilterTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-08-19T21:07:30" hostname="PRAGMATIQPASCAL" time="0.001">
+  <properties/>
+  <testcase name="distanceZeroIncluded" classname="io.bytecodemapper.core.match.MethodMatcherRelaxedFilterTest" time="0.0"/>
+  <testcase name="distanceTwoExcluded" classname="io.bytecodemapper.core.match.MethodMatcherRelaxedFilterTest" time="0.001"/>
+  <testcase name="distanceOneIncluded" classname="io.bytecodemapper.core.match.MethodMatcherRelaxedFilterTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
