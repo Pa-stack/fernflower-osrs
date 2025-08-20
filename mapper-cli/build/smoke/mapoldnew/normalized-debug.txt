@@ -1,0 +1,81 @@
+# NormalizedMethod debug dump
+== a#<init>()V
+descriptor: ()V
+fingerprint: 3dfc753da5cf89810daaf2c05dd1b03060c1ab544232e633e30d86e1c884af04
+topOpcodes: 182x3 183x3 18x2 89x2 187x2 191x2
+strings: "a.<init>("
+== a#<init>()V
+descriptor: ()V
+fingerprint: 3bc32ed3b4349c96a722b8c014a3981853bbbf6e2c97d50a73607c3e199a776a
+topOpcodes: 25x10 167x9 181x9 18x5 3x3 1x1
+strings:
+== a#a(B)I
+descriptor: (B)I
+fingerprint: 1dfc62bdcd335aa8ddef95ead23ac1e806359f6373231e6acdf7a2b673441a99
+topOpcodes: 18x3 182x3 180x2 25x1 89x1 104x1
+strings: "a.a("
+== a#aa()V
+descriptor: ()V
+fingerprint: f70aa97be2e794995536155e67f57f6654d4fc8909853f3526df5e0699692362
+topOpcodes: 25x5 167x4 185x3 58x2 16x1 153x1
+strings:
+== a#ab(Lgk;)Las;
+descriptor: (Lgk;)Las;
+fingerprint: 0db1987d316fd89835b7e98931e9bbe54752dc77668a5589b347954039101fd3
+topOpcodes: 167x10 58x6 25x5 89x5 183x5 187x5
+strings: ""
+== a#ac(III)[I
+descriptor: (III)[I
+fingerprint: 4f561da869dfea8c67c40998fa6728a08a4145f8f209e872a9ac520de2b064ac
+topOpcodes: 21x6 25x5 167x5 185x4 58x2 153x2
+strings:
+== a#ad()Ljava/lang/String;
+descriptor: ()Ljava/lang/String;
+fingerprint: aa88a08b4754799cc20d47fe591286f53721d97c7fa7bd63b6e70d1b48bee5c2
+topOpcodes: 25x1 176x1 180x1
+strings:
+== a#ae()Z
+descriptor: ()Z
+fingerprint: 4197520f0957ea68fd52aba0b55713249939194f13a48270333adadde156ea87
+topOpcodes: 25x1 172x1 180x1
+strings:
+== a#af(Lgk;I)V
+descriptor: (Lgk;I)V
+fingerprint: 9963ecc3ea43aa2c47cbde4bc4f956c22b41f4826db17907fa4d19e9524c9bda
+topOpcodes: 25x20 18x13 167x13 182x11 181x8 21x3
+strings:
+== a#ag()I
+descriptor: ()I
+fingerprint: ce9a64a44ee6287b6b06b2fa624c32609ff43110d49c7b7c916bff1bf592407c
+topOpcodes: 18x1 25x1 104x1 172x1 180x1
+strings:
+== a#ah(Lgk;)Las;
+descriptor: (Lgk;)Las;
+fingerprint: 0db1987d316fd89835b7e98931e9bbe54752dc77668a5589b347954039101fd3
+topOpcodes: 167x8 58x6 25x5 89x5 183x5 187x5
+strings: ""
+== a#ai(III)[I
+descriptor: (III)[I
+fingerprint: 4f561da869dfea8c67c40998fa6728a08a4145f8f209e872a9ac520de2b064ac
+topOpcodes: 21x6 25x5 167x4 185x4 58x2 153x2
+strings:
+== a#aj()Ljava/lang/String;
+descriptor: ()Ljava/lang/String;
+fingerprint: aa88a08b4754799cc20d47fe591286f53721d97c7fa7bd63b6e70d1b48bee5c2
+topOpcodes: 25x1 176x1 180x1
+strings:
+== a#ak(III)Z
+descriptor: (III)Z
+fingerprint: df91df3f1af435f5c755d52313d5234690ffd80228403b1e4a2e93ab874aac89
+topOpcodes: 167x5 25x4 21x3 185x3 58x2 153x2
+strings:
+== a#al()Z
+descriptor: ()Z
+fingerprint: 4197520f0957ea68fd52aba0b55713249939194f13a48270333adadde156ea87
+topOpcodes: 25x1 172x1 180x1
+strings:
+== a#am()I
+descriptor: ()I
+fingerprint: ce9a64a44ee6287b6b06b2fa624c32609ff43110d49c7b7c916bff1bf592407c
+topOpcodes: 18x1 25x1 104x1 172x1 180x1
+strings:

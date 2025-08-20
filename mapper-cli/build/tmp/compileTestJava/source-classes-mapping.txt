@@ -2,21 +2,21 @@ io/bytecodemapper/cli/CallGraphRefinerSmokeTest.java
  io.bytecodemapper.cli.CallGraphRefinerSmokeTest
 io/bytecodemapper/core/match/MethodMatcherRelaxedFilterTest.java
  io.bytecodemapper.core.match.MethodMatcherRelaxedFilterTest
-io/bytecodemapper/cli/BenchManifestTest.java
- io.bytecodemapper.cli.BenchManifestTest
-io/bytecodemapper/cli/TestFixtures.java
- io.bytecodemapper.cli.TestFixtures
-io/bytecodemapper/cli/DeterminismEndToEndTest.java
- io.bytecodemapper.cli.DeterminismEndToEndTest
-io/bytecodemapper/cli/CallGraphRefinerMissingNeighborTest.java
- io.bytecodemapper.cli.CallGraphRefinerMissingNeighborTest
-io/bytecodemapper/cli/MapOldNewSmokeTest.java
- io.bytecodemapper.cli.MapOldNewSmokeTest
-io/bytecodemapper/cli/MapOldNewAcceptanceMarginTest.java
- io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest
-io/bytecodemapper/cli/MapOldNewDebugFlagsTest.java
- io.bytecodemapper.cli.MapOldNewDebugFlagsTest
-io/bytecodemapper/core/match/MethodMatcherDistanceTest.java
- io.bytecodemapper.core.match.MethodMatcherDistanceTest
 io/bytecodemapper/cli/DeterminismSmokeTest.java
  io.bytecodemapper.cli.DeterminismSmokeTest
+io/bytecodemapper/cli/TestFixtures.java
+ io.bytecodemapper.cli.TestFixtures
+io/bytecodemapper/core/match/MethodMatcherDistanceTest.java
+ io.bytecodemapper.core.match.MethodMatcherDistanceTest
+io/bytecodemapper/cli/CallGraphRefinerMissingNeighborTest.java
+ io.bytecodemapper.cli.CallGraphRefinerMissingNeighborTest
+io/bytecodemapper/cli/MapOldNewDebugFlagsTest.java
+ io.bytecodemapper.cli.MapOldNewDebugFlagsTest
+io/bytecodemapper/cli/BenchManifestTest.java
+ io.bytecodemapper.cli.BenchManifestTest
+io/bytecodemapper/cli/DeterminismEndToEndTest.java
+ io.bytecodemapper.cli.DeterminismEndToEndTest
+io/bytecodemapper/cli/MapOldNewAcceptanceMarginTest.java
+ io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest
+io/bytecodemapper/cli/MapOldNewSmokeTest.java
+ io.bytecodemapper.cli.MapOldNewSmokeTest

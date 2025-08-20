@@ -94,7 +94,7 @@ public final class Main {
         "           [--deterministic] [--cacheDir <dir>] [--idf <path>]\n" +
         "           [--refine] [--refineIters <0|1>] [--lambda <0.0..1.0>]\n" +
         "           [--tauAcceptMethods <0..1>] [--marginMethods <0..1>]\n" +
-        "           [--debug-stats] [--debug-normalized [path]] [--debug-sample <N>]");
+        "           [--debug-stats] [--debug-normalized [path]] [--debug-sample <N>] [--maxMethods <N>]");
     System.out.println("  applyMappings --inJar <in.jar> --mappings <mappings.tiny> --out <out.jar> [--format=tiny2|enigma] [--remapper=tiny|asm] [--verifyRemap] [--deterministic]");
     // >>> AUTOGEN: BYTECODEMAPPER CLI Main BENCH USAGE BEGIN
     // Bench using explicit manifest of pairs
