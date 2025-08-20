@@ -5,6 +5,8 @@ import io.bytecodemapper.cli.cache.MethodFeatureCacheEntry;
 import io.bytecodemapper.cli.method.MethodFeatures;
 import io.bytecodemapper.cli.method.MethodRef;
 import io.bytecodemapper.cli.method.MethodScorer;
+import io.bytecodemapper.core.hash.StableHash64;
+import io.bytecodemapper.core.index.NsfIndex;
 import io.bytecodemapper.signals.idf.IdfStore;
 import io.bytecodemapper.signals.normalized.NormalizedAdapters;
 import io.bytecodemapper.signals.micro.MicroPatternExtractor;
@@ -49,6 +51,12 @@ public final class MethodMatcher {
         public final java.util.List<Abstention> abstained = new java.util.ArrayList<Abstention>();
     }
 
+    // >>> AUTOGEN: BYTECODEMAPPER MATCH NSF TIERS BEGIN
+    // New tier order (comma list). Default: exact nsf, near nsf, then WL exact, then relaxed WL
+    private static String NSFTierOrder = "exact,near,wl,wlrelaxed";
+    public static void setNsftierOrder(String csv){ if (csv!=null && csv.trim().length()>0) NSFTierOrder = csv; }
+    // <<< AUTOGEN: BYTECODEMAPPER MATCH NSF TIERS END
+
     /**
      * Overload that accepts feature caches. Builds WL index on NEW side and, for each OLD
      * method, generates candidates (same desc, equal WL first; if none, relax to same desc
@@ -62,11 +70,39 @@ public final class MethodMatcher {
             Map<String, Map<String, MethodFeatureCacheEntry>> oldFeat,
             Map<String, Map<String, MethodFeatureCacheEntry>> newFeat,
             IdfStore idf,
-            boolean deterministic) {
+            boolean deterministic,
+            boolean debugStats) {
         MethodMatchResult out = new MethodMatchResult();
 
         // 1) Build NEW-side index by (desc, wl)
         Map<Key, List<NewRef>> wlIndex = buildNewSideWlIndex(newFeat);
+
+        // >>> AUTOGEN: BYTECODEMAPPER MATCH NSF TIERS BEGIN
+        // Build NEW-side nsf index per newOwner
+        java.util.Map<String, NsfIndex> nsfIndexByNewOwner = new java.util.LinkedHashMap<String, NsfIndex>();
+        {
+            java.util.ArrayList<String> newOwners = new java.util.ArrayList<String>(newFeat.keySet());
+            java.util.Collections.sort(newOwners);
+            for (String newOwner : newOwners) {
+                java.util.Map<String, MethodFeatureCacheEntry> nm = newFeat.get(newOwner);
+                if (nm == null) continue;
+                NsfIndex idx = new NsfIndex();
+                java.util.ArrayList<String> sigs = new java.util.ArrayList<String>(nm.keySet());
+                java.util.Collections.sort(sigs);
+                for (String sig : sigs) {
+                    MethodFeatureCacheEntry e = nm.get(sig);
+                    if (e == null) continue;
+                    // Use stable 64-bit hash derived from normalized fingerprint as surrogate nsf64
+                    String fp = (e.normFingerprint != null ? e.normFingerprint : (e.normalizedBodyHash != null ? e.normalizedBodyHash : (e.normalizedDescriptor != null ? e.normalizedDescriptor : sig)));
+                    long nsf64 = StableHash64.hashUtf8(fp);
+                    String name = sig.substring(0, sig.indexOf('('));
+                    String desc = sig.substring(sig.indexOf('('));
+                    idx.add(newOwner, desc, name, nsf64);
+                }
+                nsfIndexByNewOwner.put(newOwner, idx);
+            }
+        }
+        // <<< AUTOGEN: BYTECODEMAPPER MATCH NSF TIERS END
 
         // 2) Iterate OLD owners deterministically
         ArrayList<String> owners = new ArrayList<String>(classMap.keySet());
@@ -87,13 +123,44 @@ public final class MethodMatcher {
                 if (ofe == null) continue;
                 long oldWl = ofe.wlSignature;
 
-                // Primary candidates: exact WL+desc
-                List<NewRef> cands = wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList());
+                // Primary candidates: collect according to tier order (nsf + wl)
+                java.util.ArrayList<NewRef> candsMerged = new java.util.ArrayList<NewRef>();
+                // Precompute old nsf64 using same surrogate
+                String oldFp = (ofe.normFingerprint != null ? ofe.normFingerprint : (ofe.normalizedBodyHash != null ? ofe.normalizedBodyHash : (ofe.normalizedDescriptor != null ? ofe.normalizedDescriptor : sig)));
+                long oldNsf = StableHash64.hashUtf8(oldFp);
 
-                // Relaxed: same owner and desc, WL distance gating (<=1)
-                if (cands.isEmpty()) {
-                    cands = relaxedCandidates(newFeat, newOwner, desc, java.lang.Long.toString(oldWl), deterministic);
+                NsfIndex nsfIdx = nsfIndexByNewOwner.get(newOwner);
+                for (String tier : NSFTierOrder.split(",")) {
+                    String t = tier.trim().toLowerCase(java.util.Locale.ROOT);
+                    if ("exact".equals(t)) {
+                        if (nsfIdx != null) {
+                            java.util.List<NsfIndex.NewRef> xs = nsfIdx.exact(newOwner, desc, oldNsf);
+                            for (NsfIndex.NewRef r : xs) candsMerged.add(new NewRef(r.owner, r.name, r.desc, 0));
+                        }
+                    } else if ("near".equals(t)) {
+                        if (nsfIdx != null) {
+                            int hamBudget = 1; // see optional flattening gate later
+                            java.util.List<NsfIndex.NewRef> xs = nsfIdx.near(newOwner, desc, oldNsf, hamBudget);
+                            for (NsfIndex.NewRef r : xs) candsMerged.add(new NewRef(r.owner, r.name, r.desc, 0));
+                        }
+                    } else if ("wl".equals(t)) {
+                        java.util.List<NewRef> xs = wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList());
+                        candsMerged.addAll(xs);
+                    } else if ("wlrelaxed".equals(t)) {
+                        candsMerged.addAll(relaxedCandidates(newFeat, newOwner, desc, java.lang.Long.toString(oldWl), deterministic));
+                    }
                 }
+                // Deduplicate deterministically by (owner,desc,name) preserving tier order
+                java.util.LinkedHashMap<String, NewRef> uniq = new java.util.LinkedHashMap<String, NewRef>();
+                for (NewRef r : candsMerged) {
+                    String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
+                    if (!uniq.containsKey(k)) uniq.put(k, r);
+                }
+                java.util.ArrayList<NewRef> cands = new java.util.ArrayList<NewRef>(uniq.values());
+
+                // Keep back-compat safety: if nothing from tiers, fall back to WL exact, then relaxed
+                if (cands.isEmpty()) cands = new java.util.ArrayList<NewRef>(wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList()));
+                if (cands.isEmpty()) cands = new java.util.ArrayList<NewRef>(relaxedCandidates(newFeat, newOwner, desc, java.lang.Long.toString(oldWl), deterministic));
 
                 // Deterministic cap to prevent excessive memory on large classes/signature collisions
                 if (cands.size() > MAX_CANDIDATES) {
@@ -104,7 +171,7 @@ public final class MethodMatcher {
                             return a.name.compareTo(b.name);
                         }
                     });
-                    cands = trimmed.subList(0, MAX_CANDIDATES);
+                    cands = new java.util.ArrayList<NewRef>(trimmed.subList(0, MAX_CANDIDATES));
                 }
 
                 // Build MethodFeatures for scoring
@@ -119,6 +186,17 @@ public final class MethodMatcher {
                 MethodScorer.Result r = MethodScorer.scoreOne(src, candFeat, idf);
                 if (r.accepted && r.best != null) {
                     out.accepted.add(new Pair(oldOwner, oldName, r.best.ref.name, desc));
+                    if (debugStats) {
+                        System.out.println("[match] ok " + oldOwner + "#" + oldName + desc
+                                + " -> " + r.best.ref.owner + "#" + r.best.ref.name
+                                + " total=" + String.format(java.util.Locale.ROOT, "%.4f", r.scoreBest)
+                                + " margin=" + String.format(java.util.Locale.ROOT, "%.4f", (r.scoreBest - Math.max(0, r.scoreSecond)))
+                                + " calls=" + String.format(java.util.Locale.ROOT, "%.4f", r.sCalls)
+                                + " micro=" + String.format(java.util.Locale.ROOT, "%.4f", r.sMicro)
+                                + " hist=" + String.format(java.util.Locale.ROOT, "%.4f", r.sOpcode)
+                                + " str=" + String.format(java.util.Locale.ROOT, "%.4f", r.sStrings)
+                        );
+                    }
                 } else {
                     // Abstain: compute candidate scores for diagnostics/output
                     double[] scores = MethodScorer.scoreVector(src, candFeat, idf);
@@ -143,6 +221,16 @@ public final class MethodMatcher {
                         }
                     });
                     out.abstained.add(new Abstention(oldOwner, oldName, desc, cs));
+                    if (debugStats) {
+                        String top = cs.isEmpty()? "-" : (cs.get(0).newOwner + "#" + cs.get(0).newName);
+                        System.out.println("[match] abstain " + oldOwner + "#" + oldName + desc
+                                + " reason=" + (r.abstainReason != null ? r.abstainReason : "unknown")
+                                + " best=" + String.format(java.util.Locale.ROOT, "%.4f", best)
+                                + " second=" + String.format(java.util.Locale.ROOT, "%.4f", second)
+                                + " top=" + top
+                                + " cands=" + cs.size()
+                        );
+                    }
                 }
             }
         }

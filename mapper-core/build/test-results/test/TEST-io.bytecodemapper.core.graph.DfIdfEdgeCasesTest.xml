@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-20T07:11:00" hostname="PRAGMATIQPASCAL" time="0.001">
+<testsuite name="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:03:32" hostname="PRAGMATIQPASCAL" time="0.003">
   <properties/>
-  <testcase name="dfIdf_handles_loop" classname="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" time="0.001"/>
-  <testcase name="dfIdf_handles_trycatch_and_switch" classname="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" time="0.0"/>
+  <testcase name="dfIdf_handles_loop" classname="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" time="0.002"/>
+  <testcase name="dfIdf_handles_trycatch_and_switch" classname="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" time="0.001"/>
   <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=3
 [DF] iter=1, changed=false
 ]]></system-out>

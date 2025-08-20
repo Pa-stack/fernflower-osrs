@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.WLStabilityTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T07:11:00" hostname="PRAGMATIQPASCAL" time="0.001">
+<testsuite name="io.bytecodemapper.core.WLStabilityTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:03:32" hostname="PRAGMATIQPASCAL" time="0.001">
   <properties/>
   <testcase name="wl_has_same_signature_under_noop_reordering" classname="io.bytecodemapper.core.WLStabilityTest" time="0.001"/>
   <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=1

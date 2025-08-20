@@ -49,10 +49,18 @@ final class MapOldNew {
         boolean deterministic = false;
         String cacheDirStr = "mapper-cli/build/cache";
         String idfPathStr  = "mapper-cli/build/idf.properties";
+        String dumpNormalizedDir = null; // --dump-normalized-features[=dir]
         for (int i=0;i<args.length;i++) {
             if ("--deterministic".equals(args[i])) { deterministic = true; }
             else if ("--cacheDir".equals(args[i]) && i+1<args.length) { cacheDirStr = args[++i]; }
             else if ("--idf".equals(args[i]) && i+1<args.length) { idfPathStr = args[++i]; }
+            else if (args[i].startsWith("--dump-normalized-features")) {
+                // forms: --dump-normalized-features or --dump-normalized-features=dir
+                String a = args[i];
+                int eq = a.indexOf('=');
+                if (eq > 0 && eq < a.length()-1) dumpNormalizedDir = a.substring(eq+1);
+                // if flag provided without value, we'll assign default later
+            }
         }
         java.nio.file.Path cacheDir = io.bytecodemapper.cli.util.CliPaths.resolveOutput(cacheDirStr);
         java.nio.file.Path idfPath  = io.bytecodemapper.cli.util.CliPaths.resolveOutput(idfPathStr);
@@ -65,6 +73,8 @@ final class MapOldNew {
         int debugSample = 50;
     boolean debugStats = false;
     int maxMethods = 0; // test-only throttle; 0 = unlimited
+    // NSF tiering flag
+    String nsfTierOrder = "exact,near,wl,wlrelaxed";
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS BEGIN
         double tauAcceptMethods = 0.60;
         double marginMethods = 0.05;
@@ -76,7 +86,9 @@ final class MapOldNew {
     int demoCount = 0;            // unused when orchestrator is active
     String demoPrefix = null;     // unused when orchestrator is active
 
-        for (int i = 0; i < args.length; i++) {
+    // Scoring weight flags (optional)
+    Double wCallsFlag = null, wMicroFlag = null, wNormFlag = null, wStrFlag = null, wFieldsFlag = null, alphaMicroFlag = null;
+    for (int i = 0; i < args.length; i++) {
             String a = args[i];
             if ("--debug-normalized".equals(a)) {
                 debugNormalized = true;
@@ -102,12 +114,26 @@ final class MapOldNew {
                 try { refineIters = Integer.parseInt(args[++i]); } catch (NumberFormatException ignore) {}
             } else if ("--maxMethods".equals(a) && i+1<args.length) {
                 try { maxMethods = Integer.parseInt(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--nsf-tier-order".equals(a) && i+1<args.length) {
+                nsfTierOrder = args[++i];
             } else if ("--includeIdentity".equals(a)) {
                 includeIdentity = true;
             } else if ("--demoRemapCount".equals(a) && i+1<args.length) {
                 try { demoCount = Integer.parseInt(args[++i]); } catch (NumberFormatException ignore) {}
             } else if ("--demoRemapPrefix".equals(a) && i+1<args.length) {
                 demoPrefix = args[++i];
+            } else if ("--wCalls".equals(a) && i+1<args.length) {
+                try { wCallsFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--wMicro".equals(a) && i+1<args.length) {
+                try { wMicroFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--wNorm".equals(a) && i+1<args.length) {
+                try { wNormFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--wStrings".equals(a) && i+1<args.length) {
+                try { wStrFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--wFields".equals(a) && i+1<args.length) {
+                try { wFieldsFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--alphaMicro".equals(a) && i+1<args.length) {
+                try { alphaMicroFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
             }
         }
         // Apply method matching thresholds (global static for this run)
@@ -189,8 +215,31 @@ final class MapOldNew {
     debugStats, debugNormalized, debugSample,
     maxMethods
     );
+    // Apply scoring weight overrides if provided
+    if (wCallsFlag != null) o.weightCalls = wCallsFlag.doubleValue();
+    if (wMicroFlag != null) o.weightMicropatterns = wMicroFlag.doubleValue();
+    if (wNormFlag != null) { o.weightOpcode = wNormFlag.doubleValue(); o.useNormalizedHistogram = true; }
+    if (wStrFlag != null) o.weightStrings = wStrFlag.doubleValue();
+    if (wFieldsFlag != null) o.weightFields = wFieldsFlag.doubleValue();
+    if (alphaMicroFlag != null) o.alphaMicropattern = alphaMicroFlag.doubleValue();
+
     Orchestrator orch = new Orchestrator();
     Orchestrator.Result r = orch.run(oldPath, newPath, o);
+
+    // >>> AUTOGEN: BYTECODEMAPPER CLI NSF TIER FLAG BEGIN
+    io.bytecodemapper.core.match.MethodMatcher.setNsftierOrder(nsfTierOrder);
+    // <<< AUTOGEN: BYTECODEMAPPER CLI NSF TIER FLAG END
+
+    // Optional: dump per-method normalized features as JSONL deterministically
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DUMP NSF JSONL CALL BEGIN
+    if (dumpNormalizedDir != null) {
+        java.nio.file.Path dir = io.bytecodemapper.cli.util.CliPaths.resolveOutput(
+            dumpNormalizedDir.length() > 0 ? dumpNormalizedDir : "mapper-cli/build/nsf-jsonl");
+        java.nio.file.Files.createDirectories(dir);
+        io.bytecodemapper.cli.util.NormalizedDumpWriter.dumpJsonl(oldPath, newPath, dir);
+        System.out.println("Wrote normalized-features JSONL to: " + dir);
+    }
+    // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DUMP NSF JSONL CALL END
 
     // Write Tiny v2 deterministically using orchestrator output
     io.bytecodemapper.io.tiny.TinyV2Writer.writeTiny2(outPath, r.classMap, r.methods, r.fields);

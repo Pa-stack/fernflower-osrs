@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.signals.idf.IdfStoreTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T07:11:03" hostname="PRAGMATIQPASCAL" time="0.007">
+<testsuite name="io.bytecodemapper.signals.idf.IdfStoreTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:04:06" hostname="PRAGMATIQPASCAL" time="0.012">
   <properties/>
-  <testcase name="ema_and_persist_roundtrip" classname="io.bytecodemapper.signals.idf.IdfStoreTest" time="0.007"/>
+  <testcase name="ema_and_persist_roundtrip" classname="io.bytecodemapper.signals.idf.IdfStoreTest" time="0.012"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

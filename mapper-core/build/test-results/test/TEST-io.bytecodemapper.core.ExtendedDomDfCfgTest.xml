@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.ExtendedDomDfCfgTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-08-20T07:11:00" hostname="PRAGMATIQPASCAL" time="0.008">
+<testsuite name="io.bytecodemapper.core.ExtendedDomDfCfgTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:03:32" hostname="PRAGMATIQPASCAL" time="0.012">
   <properties/>
-  <testcase name="tryCatchAndSwitch_dontExplodeAndHaveStableCounts" classname="io.bytecodemapper.core.ExtendedDomDfCfgTest" time="0.006"/>
+  <testcase name="tryCatchAndSwitch_dontExplodeAndHaveStableCounts" classname="io.bytecodemapper.core.ExtendedDomDfCfgTest" time="0.004"/>
   <testcase name="diamond_hasJoinAndFrontier" classname="io.bytecodemapper.core.ExtendedDomDfCfgTest" time="0.001"/>
-  <testcase name="loops_haveBackEdgeAndNonEmptyTdf" classname="io.bytecodemapper.core.ExtendedDomDfCfgTest" time="0.001"/>
+  <testcase name="loops_haveBackEdgeAndNonEmptyTdf" classname="io.bytecodemapper.core.ExtendedDomDfCfgTest" time="0.006"/>
   <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=5
 [DF] iter=1, changed=true
 [DF] iter=2, changed=false

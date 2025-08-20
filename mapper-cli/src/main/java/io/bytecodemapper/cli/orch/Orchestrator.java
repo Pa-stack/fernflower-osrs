@@ -219,7 +219,7 @@ public final class Orchestrator {
 
         java.util.List<MethodPair> methodPairs = new java.util.ArrayList<MethodPair>();
         {
-            MethodMatchResult mm = MethodMatcher.matchMethods(oldClasses, newClasses, classMap, oldFeat, newFeat, idf, opt.deterministic);
+            MethodMatchResult mm = MethodMatcher.matchMethods(oldClasses, newClasses, classMap, oldFeat, newFeat, idf, opt.deterministic, opt.debugStats);
             for (MethodMatcher.Pair p : mm.accepted) methodPairs.add(new MethodPair(p.oldOwner, p.oldName, p.desc, p.newName));
         }
         java.util.List<FieldPair> fieldPairs = new java.util.ArrayList<FieldPair>();

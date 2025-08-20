@@ -4,6 +4,11 @@ io/bytecodemapper/signals/micro/MicroScore.java
  io.bytecodemapper.signals.micro.MicroScore
 io/bytecodemapper/signals/score/Weights.java
  io.bytecodemapper.signals.score.Weights
+io/bytecodemapper/signals/normalized/NormalizedFeatures.java
+ io.bytecodemapper.signals.normalized.NormalizedFeatures
+ io.bytecodemapper.signals.normalized.NormalizedFeatures$MinHash32
+ io.bytecodemapper.signals.normalized.NormalizedFeatures$TfIdfSketch
+ io.bytecodemapper.signals.normalized.NormalizedFeatures$TryCatchShape
 io/bytecodemapper/signals/micro/MicroPatternExtractor.java
  io.bytecodemapper.signals.micro.MicroPatternExtractor
 io/bytecodemapper/signals/opcode/OpcodeFeatures.java
@@ -26,6 +31,7 @@ io/bytecodemapper/signals/strings/StringBagExtractor.java
  io.bytecodemapper.signals.strings.StringBagExtractor
 io/bytecodemapper/signals/normalized/NormalizedMethod.java
  io.bytecodemapper.signals.normalized.NormalizedMethod
+ io.bytecodemapper.signals.normalized.NormalizedMethod$1
  io.bytecodemapper.signals.normalized.NormalizedMethod$MethodKey
 io/bytecodemapper/signals/calls/CallBagTfidf.java
  io.bytecodemapper.signals.calls.CallBagTfidf
