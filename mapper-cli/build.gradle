@@ -9,6 +9,9 @@ targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    // >>> AUTOGEN: BYTECODEMAPPER CLI REPO FABRIC BEGIN
+    maven { url "https://maven.fabricmc.net/" }
+    // <<< AUTOGEN: BYTECODEMAPPER CLI REPO FABRIC END
 }
 
 dependencies {

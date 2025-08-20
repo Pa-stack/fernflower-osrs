@@ -82,7 +82,7 @@ public final class Main {
         "           [--refine] [--refineIters <0|1>] [--lambda <0.0..1.0>]\n" +
         "           [--tauAcceptMethods <0..1>] [--marginMethods <0..1>]\n" +
         "           [--debug-stats] [--debug-normalized [path]] [--debug-sample <N>]");
-        System.out.println("  applyMappings --inJar <in.jar> --mappings <mappings.tiny> --out <out.jar> [--verifyRemap]");
+    System.out.println("  applyMappings --inJar <in.jar> --mappings <mappings.tiny> --out <out.jar> [--format=tiny2|enigma] [--remapper=tiny|asm] [--verifyRemap] [--deterministic]");
         System.out.println("  tinyStats --in <mappings.tiny> [--list N]");
         System.out.println("  printIdf --out <path> [--from <existing.properties>] [--lambda 0.9]");
     }

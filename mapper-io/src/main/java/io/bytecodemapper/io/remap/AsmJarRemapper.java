@@ -45,6 +45,7 @@ public final class AsmJarRemapper {
             byte[] manifestBytes = entries.remove("META-INF/MANIFEST.MF");
             if (manifestBytes != null) {
                 ZipEntry ze = new ZipEntry("META-INF/MANIFEST.MF");
+                ze.setTime(0L); // deterministic timestamp
                 jout.putNextEntry(ze);
                 jout.write(manifestBytes);
                 jout.closeEntry();
@@ -57,6 +58,7 @@ public final class AsmJarRemapper {
 
                 if (!name.endsWith(".class")) {
                     ZipEntry ze = new ZipEntry(name);
+                    ze.setTime(0L); // deterministic timestamp
                     jout.putNextEntry(ze);
                     jout.write(data);
                     jout.closeEntry();
@@ -75,6 +77,7 @@ public final class AsmJarRemapper {
                 String newEntryName = newInternalName + ".class";
 
                 ZipEntry ze = new ZipEntry(newEntryName);
+                ze.setTime(0L); // deterministic timestamp
                 jout.putNextEntry(ze);
                 jout.write(outBytes);
                 jout.closeEntry();
