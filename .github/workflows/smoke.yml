@@ -216,6 +216,25 @@ jobs:
           println "[CI][WIN] sysprop java.home=" + System.getProperty("java.home")
           "@ | Out-File -FilePath ci-init.gradle -Encoding ascii
 
+      # >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE WINDOWS JAVA_HOME NEUTRALIZE BEGIN
+      - name: Neutralize local org.gradle.java.home and export ORG_GRADLE_JAVA_HOME
+        shell: pwsh
+        run: |
+          # Ensure any repo-local override doesn't leak into CI
+          if (Test-Path 'gradle.properties') {
+            Write-Host '[WIN][CI] Neutralizing org.gradle.java.home in gradle.properties'
+            $raw = Get-Content gradle.properties -Raw
+            $patched = $raw -replace '^(?im)\s*org\.gradle\.java\.home\s*=.*$', '# CI neutralized org.gradle.java.home (uses JAVA_HOME)'
+            if ($patched -ne $raw) {
+              $patched | Set-Content gradle.properties -Encoding ascii
+            }
+          }
+          # Belt-and-suspenders: also set env var recognized by Gradle
+          $env:ORG_GRADLE_JAVA_HOME = $env:JAVA_HOME
+          Write-Host "[WIN][CI] JAVA_HOME=$env:JAVA_HOME"
+          Write-Host "[WIN][CI] ORG_GRADLE_JAVA_HOME=$env:ORG_GRADLE_JAVA_HOME"
+      # >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE WINDOWS JAVA_HOME NEUTRALIZE END
+
       - name: Gradle version (expect 6.9.4) with CI Java override
         shell: pwsh
         run: |
