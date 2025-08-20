@@ -1,4 +1,4 @@
-# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE BEGIN
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE ASSERT BEGIN
 name: Smoke
 
 on:
@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [ "**" ]
   schedule:
-    - cron: "17 3 * * *"  # daily at 03:17 UTC
+    - cron: "17 3 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -29,11 +29,22 @@ jobs:
           java-version: "8"
           cache: gradle
 
+      - name: Show Java version
+        run: |
+          set -eux
+          java -version
+
       - name: Gradle wrapper permissions
         run: chmod +x ./gradlew
 
-      - name: Gradle version sanity
-        run: ./gradlew -v
+      - name: Gradle version (expect 6.9.4) and assert
+        run: |
+          set -eux
+          ./gradlew -v | tee gradle-version.txt
+          echo "---- Raw gradle -v ----"
+          cat gradle-version.txt
+          echo "---- Asserting Gradle 6.9.4 ----"
+          grep -E "^Gradle 6\.9\.4$" gradle-version.txt
 
       - name: Smoke (deterministic)
         run: ./gradlew :mapper-cli:smoke --no-daemon -Dorg.gradle.jvmargs="-Xmx2g"
@@ -58,6 +69,7 @@ jobs:
         with:
           name: smoke-artifacts
           path: |
+            gradle-version.txt
             mapper-cli/build/smoke/m1.tiny
             mapper-cli/build/smoke/m2.tiny
             mapper-cli/build/smoke/norm1.txt
@@ -68,4 +80,4 @@ jobs:
             mapper-cli/build/smoke/remap-asm-b.jar
             mapper-cli/build/smoke/metrics1.json
             mapper-cli/build/smoke/metrics2.json
-# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE END
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE ASSERT END
