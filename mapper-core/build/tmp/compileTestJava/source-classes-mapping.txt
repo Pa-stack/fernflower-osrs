@@ -2,12 +2,16 @@ io/bytecodemapper/core/DfIdfCorrectnessTest.java
  io.bytecodemapper.core.DfIdfCorrectnessTest
 io/bytecodemapper/core/CoreApisTest.java
  io.bytecodemapper.core.CoreApisTest
+io/bytecodemapper/core/graph/DfIdfEdgeCasesTest.java
+ io.bytecodemapper.core.graph.DfIdfEdgeCasesTest
 io/bytecodemapper/core/WLSignatureSmokeTest.java
  io.bytecodemapper.core.WLSignatureSmokeTest
 io/bytecodemapper/core/assign/GreedyAssignTest.java
  io.bytecodemapper.core.assign.GreedyAssignTest
 io/bytecodemapper/core/testutil/AsmSynth.java
  io.bytecodemapper.core.testutil.AsmSynth
+io/bytecodemapper/core/WLStabilityTest.java
+ io.bytecodemapper.core.WLStabilityTest
 io/bytecodemapper/core/WLRefinementTest.java
  io.bytecodemapper.core.WLRefinementTest
 io/bytecodemapper/core/ReducedCfgDomDfTest.java
@@ -16,7 +20,3 @@ io/bytecodemapper/core/NormalizerTest.java
  io.bytecodemapper.core.NormalizerTest
 io/bytecodemapper/core/ExtendedDomDfCfgTest.java
  io.bytecodemapper.core.ExtendedDomDfCfgTest
-io/bytecodemapper/core/graph/DfIdfEdgeCasesTest.java
- io.bytecodemapper.core.graph.DfIdfEdgeCasesTest
-io/bytecodemapper/core/WLStabilityTest.java
- io.bytecodemapper.core.WLStabilityTest

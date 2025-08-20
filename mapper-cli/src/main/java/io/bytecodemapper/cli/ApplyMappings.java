@@ -7,7 +7,7 @@ import java.io.File;
 public final class ApplyMappings {
 
     public static void run(String[] args) throws Exception {
-        File inJar = null, mappings = null, outJar = null;
+    File inJar = null, mappings = null, outJar = null;
         RemapService.MappingFormat fmt = RemapService.MappingFormat.TINY2;
         RemapService.RemapperKind kind = RemapService.RemapperKind.TINY; // default: TinyRemapper
         boolean verify = false;
@@ -28,13 +28,24 @@ public final class ApplyMappings {
             else if ("--deterministic".equals(a)) deterministic = true;
         }
 
-        if (inJar == null || mappings == null || outJar == null) {
+    if (inJar == null || mappings == null || outJar == null) {
             System.err.println("Usage: applyMappings --inJar <in.jar> --mappings <map.tiny> --out <out.jar> [--format=tiny2|enigma] [--remapper=tiny|asm] [--verifyRemap] [--deterministic]");
             System.exit(2);
             return;
         }
 
-        RemapService.VerifyStats vs = RemapService.applyMappings(inJar, mappings, outJar, fmt, kind, verify, deterministic);
+    // >>> AUTOGEN: BYTECODEMAPPER CLI ApplyMappings PATH RESOLUTION BEGIN
+    // Resolve inputs relative to repo root or CWD; anchor outputs under module when relative
+    java.nio.file.Path inPath = io.bytecodemapper.cli.util.CliPaths.resolveInput(inJar.getPath());
+    java.nio.file.Path mapPath = io.bytecodemapper.cli.util.CliPaths.resolveInput(mappings.getPath());
+    java.nio.file.Path outPath = io.bytecodemapper.cli.util.CliPaths.resolveOutput(outJar.getPath());
+    inJar = inPath.toFile();
+    mappings = mapPath.toFile();
+    outJar = outPath.toFile();
+    if (outJar.getParentFile() != null) outJar.getParentFile().mkdirs();
+    // >>> AUTOGEN: BYTECODEMAPPER CLI ApplyMappings PATH RESOLUTION END
+
+    RemapService.VerifyStats vs = RemapService.applyMappings(inJar, mappings, outJar, fmt, kind, verify, deterministic);
         if (verify) System.out.println("[applyMappings] " + vs);
     }
 
