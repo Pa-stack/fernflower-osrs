@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:21:54" hostname="PRAGMATIQPASCAL" time="4.155">
+<testsuite name="io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:43:08" hostname="PRAGMATIQPASCAL" time="3.194">
   <properties/>
-  <testcase name="stricterThresholdsReduceAcceptances" classname="io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest" time="4.155"/>
+  <testcase name="stricterThresholdsReduceAcceptances" classname="io.bytecodemapper.cli.MapOldNewAcceptanceMarginTest" time="3.194"/>
   <system-out><![CDATA[Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m1.tiny
 Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m2.tiny
 ]]></system-out>

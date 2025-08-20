@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.AcceptanceMarginIT" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:21:45" hostname="PRAGMATIQPASCAL" time="3.547">
+<testsuite name="io.bytecodemapper.cli.AcceptanceMarginIT" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T14:42:57" hostname="PRAGMATIQPASCAL" time="3.056">
   <properties/>
-  <testcase name="exact_threshold_accepts_margin_rule_holds" classname="io.bytecodemapper.cli.AcceptanceMarginIT" time="3.547"/>
+  <testcase name="exact_threshold_accepts_margin_rule_holds" classname="io.bytecodemapper.cli.AcceptanceMarginIT" time="3.056"/>
   <system-out><![CDATA[Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\acc\m1.tiny
 Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\acc\m2.tiny
 ]]></system-out>

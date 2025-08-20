@@ -14,181 +14,186 @@
 	7Refine iter=1 flips=0 maxDelta=0.10000 (prev flips=-)
 
 	7Refine iter=2 flips=0 maxDelta=0.00000 (prev flips=0)
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-gWrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e7980674596476793856\mappings1.tiny
-gWrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e7980674596476793856\mappings2.tiny
-lWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m1.tiny
-lWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m2.tiny
-'[DF] iterateToFixpoint start, nodes=2
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=6
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=35
-[DF] iter=1, changed=true
-[DF] iter=2, changed=true
-[DF] iter=3, changed=false
-([DF] iterateToFixpoint start, nodes=36
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=21
-[DF] iter=1, changed=true
-[DF] iter=2, changed=true
-[DF] iter=3, changed=false
-([DF] iterateToFixpoint start, nodes=16
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=49
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=45
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=10
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=4
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=15
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-'[DF] iterateToFixpoint start, nodes=7
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=14
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=34
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=6
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=20
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=10
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=2
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=6
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=13
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=9
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=17
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=12
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=8
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=9
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=9
-[DF] iter=1, changed=false
-éWrote normalized debug to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\smoke\mapoldnew\normalized-debug.txt
-ÑWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\smoke\mapoldnew\smoke-mappings.tiny
-'[DF] iterateToFixpoint start, nodes=2
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=6
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=35
-[DF] iter=1, changed=true
-[DF] iter=2, changed=true
-[DF] iter=3, changed=false
-([DF] iterateToFixpoint start, nodes=36
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=21
-[DF] iter=1, changed=true
-[DF] iter=2, changed=true
-[DF] iter=3, changed=false
-([DF] iterateToFixpoint start, nodes=16
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=49
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=45
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=10
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=4
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=15
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-'[DF] iterateToFixpoint start, nodes=7
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=14
-[DF] iter=1, changed=true
-[DF] iter=2, changed=false
-([DF] iterateToFixpoint start, nodes=34
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=6
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=20
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=10
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=2
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=6
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=13
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=9
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=17
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-([DF] iterateToFixpoint start, nodes=12
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=8
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=9
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=1
-[DF] iter=1, changed=false
-'[DF] iterateToFixpoint start, nodes=9
-[DF] iter=1, changed=false
-êWrote normalized debug to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\smoke\mapoldnew\normalized-debug-2.txt
-ÜWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\smoke\mapoldnew\smoke-mappings-2.tiny
-qWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\ref\base.tiny
-qWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\ref\ref1.tiny
-qWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\ref\ref2.tiny
-oWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\rv\map.tiny
-E[applyMappings] TinyRemapper verify: classes=328 methods=4 fields=0
-0[applyMappings] classes=328 methods=4 fields=0
-E[applyMappings] TinyRemapper verify: classes=328 methods=4 fields=0
-0[applyMappings] classes=328 methods=4 fields=0
-E[applyMappings] TinyRemapper verify: classes=328 methods=4 fields=0
-0[applyMappings] classes=328 methods=4 fields=0
-E[applyMappings] TinyRemapper verify: classes=328 methods=4 fields=0
-0[applyMappings] classes=328 methods=4 fields=0
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+gWrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e6921467185645232439\mappings1.tiny
+gWrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e6921467185645232439\mappings2.tiny
+lWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m1.tiny
+lWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\acc-m2.tiny
+'[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=35
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=false
+([DF] iterateToFixpoint start, nodes=36
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=21
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=false
+([DF] iterateToFixpoint start, nodes=16
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=49
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=45
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=15
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+'[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=14
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=34
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=20
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=13
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=17
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+éWrote normalized debug to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\smoke\mapoldnew\normalized-debug.txt
+ÑWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\smoke\mapoldnew\smoke-mappings.tiny
+'[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=35
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=false
+([DF] iterateToFixpoint start, nodes=36
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=21
+[DF] iter=1, changed=true
+[DF] iter=2, changed=true
+[DF] iter=3, changed=false
+([DF] iterateToFixpoint start, nodes=16
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=49
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=45
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=15
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+'[DF] iterateToFixpoint start, nodes=7
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=14
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+([DF] iterateToFixpoint start, nodes=34
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=20
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=10
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=2
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=6
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=13
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=17
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+([DF] iterateToFixpoint start, nodes=12
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=8
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+'[DF] iterateToFixpoint start, nodes=9
+[DF] iter=1, changed=false
+êWrote normalized debug to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\smoke\mapoldnew\normalized-debug-2.txt
+ÜWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\smoke\mapoldnew\smoke-mappings-2.tiny
+}Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-scorer-flags\map-a.tiny
+}Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-scorer-flags\map-b.tiny
+}Wrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-scorer-flags\map-b.tiny
+ zWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-nsf-tier\tier-a.tiny
+ zWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\test-nsf-tier\tier-b.tiny
+"!qWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\ref\base.tiny
+"!qWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\ref\ref1.tiny
+"!qWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\ref\ref2.tiny
+$#oWrote Tiny v2 to: C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\rv\map.tiny
+$#E[applyMappings] TinyRemapper verify: classes=328 methods=4 fields=0
+$#0[applyMappings] classes=328 methods=4 fields=0
+$#E[applyMappings] TinyRemapper verify: classes=328 methods=4 fields=0
+$#0[applyMappings] classes=328 methods=4 fields=0
+$#E[applyMappings] TinyRemapper verify: classes=328 methods=4 fields=0
+$#0[applyMappings] classes=328 methods=4 fields=0
+$#E[applyMappings] TinyRemapper verify: classes=328 methods=4 fields=0
+$#0[applyMappings] classes=328 methods=4 fields=0

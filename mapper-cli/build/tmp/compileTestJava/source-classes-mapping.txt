@@ -16,10 +16,16 @@ io/bytecodemapper/core/match/MethodMatcherRelaxedFilterTest.java
  io.bytecodemapper.core.match.MethodMatcherRelaxedFilterTest
 io/bytecodemapper/cli/BenchManifestTest.java
  io.bytecodemapper.cli.BenchManifestTest
+io/bytecodemapper/cli/NsfTieringOrderTest.java
+ io.bytecodemapper.cli.NsfTieringOrderTest
 io/bytecodemapper/cli/AcceptanceMarginIT.java
  io.bytecodemapper.cli.AcceptanceMarginIT
+io/bytecodemapper/cli/MethodScorerFlagsTest.java
+ io.bytecodemapper.cli.MethodScorerFlagsTest
 io/bytecodemapper/cli/DeterminismEndToEndTest.java
  io.bytecodemapper.cli.DeterminismEndToEndTest
+io/bytecodemapper/cli/DebugStatsTelemetryTest.java
+ io.bytecodemapper.cli.DebugStatsTelemetryTest
 io/bytecodemapper/cli/RefinementEffectIT.java
  io.bytecodemapper.cli.RefinementEffectIT
 io/bytecodemapper/cli/MapOldNewSmokeTest.java
