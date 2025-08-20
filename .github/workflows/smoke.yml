@@ -40,14 +40,14 @@ jobs:
       - name: Gradle version (expect 6.9.4) and assert
         run: |
           set -eux
-          ./gradlew -v | tee gradle-version.txt
+          ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" -v | tee gradle-version.txt
           echo "---- Raw gradle -v ----"
           cat gradle-version.txt
           echo "---- Asserting Gradle 6.9.4 ----"
           grep -E "^Gradle 6\.9\.4$" gradle-version.txt
 
       - name: Smoke (deterministic)
-        run: ./gradlew :mapper-cli:smoke --no-daemon -Dorg.gradle.jvmargs="-Xmx2g"
+        run: ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :mapper-cli:smoke --no-daemon -Dorg.gradle.jvmargs="-Xmx2g"
 
       - name: Show hashes
         run: |
