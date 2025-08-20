@@ -1,3 +1,74 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOCS RUNBOOK BEGIN -->
+# BytecodeMapper Runbook
+
+## Overview (Pipeline)
+
+1. **Feature extraction (old/new):** ReducedCFG → Dominators → DF → TDF (IDF) → WL (K=4).
+2. **Candidate gen:** WL index on new side, `(desc, wlSig)` exact bucket → relaxed (same owner+desc, WL multiset distance ≤ 1).
+3. **Scoring:** `S_total = 0.45 calls + 0.25 micro(α=0.60) + 0.15 opcode_norm + 0.10 strings + 0.05 fields`.
+4. **Accept/abstain:** Accept if `S_total ≥ 0.60` **and** `(best−second) ≥ 0.05`, else abstain. Deterministic tie-breaks only after margin.
+5. **(Optional) Refinement:** `--refine [--lambda <0..1>] [--refineIters N]`. Freezes high-confidence, rescored abstentions.
+6. **Mappings:** Emit Tiny v2 (deterministic ordering); apply via TinyRemapper (default) or ASM fallback.
+
+## Determinism
+
+- Fixed WL_K=4 (`CacheMeta: wl.iterations=4`), deterministic iteration/sorting everywhere.
+- Relaxed bucket uses **WL multiset distance ≤ 1** and stable sort, capped candidates (`MAX_CANDIDATES=120`).
+- Output files: stable sort; remapped jars repacked with sorted entries and fixed timestamps (`0L`).
+- **CI tip:** always pass `--deterministic`, consider `--maxMethods <N>` for quick smoke.
+
+## Key CLI commands & flags
+
+### mapOldNew
+
+```text
+mapOldNew --old <old.jar> --new <new\.jar> --out <mappings.tiny>
+[--deterministic] [--cacheDir <dir>] [--idf <path>]
+[--refine] [--refineIters <N>] [--lambda <0..1>]
+[--tauAcceptMethods <0..1>] [--marginMethods <0..1>]
+[--debug-normalized <path>] [--debug-sample <N>] [--maxMethods <N>]
+```
+
+- **Thresholds:** `--tauAcceptMethods` (default 0.60), `--marginMethods` (default 0.05).
+- **Micropattern α:** `--lambda` (default 0.60; bounds-checked).
+- **Debug:** `--debug-normalized` writes normalized feature samples; pair with `--debug-sample`.
+
+### applyMappings
+
+```text
+applyMappings --inJar <in.jar> --mappings <map.tiny> --out <out.jar>
+[--format=tiny2|enigma] [--remapper=tiny|asm] [--verifyRemap] [--deterministic]
+```
+
+- **Default remapper:** `tiny` (TinyRemapper).
+- **Verify:** prints class/method/field rename counts.
+- **Deterministic repack:** sorted entries, fixed timestamps; MANIFEST first.
+
+### bench (manifest first)
+
+```text
+bench --manifest <pairs.json> [--outDir <dir>] [--metricsOut <metrics.json>] [--deterministic]
+```
+
+- Manifest schema: `{"pairs":[{"id"?,"old","new","note"?"}...]}`.
+- Metrics JSON keys (deterministic): `pairs`, `totalAccepted`, `totalAbstained`, `items[]` (`id,old,new,accepted,abstained,out,note`).
+
+## Troubleshooting quick wins
+
+- **Non-determinism:** ensure `--deterministic`, clear caches after WL_K change; verify repack step.
+- **Empty candidates:** consider relaxing WL distance to `≤ 2` temporarily (tuning).
+- **Slow CI:** use `--maxMethods N` and small `--debug-sample`.
+- **ENIGMA format:** currently guarded; prefer Tiny v2 end-to-end.
+
+## Examples
+
+- Deterministic map + apply:
+
+```text
+mapOldNew --old data/weeks/osrs-170.jar --new data/weeks/osrs-171.jar --out build/m.tiny --deterministic
+applyMappings --inJar data/weeks/osrs-171.jar --mappings build/m.tiny --out build/remap-tiny.jar --verifyRemap --deterministic
+```
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOCS RUNBOOK END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook orchestrator-caches BEGIN -->
 ## Orchestrator, caches, and deterministic mode
 
