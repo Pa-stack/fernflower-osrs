@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.bytecodemapper.core.DfIdfCorrectnessTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:13:17" hostname="PRAGMATIQPASCAL" time="0.011">
+  <properties/>
+  <testcase name="dominanceFrontierMergesAtJoin" classname="io.bytecodemapper.core.DfIdfCorrectnessTest" time="0.009"/>
+  <testcase name="iteratedFrontierPropagates" classname="io.bytecodemapper.core.DfIdfCorrectnessTest" time="0.001"/>
+  <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=5
+[DF] iter=1, changed=true
+[DF] iter=2, changed=false
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.bytecodemapper.cli.BenchDeterminismIT" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:09:38" hostname="PRAGMATIQPASCAL" time="3.554">
+  <properties/>
+  <testcase name="bench_metrics_are_byte_identical_across_runs" classname="io.bytecodemapper.cli.BenchDeterminismIT" time="3.554"/>
+  <system-out><![CDATA[[bench] pairs=2 totalAccepted=3 totalAbstained=13678
+[bench] Wrote metrics to C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\bench\metrics1.json
+[bench] pairs=2 totalAccepted=3 totalAbstained=13678
+[bench] Wrote metrics to C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\it\bench\metrics2.json
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

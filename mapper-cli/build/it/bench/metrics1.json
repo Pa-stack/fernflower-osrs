@@ -1,0 +1,9 @@
+{
+  "pairs": 2,
+  "totalAccepted": 3,
+  "totalAbstained": 13678,
+  "items": [
+    {"id":"w169_170","old":"data/weeks/osrs-169.jar","new":"data/weeks/osrs-170.jar","accepted":2,"abstained":6872,"out":"w169_170.tiny","note":"weekly"},
+    {"id":"w170_171","old":"data/weeks/osrs-170.jar","new":"data/weeks/osrs-171.jar","accepted":1,"abstained":6806,"out":"w170_171.tiny","note":"weekly"}
+  ]
+}

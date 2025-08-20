@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.bytecodemapper.core.WLSignatureSmokeTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:13:17" hostname="PRAGMATIQPASCAL" time="0.004">
+  <properties/>
+  <testcase name="wlStableUnderNoopReorderings" classname="io.bytecodemapper.core.WLSignatureSmokeTest" time="0.002"/>
+  <testcase name="wlDiffersOnExtraBranch" classname="io.bytecodemapper.core.WLSignatureSmokeTest" time="0.002"/>
+  <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=4
+[DF] iter=1, changed=false
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
