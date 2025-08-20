@@ -83,7 +83,16 @@
       "windows": {
         "command": "${workspaceFolder}\\mapper-cli\\build\\install\\mapper-cli\\bin\\mapper-cli.bat"
       }
+    },
+    // >>> AUTOGEN: BYTECODEMAPPER VSCODE TASKS SMOKE BEGIN
+    {
+      "label": "BytecodeMapper: Smoke",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/smoke.sh",
+      "windows": { "command": "${workspaceFolder}\\scripts\\smoke.ps1" },
+      "problemMatcher": []
     }
+    // >>> AUTOGEN: BYTECODEMAPPER VSCODE TASKS SMOKE END
   ],
   "inputs": [
     {
