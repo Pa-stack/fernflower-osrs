@@ -1,3 +1,7 @@
+<!-- >>> AUTOGEN: BYTECODEMAPPER README SMOKE BADGE BEGIN -->
+[![Smoke](https://github.com/${GITHUB_OWNER:-Pa-stack}/${GITHUB_REPO:-fernflower-osrs}/actions/workflows/smoke.yml/badge.svg)](../../actions/workflows/smoke.yml)
+<!-- >>> AUTOGEN: BYTECODEMAPPER README SMOKE BADGE END -->
+
 ### About Fernflower
 
 Fernflower is the first actually working analytical decompiler for Java and

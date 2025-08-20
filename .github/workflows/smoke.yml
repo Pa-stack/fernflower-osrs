@@ -1,0 +1,71 @@
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE BEGIN
+name: Smoke
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "**" ]
+  schedule:
+    - cron: "17 3 * * *"  # daily at 03:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 8 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+          cache: gradle
+
+      - name: Gradle wrapper permissions
+        run: chmod +x ./gradlew
+
+      - name: Gradle version sanity
+        run: ./gradlew -v
+
+      - name: Smoke (deterministic)
+        run: ./gradlew :mapper-cli:smoke --no-daemon -Dorg.gradle.jvmargs="-Xmx2g"
+
+      - name: Show hashes
+        run: |
+          set -eux
+          for f in \
+            mapper-cli/build/smoke/m1.tiny \
+            mapper-cli/build/smoke/m2.tiny \
+            mapper-cli/build/smoke/remap-tiny-a.jar \
+            mapper-cli/build/smoke/remap-tiny-b.jar \
+            mapper-cli/build/smoke/remap-asm-a.jar \
+            mapper-cli/build/smoke/remap-asm-b.jar \
+            mapper-cli/build/smoke/metrics1.json \
+            mapper-cli/build/smoke/metrics2.json ; do
+            [ -f "$f" ] && sha256sum "$f" || true
+          done
+
+      - name: Upload smoke artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-artifacts
+          path: |
+            mapper-cli/build/smoke/m1.tiny
+            mapper-cli/build/smoke/m2.tiny
+            mapper-cli/build/smoke/norm1.txt
+            mapper-cli/build/smoke/norm2.txt
+            mapper-cli/build/smoke/remap-tiny-a.jar
+            mapper-cli/build/smoke/remap-tiny-b.jar
+            mapper-cli/build/smoke/remap-asm-a.jar
+            mapper-cli/build/smoke/remap-asm-b.jar
+            mapper-cli/build/smoke/metrics1.json
+            mapper-cli/build/smoke/metrics2.json
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE END
