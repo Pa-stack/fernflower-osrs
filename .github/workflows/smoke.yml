@@ -1,4 +1,4 @@
-# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE ASSERT BEGIN
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE VERIFY BEGIN
 name: Smoke
 
 on:
@@ -29,7 +29,7 @@ jobs:
           java-version: "8"
           cache: gradle
 
-      - name: Show Java version
+      - name: Show Java version (expect 1.8)
         run: |
           set -eux
           java -version
@@ -37,16 +37,33 @@ jobs:
       - name: Gradle wrapper permissions
         run: chmod +x ./gradlew
 
-      - name: Gradle version (expect 6.9.4) and assert
+      - name: Show pinned gradle.properties (if any)
         run: |
           set -eux
-          ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" -v | tee gradle-version.txt
-          echo "---- Raw gradle -v ----"
-          cat gradle-version.txt
+          if [ -f gradle.properties ]; then
+            echo "----- gradle.properties -----"
+            sed -n '1,200p' gradle.properties | sed 's/./&/g' | cat
+            echo "-----------------------------"
+          else
+            echo "No root gradle.properties found."
+          fi
+
+      - name: Create CI init script to print JVMs and properties
+        run: |
+          cat > ci-init.gradle <<'EOF'
+          println "[CI] env JAVA_HOME=" + System.getenv("JAVA_HOME")
+          println "[CI] sysprop org.gradle.java.home=" + System.getProperty("org.gradle.java.home")
+          println "[CI] sysprop java.home=" + System.getProperty("java.home")
+          EOF
+
+      - name: Gradle version (expect 6.9.4) with CI Java override
+        run: |
+          set -eux
+          ./gradlew -I ci-init.gradle -Dorg.gradle.java.home="$JAVA_HOME" -v | tee gradle-version.txt
           echo "---- Asserting Gradle 6.9.4 ----"
           grep -E "^Gradle 6\.9\.4$" gradle-version.txt
 
-      - name: Smoke (deterministic)
+      - name: Smoke (deterministic) with CI Java override
         run: ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :mapper-cli:smoke --no-daemon -Dorg.gradle.jvmargs="-Xmx2g"
 
       - name: Show hashes
@@ -69,6 +86,7 @@ jobs:
         with:
           name: smoke-artifacts
           path: |
+            ci-init.gradle
             gradle-version.txt
             mapper-cli/build/smoke/m1.tiny
             mapper-cli/build/smoke/m2.tiny
@@ -80,4 +98,4 @@ jobs:
             mapper-cli/build/smoke/remap-asm-b.jar
             mapper-cli/build/smoke/metrics1.json
             mapper-cli/build/smoke/metrics2.json
-# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE ASSERT END
+# >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE VERIFY END
