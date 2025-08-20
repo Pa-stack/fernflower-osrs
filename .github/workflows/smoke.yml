@@ -62,16 +62,6 @@ jobs:
           java-version: "8"
           cache: gradle
 
-      - name: Isolate Gradle user home
-        shell: pwsh
-        run: |
-          $local = Join-Path $pwd '.gradle'
-          New-Item -ItemType Directory -Force -Path $local | Out-Null
-          "GRADLE_USER_HOME=$local" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          Write-Host "[WIN][CI] GRADLE_USER_HOME=$local"
-          $userProps = Join-Path $env:USERPROFILE '.gradle\gradle.properties'
-          if (Test-Path $userProps) { Write-Host "[WIN][CI] Runner user gradle.properties exists at $userProps (ignored due to isolation)" }
-
       - name: Show Java version (expect 1.8)
         run: |
           set -eux
@@ -176,6 +166,18 @@ jobs:
           distribution: temurin
           java-version: "8"
           cache: gradle
+
+      # >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE WINDOWS GRADLE_USER_HOME ISOLATE BEGIN
+      - name: Isolate Gradle user home
+        shell: pwsh
+        run: |
+          $local = Join-Path $pwd '.gradle'
+          New-Item -ItemType Directory -Force -Path $local | Out-Null
+          "GRADLE_USER_HOME=$local" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "[WIN][CI] GRADLE_USER_HOME=$local"
+          $userProps = Join-Path $env:USERPROFILE '.gradle\gradle.properties'
+          if (Test-Path $userProps) { Write-Host "[WIN][CI] Runner user gradle.properties exists at $userProps (ignored due to isolation)" }
+      # >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE WINDOWS GRADLE_USER_HOME ISOLATE END
 
       - name: Show Java version (expect 1.8)
         shell: pwsh
