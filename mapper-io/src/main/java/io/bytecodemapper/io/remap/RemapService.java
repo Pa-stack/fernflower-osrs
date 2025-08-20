@@ -119,34 +119,44 @@ public final class RemapService {
         return s;
     }
 
+    // >>> AUTOGEN: BYTECODEMAPPER IO repackSorted HARDEN BEGIN
     private static void repackSorted(Path jarPath) throws IOException {
         Path tmp = Files.createTempFile(jarPath.getParent(), "repack-", ".jar");
-        List<JarEntry> entries = new ArrayList<JarEntry>();
+        List<String> names = new ArrayList<String>();
         Map<String, byte[]> blobs = new HashMap<String, byte[]>();
 
         JarInputStream jis = new JarInputStream(Files.newInputStream(jarPath));
         try {
-            for (JarEntry e; (e = jis.getNextJarEntry()) != null; ) {
+            JarEntry e;
+            byte[] buf = new byte[8192];
+            while ((e = jis.getNextJarEntry()) != null) {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                byte[] buf = new byte[8192]; int n;
+                int n;
                 while ((n = jis.read(buf)) > 0) bos.write(buf, 0, n);
-                JarEntry copy = new JarEntry(e.getName());
-                entries.add(copy);
-                blobs.put(copy.getName(), bos.toByteArray());
+                blobs.put(e.getName(), bos.toByteArray());
+                names.add(e.getName());
             }
         } finally {
             jis.close();
         }
-        Collections.sort(entries, new Comparator<JarEntry>() {
-            @Override public int compare(JarEntry a, JarEntry b) { return a.getName().compareTo(b.getName()); }
-        });
+
+        // Ensure MANIFEST (and META-INF dir) first if present
+        List<String> ordered = new ArrayList<String>();
+        if (names.contains("META-INF/")) ordered.add("META-INF/");
+        if (names.contains("META-INF/MANIFEST.MF")) ordered.add("META-INF/MANIFEST.MF");
+
+        Collections.sort(names);
+        for (String n : names) {
+            if (!ordered.contains(n)) ordered.add(n);
+        }
+
         JarOutputStream jos = new JarOutputStream(Files.newOutputStream(tmp));
         try {
-            for (JarEntry e : entries) {
-                JarEntry ne = new JarEntry(e.getName());
-                ne.setTime(0L); // deterministic timestamp
-                jos.putNextEntry(ne);
-                byte[] data = blobs.get(e.getName());
+            for (String n : ordered) {
+                JarEntry out = new JarEntry(n);
+                out.setTime(0L); // deterministic timestamp
+                jos.putNextEntry(out);
+                byte[] data = blobs.get(n);
                 if (data != null) jos.write(data);
                 jos.closeEntry();
             }
@@ -155,5 +165,6 @@ public final class RemapService {
         }
         Files.move(tmp, jarPath, StandardCopyOption.REPLACE_EXISTING);
     }
+    // >>> AUTOGEN: BYTECODEMAPPER IO repackSorted HARDEN END
 }
 // >>> AUTOGEN: BYTECODEMAPPER IO RemapService END

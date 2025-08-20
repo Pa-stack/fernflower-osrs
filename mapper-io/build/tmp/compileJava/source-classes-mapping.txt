@@ -9,13 +9,12 @@ io/bytecodemapper/io/tiny/TinyV2Mappings.java
  io.bytecodemapper.io.tiny.TinyV2Mappings
 io/bytecodemapper/io/TinyLikeWriter.java
  io.bytecodemapper.io.TinyLikeWriter
-io/bytecodemapper/io/remap/RemapService.java
- io.bytecodemapper.io.remap.RemapService
- io.bytecodemapper.io.remap.RemapService$1
- io.bytecodemapper.io.remap.RemapService$2
- io.bytecodemapper.io.remap.RemapService$MappingFormat
- io.bytecodemapper.io.remap.RemapService$RemapperKind
- io.bytecodemapper.io.remap.RemapService$VerifyStats
 io/bytecodemapper/io/remap/AsmJarRemapper.java
  io.bytecodemapper.io.remap.AsmJarRemapper
  io.bytecodemapper.io.remap.AsmJarRemapper$MapBackedRemapper
+io/bytecodemapper/io/remap/RemapService.java
+ io.bytecodemapper.io.remap.RemapService
+ io.bytecodemapper.io.remap.RemapService$1
+ io.bytecodemapper.io.remap.RemapService$MappingFormat
+ io.bytecodemapper.io.remap.RemapService$RemapperKind
+ io.bytecodemapper.io.remap.RemapService$VerifyStats
