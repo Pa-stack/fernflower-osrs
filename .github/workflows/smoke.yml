@@ -62,6 +62,16 @@ jobs:
           java-version: "8"
           cache: gradle
 
+      - name: Isolate Gradle user home
+        shell: pwsh
+        run: |
+          $local = Join-Path $pwd '.gradle'
+          New-Item -ItemType Directory -Force -Path $local | Out-Null
+          "GRADLE_USER_HOME=$local" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "[WIN][CI] GRADLE_USER_HOME=$local"
+          $userProps = Join-Path $env:USERPROFILE '.gradle\gradle.properties'
+          if (Test-Path $userProps) { Write-Host "[WIN][CI] Runner user gradle.properties exists at $userProps (ignored due to isolation)" }
+
       - name: Show Java version (expect 1.8)
         run: |
           set -eux
@@ -231,6 +241,7 @@ jobs:
           }
           # Belt-and-suspenders: also set env var recognized by Gradle
           $env:ORG_GRADLE_JAVA_HOME = $env:JAVA_HOME
+          "ORG_GRADLE_JAVA_HOME=$env:ORG_GRADLE_JAVA_HOME" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "[WIN][CI] JAVA_HOME=$env:JAVA_HOME"
           Write-Host "[WIN][CI] ORG_GRADLE_JAVA_HOME=$env:ORG_GRADLE_JAVA_HOME"
       # >>> AUTOGEN: BYTECODEMAPPER CI GHA SMOKE WINDOWS JAVA_HOME NEUTRALIZE END
@@ -238,13 +249,13 @@ jobs:
       - name: Gradle version (expect 6.9.4) with CI Java override
         shell: pwsh
         run: |
-          ./gradlew.bat -I ci-init.gradle -Dorg.gradle.java.home="$env:JAVA_HOME" -v | Tee-Object -FilePath gradle-version-win.txt
+          ./gradlew.bat -I ci-init.gradle -Dorg.gradle.java.home="$env:JAVA_HOME" -g .gradle -v | Tee-Object -FilePath gradle-version-win.txt
           if (-not (Select-String -Path gradle-version-win.txt -Pattern "^Gradle 6\.9\.4$")) { throw "Expected Gradle 6.9.4" }
 
       - name: Smoke (deterministic) with CI Java override
         shell: pwsh
         run: |
-          ./gradlew.bat -Dorg.gradle.java.home="$env:JAVA_HOME" :mapper-cli:smoke --no-daemon -Dorg.gradle.jvmargs="-Xmx2g"
+          ./gradlew.bat -Dorg.gradle.java.home="$env:JAVA_HOME" -g .gradle :mapper-cli:smoke --no-daemon -Dorg.gradle.jvmargs="-Xmx2g"
 
       - name: Show hashes (certutil)
         shell: pwsh
