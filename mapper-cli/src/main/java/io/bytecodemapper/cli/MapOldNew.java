@@ -75,6 +75,8 @@ final class MapOldNew {
     int maxMethods = 0; // test-only throttle; 0 = unlimited
     // NSF tiering flag
     String nsfTierOrder = "exact,near,wl,wlrelaxed";
+    // nsf64 rollout flag
+    io.bytecodemapper.cli.flags.UseNsf64Mode useNsf64Mode = io.bytecodemapper.cli.flags.UseNsf64Mode.CANONICAL;
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS BEGIN
         double tauAcceptMethods = 0.60;
         double marginMethods = 0.05;
@@ -116,6 +118,8 @@ final class MapOldNew {
                 try { maxMethods = Integer.parseInt(args[++i]); } catch (NumberFormatException ignore) {}
             } else if ("--nsf-tier-order".equals(a) && i+1<args.length) {
                 nsfTierOrder = args[++i];
+            } else if ("--use-nsf64".equals(a) && i+1<args.length) {
+                useNsf64Mode = io.bytecodemapper.cli.flags.UseNsf64Mode.parse(args[++i]);
             } else if ("--includeIdentity".equals(a)) {
                 includeIdentity = true;
             } else if ("--demoRemapCount".equals(a) && i+1<args.length) {
@@ -223,12 +227,12 @@ final class MapOldNew {
     if (wFieldsFlag != null) o.weightFields = wFieldsFlag.doubleValue();
     if (alphaMicroFlag != null) o.alphaMicropattern = alphaMicroFlag.doubleValue();
 
+    // Apply nsf64 tiering and rollout mode before matching
+    io.bytecodemapper.core.match.MethodMatcher.setNsftierOrder(nsfTierOrder);
+    io.bytecodemapper.core.match.MethodMatcher.setUseNsf64Mode(useNsf64Mode);
+
     Orchestrator orch = new Orchestrator();
     Orchestrator.Result r = orch.run(oldPath, newPath, o);
-
-    // >>> AUTOGEN: BYTECODEMAPPER CLI NSF TIER FLAG BEGIN
-    io.bytecodemapper.core.match.MethodMatcher.setNsftierOrder(nsfTierOrder);
-    // <<< AUTOGEN: BYTECODEMAPPER CLI NSF TIER FLAG END
 
     // Optional: dump per-method normalized features as JSONL deterministically
     // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew DUMP NSF JSONL CALL BEGIN

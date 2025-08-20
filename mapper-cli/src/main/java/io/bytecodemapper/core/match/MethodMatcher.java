@@ -9,8 +9,11 @@ import io.bytecodemapper.core.hash.StableHash64;
 import io.bytecodemapper.core.index.NsfIndex;
 import io.bytecodemapper.signals.idf.IdfStore;
 import io.bytecodemapper.signals.normalized.NormalizedAdapters;
+import io.bytecodemapper.signals.normalized.NormalizedMethod;
+import io.bytecodemapper.signals.normalized.NormalizedFeatures;
 import io.bytecodemapper.signals.micro.MicroPatternExtractor;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.util.*;
 
@@ -57,6 +60,12 @@ public final class MethodMatcher {
     public static void setNsftierOrder(String csv){ if (csv!=null && csv.trim().length()>0) NSFTierOrder = csv; }
     // <<< AUTOGEN: BYTECODEMAPPER MATCH NSF TIERS END
 
+    // Rollout mode for nsf64 usage (default CANONICAL)
+    private static io.bytecodemapper.cli.flags.UseNsf64Mode NSF_MODE = io.bytecodemapper.cli.flags.UseNsf64Mode.CANONICAL;
+    public static void setUseNsf64Mode(io.bytecodemapper.cli.flags.UseNsf64Mode m) {
+        if (m != null) NSF_MODE = m;
+    }
+
     /**
      * Overload that accepts feature caches. Builds WL index on NEW side and, for each OLD
      * method, generates candidates (same desc, equal WL first; if none, relax to same desc
@@ -78,8 +87,10 @@ public final class MethodMatcher {
         Map<Key, List<NewRef>> wlIndex = buildNewSideWlIndex(newFeat);
 
         // >>> AUTOGEN: BYTECODEMAPPER MATCH NSF TIERS BEGIN
-        // Build NEW-side nsf index per newOwner
-        java.util.Map<String, NsfIndex> nsfIndexByNewOwner = new java.util.LinkedHashMap<String, NsfIndex>();
+        // Build NEW-side nsf index per newOwner using canonical nsf64 with optional surrogate fallback.
+        final java.util.Map<String, NsfIndex> nsfIndexByNewOwner = new java.util.LinkedHashMap<String, NsfIndex>();
+        // Provenance map keyed by owner\0desc\0name\0fp -> "nsf64" or "nsf_surrogate"
+        final java.util.Map<String, String> nsfProvByKeyFp = new java.util.LinkedHashMap<String, String>();
         {
             java.util.ArrayList<String> newOwners = new java.util.ArrayList<String>(newFeat.keySet());
             java.util.Collections.sort(newOwners);
@@ -89,15 +100,44 @@ public final class MethodMatcher {
                 NsfIndex idx = new NsfIndex();
                 java.util.ArrayList<String> sigs = new java.util.ArrayList<String>(nm.keySet());
                 java.util.Collections.sort(sigs);
+                ClassNode cn = newClasses.get(newOwner);
                 for (String sig : sigs) {
                     MethodFeatureCacheEntry e = nm.get(sig);
                     if (e == null) continue;
-                    // Use stable 64-bit hash derived from normalized fingerprint as surrogate nsf64
-                    String fp = (e.normFingerprint != null ? e.normFingerprint : (e.normalizedBodyHash != null ? e.normalizedBodyHash : (e.normalizedDescriptor != null ? e.normalizedDescriptor : sig)));
-                    long nsf64 = StableHash64.hashUtf8(fp);
                     String name = sig.substring(0, sig.indexOf('('));
                     String desc = sig.substring(sig.indexOf('('));
-                    idx.add(newOwner, desc, name, nsf64);
+                    long canonical = 0L;
+                    // Compute canonical nsf64 from NormalizedMethod if available
+                    if (cn != null) {
+                        org.objectweb.asm.tree.MethodNode mn = findMethod(cn, name, desc);
+                        if (mn != null) {
+                            try {
+                                NormalizedMethod norm = new NormalizedMethod(newOwner, mn, java.util.Collections.<Integer>emptySet());
+                                NormalizedFeatures nf = norm.extract();
+                                canonical = nf != null ? nf.nsf64 : 0L;
+                            } catch (Throwable ignore) { canonical = 0L; }
+                        }
+                    }
+                    // Surrogate fingerprint for fallback/indexing depending on mode
+                    String fp = (e.normFingerprint != null ? e.normFingerprint : (e.normalizedBodyHash != null ? e.normalizedBodyHash : (e.normalizedDescriptor != null ? e.normalizedDescriptor : sig)));
+                    long surrogate = StableHash64.hashUtf8(fp);
+
+                    io.bytecodemapper.cli.flags.UseNsf64Mode mode = NSF_MODE;
+                    if (mode == io.bytecodemapper.cli.flags.UseNsf64Mode.CANONICAL) {
+                        long use = (canonical != 0L ? canonical : surrogate);
+                        idx.add(newOwner, desc, name, use);
+                        nsfProvByKeyFp.put(nsfKey(newOwner, desc, name, use), (canonical != 0L ? "nsf64" : "nsf_surrogate"));
+                    } else if (mode == io.bytecodemapper.cli.flags.UseNsf64Mode.SURROGATE) {
+                        idx.add(newOwner, desc, name, surrogate);
+                        nsfProvByKeyFp.put(nsfKey(newOwner, desc, name, surrogate), "nsf_surrogate");
+                    } else { // BOTH
+                        if (canonical != 0L) {
+                            idx.add(newOwner, desc, name, canonical);
+                            nsfProvByKeyFp.put(nsfKey(newOwner, desc, name, canonical), "nsf64");
+                        }
+                        idx.add(newOwner, desc, name, surrogate);
+                        nsfProvByKeyFp.put(nsfKey(newOwner, desc, name, surrogate), "nsf_surrogate");
+                    }
                 }
                 nsfIndexByNewOwner.put(newOwner, idx);
             }
@@ -125,23 +165,59 @@ public final class MethodMatcher {
 
                 // Primary candidates: collect according to tier order (nsf + wl)
                 java.util.ArrayList<NewRef> candsMerged = new java.util.ArrayList<NewRef>();
-                // Precompute old nsf64 using same surrogate
+                // Precompute old canonical nsf64 (from NormalizedMethod) and surrogate fallback
+                long oldCanonical = 0L;
+                {
+                    ClassNode ocn = oldClasses.get(oldOwner);
+                    if (ocn != null) {
+                        org.objectweb.asm.tree.MethodNode omn = findMethod(ocn, oldName, desc);
+                        if (omn != null) {
+                            try {
+                                NormalizedMethod norm = new NormalizedMethod(oldOwner, omn, java.util.Collections.<Integer>emptySet());
+                                NormalizedFeatures nf = norm.extract();
+                                oldCanonical = nf != null ? nf.nsf64 : 0L;
+                            } catch (Throwable ignore) { oldCanonical = 0L; }
+                        }
+                    }
+                }
                 String oldFp = (ofe.normFingerprint != null ? ofe.normFingerprint : (ofe.normalizedBodyHash != null ? ofe.normalizedBodyHash : (ofe.normalizedDescriptor != null ? ofe.normalizedDescriptor : sig)));
-                long oldNsf = StableHash64.hashUtf8(oldFp);
+                long oldSurrogate = StableHash64.hashUtf8(oldFp);
 
                 NsfIndex nsfIdx = nsfIndexByNewOwner.get(newOwner);
+                // Track provenance for candidates (first occurrence wins)
+                final java.util.LinkedHashMap<String,String> candProv = new java.util.LinkedHashMap<String,String>();
                 for (String tier : NSFTierOrder.split(",")) {
                     String t = tier.trim().toLowerCase(java.util.Locale.ROOT);
                     if ("exact".equals(t)) {
                         if (nsfIdx != null) {
-                            java.util.List<NsfIndex.NewRef> xs = nsfIdx.exact(newOwner, desc, oldNsf);
-                            for (NsfIndex.NewRef r : xs) candsMerged.add(new NewRef(r.owner, r.name, r.desc, 0));
+                            java.util.List<Long> fps = queryFps(oldCanonical, oldSurrogate, NSF_MODE);
+                            for (Long qfp : fps) {
+                                java.util.List<NsfIndex.NewRef> xs = nsfIdx.exact(newOwner, desc, qfp.longValue());
+                                for (NsfIndex.NewRef r : xs) {
+                                    candsMerged.add(new NewRef(r.owner, r.name, r.desc, 0));
+                                    String k = r.owner + "\u0000" + r.desc + "\u0000" + r.name;
+                                    if (!candProv.containsKey(k)) {
+                                        String pv = nsfProvByKeyFp.get(nsfKey(r.owner, r.desc, r.name, qfp.longValue()));
+                                        candProv.put(k, pv != null ? pv : (qfp.longValue() == oldCanonical && oldCanonical != 0L ? "nsf64" : "nsf_surrogate"));
+                                    }
+                                }
+                            }
                         }
                     } else if ("near".equals(t)) {
                         if (nsfIdx != null) {
                             int hamBudget = 1; // see optional flattening gate later
-                            java.util.List<NsfIndex.NewRef> xs = nsfIdx.near(newOwner, desc, oldNsf, hamBudget);
-                            for (NsfIndex.NewRef r : xs) candsMerged.add(new NewRef(r.owner, r.name, r.desc, 0));
+                            java.util.List<Long> fps = queryFps(oldCanonical, oldSurrogate, NSF_MODE);
+                            for (Long qfp : fps) {
+                                java.util.List<NsfIndex.NewRef> xs = nsfIdx.near(newOwner, desc, qfp.longValue(), hamBudget);
+                                for (NsfIndex.NewRef r : xs) {
+                                    candsMerged.add(new NewRef(r.owner, r.name, r.desc, 0));
+                                    String k = r.owner + "\u0000" + r.desc + "\u0000" + r.name;
+                                    if (!candProv.containsKey(k)) {
+                                        String pv = nsfProvByKeyFp.get(nsfKey(r.owner, r.desc, r.name, qfp.longValue()));
+                                        candProv.put(k, pv != null ? pv : (qfp.longValue() == oldCanonical && oldCanonical != 0L ? "nsf64" : "nsf_surrogate"));
+                                    }
+                                }
+                            }
                         }
                     } else if ("wl".equals(t)) {
                         java.util.List<NewRef> xs = wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList());
@@ -157,6 +233,13 @@ public final class MethodMatcher {
                     if (!uniq.containsKey(k)) uniq.put(k, r);
                 }
                 java.util.ArrayList<NewRef> cands = new java.util.ArrayList<NewRef>(uniq.values());
+                // Capture provenance for deduped candidate order
+                final java.util.LinkedHashMap<String,String> candsProvenance = new java.util.LinkedHashMap<String,String>();
+                for (NewRef r : cands) {
+                    String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
+                    String pv = candProv.get(k);
+                    if (pv != null) candsProvenance.put(k, pv);
+                }
 
                 // Keep back-compat safety: if nothing from tiers, fall back to WL exact, then relaxed
                 if (cands.isEmpty()) cands = new java.util.ArrayList<NewRef>(wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList()));
@@ -184,17 +267,20 @@ public final class MethodMatcher {
 
                 // Score and decide
                 MethodScorer.Result r = MethodScorer.scoreOne(src, candFeat, idf);
-                if (r.accepted && r.best != null) {
+        if (r.accepted && r.best != null) {
                     out.accepted.add(new Pair(oldOwner, oldName, r.best.ref.name, desc));
                     if (debugStats) {
-                        System.out.println("[match] ok " + oldOwner + "#" + oldName + desc
+            String bestKey = r.best.ref.owner + "\u0000" + r.best.ref.desc + "\u0000" + r.best.ref.name;
+            String fpMode = candsProvenance.get(bestKey);
+            System.out.println("[match] ok " + oldOwner + "#" + oldName + desc
                                 + " -> " + r.best.ref.owner + "#" + r.best.ref.name
                                 + " total=" + String.format(java.util.Locale.ROOT, "%.4f", r.scoreBest)
                                 + " margin=" + String.format(java.util.Locale.ROOT, "%.4f", (r.scoreBest - Math.max(0, r.scoreSecond)))
                                 + " calls=" + String.format(java.util.Locale.ROOT, "%.4f", r.sCalls)
                                 + " micro=" + String.format(java.util.Locale.ROOT, "%.4f", r.sMicro)
                                 + " hist=" + String.format(java.util.Locale.ROOT, "%.4f", r.sOpcode)
-                                + " str=" + String.format(java.util.Locale.ROOT, "%.4f", r.sStrings)
+                + " str=" + String.format(java.util.Locale.ROOT, "%.4f", r.sStrings)
+                + (fpMode!=null? " fp_mode=" + fpMode : "")
                         );
                     }
                 } else {
@@ -223,11 +309,18 @@ public final class MethodMatcher {
                     out.abstained.add(new Abstention(oldOwner, oldName, desc, cs));
                     if (debugStats) {
                         String top = cs.isEmpty()? "-" : (cs.get(0).newOwner + "#" + cs.get(0).newName);
+                        String topMode = "-";
+                        if (!cs.isEmpty()) {
+                            String k = cs.get(0).newOwner + "\u0000" + desc + "\u0000" + cs.get(0).newName;
+                            String pv = candsProvenance.get(k);
+                            if (pv != null) topMode = pv;
+                        }
                         System.out.println("[match] abstain " + oldOwner + "#" + oldName + desc
                                 + " reason=" + (r.abstainReason != null ? r.abstainReason : "unknown")
                                 + " best=" + String.format(java.util.Locale.ROOT, "%.4f", best)
                                 + " second=" + String.format(java.util.Locale.ROOT, "%.4f", second)
                                 + " top=" + top
+                                + " top_fp_mode=" + topMode
                                 + " cands=" + cs.size()
                         );
                     }
@@ -272,6 +365,32 @@ public final class MethodMatcher {
     private static final class NewRef {
         final String owner, name;
         NewRef(String o, String n, String d, long w) { owner=o; name=n; }
+    }
+
+    private static MethodNode findMethod(ClassNode cn, String name, String desc) {
+        if (cn == null || cn.methods == null) return null;
+        for (Object o : cn.methods) {
+            org.objectweb.asm.tree.MethodNode mn = (org.objectweb.asm.tree.MethodNode) o;
+            if (name.equals(mn.name) && desc.equals(mn.desc)) return mn;
+        }
+        return null;
+    }
+
+    private static String nsfKey(String owner, String desc, String name, long fp) {
+        return owner + "\u0000" + desc + "\u0000" + name + "\u0000" + Long.toString(fp);
+    }
+
+    private static java.util.List<Long> queryFps(long canonical, long surrogate, io.bytecodemapper.cli.flags.UseNsf64Mode mode) {
+        java.util.ArrayList<Long> list = new java.util.ArrayList<Long>();
+        if (mode == io.bytecodemapper.cli.flags.UseNsf64Mode.CANONICAL) {
+            if (canonical != 0L) list.add(Long.valueOf(canonical)); else list.add(Long.valueOf(surrogate));
+        } else if (mode == io.bytecodemapper.cli.flags.UseNsf64Mode.SURROGATE) {
+            list.add(Long.valueOf(surrogate));
+        } else { // BOTH, canonical first
+            if (canonical != 0L) list.add(Long.valueOf(canonical));
+            list.add(Long.valueOf(surrogate));
+        }
+        return list;
     }
 
     private static Map<Key, List<NewRef>> buildNewSideWlIndex(

@@ -2,7 +2,6 @@
 package io.bytecodemapper.core.index;
 
 import java.util.*;
-import io.bytecodemapper.cli.cache.MethodFeatureCacheEntry;
 
 public final class NsfIndex {
     public static final class NewRef {
@@ -44,6 +43,15 @@ public final class NsfIndex {
                 c = a.desc.compareTo(b.desc); if (c!=0) return c;
                 return a.name.compareTo(b.name);
             }});
+    }
+
+    // Package-private accessor for deterministic diagnostics/tests
+    java.util.List<NewRef> getByFp(String owner, String desc, long nsf64) {
+        ArrayList<NewRef> out = new ArrayList<NewRef>();
+        ArrayList<NewRef> b = byKey.get(key(owner, desc)); if (b==null) return out;
+        for (NewRef r : b) if (r.nsf64 == nsf64) out.add(r);
+        sort(out);
+        return out;
     }
 }
 // >>> AUTOGEN: BYTECODEMAPPER NSF INDEX END

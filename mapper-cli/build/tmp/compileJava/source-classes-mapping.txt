@@ -34,6 +34,8 @@ io/bytecodemapper/cli/method/CandidateGenerator.java
 io/bytecodemapper/core/match/ClassMatcher.java
  io.bytecodemapper.core.match.ClassMatcher
  io.bytecodemapper.core.match.ClassMatcher$ClassMatchResult
+io/bytecodemapper/cli/flags/UseNsf64Mode.java
+ io.bytecodemapper.cli.flags.UseNsf64Mode
 io/bytecodemapper/cli/Router.java
  io.bytecodemapper.cli.MainUsage
  io.bytecodemapper.cli.Router
