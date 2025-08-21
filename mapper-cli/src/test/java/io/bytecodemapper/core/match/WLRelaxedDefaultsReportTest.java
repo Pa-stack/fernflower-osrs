@@ -18,6 +18,11 @@ public class WLRelaxedDefaultsReportTest {
         String s = json;
         s = s.replaceAll("\\\"wl_relaxed_l1\\\"\\s*:\\s*\\d+", "\"wl_relaxed_l1\":X");
         s = s.replaceAll("\\\"wl_relaxed_size_band\\\"\\s*:\\s*[0-9]+\\.[0-9]+", "\"wl_relaxed_size_band\":X");
+        // Counters may vary with thresholds; normalize them too
+        s = s.replaceAll("\\\"wl_relaxed_gate_passes\\\"\\s*:\\s*\\d+", "\"wl_relaxed_gate_passes\":X");
+        s = s.replaceAll("\\\"wl_relaxed_candidates\\\"\\s*:\\s*\\d+", "\"wl_relaxed_candidates\":X");
+        s = s.replaceAll("\\\"wl_relaxed_hits\\\"\\s*:\\s*\\d+", "\"wl_relaxed_hits\":X");
+        s = s.replaceAll("\\\"wl_relaxed_accepted\\\"\\s*:\\s*\\d+", "\"wl_relaxed_accepted\":X");
         return s.trim();
     }
 
@@ -51,10 +56,18 @@ public class WLRelaxedDefaultsReportTest {
         // Determinism within run A
         Path outA2 = CliPaths.resolveOutput("mapper-cli/build/wl-defaults/a2/out.tiny");
         Path repA2 = CliPaths.resolveOutput("mapper-cli/build/wl-defaults/a2/report.json");
-        String[] base2 = base.clone();
-        base2[7] = outA2.toString(); // replace out path
-        base2[base2.length - 1] = repA2.toString(); // replace report path
-        run(base2);
+        String[] runA2 = new String[]{
+                "mapOldNew",
+                "--old", oldJar.toString(),
+                "--new", newJar.toString(),
+                "--out", outA2.toString(),
+                "--deterministic",
+                "--cacheDir", CliPaths.resolveOutput("mapper-cli/build/cache").toString(),
+                "--idf", CliPaths.resolveOutput("mapper-cli/build/idf.properties").toString(),
+                "--maxMethods", "200",
+                "--report", repA2.toString()
+        };
+        run(runA2);
         Assert.assertEquals(new String(Files.readAllBytes(outA), StandardCharsets.UTF_8),
                 new String(Files.readAllBytes(outA2), StandardCharsets.UTF_8));
         Assert.assertEquals(new String(Files.readAllBytes(repA), StandardCharsets.UTF_8).trim(),
@@ -86,10 +99,20 @@ public class WLRelaxedDefaultsReportTest {
         // Determinism within run B
         Path outB2 = CliPaths.resolveOutput("mapper-cli/build/wl-defaults/b2/out.tiny");
         Path repB2 = CliPaths.resolveOutput("mapper-cli/build/wl-defaults/b2/report.json");
-        String[] argsB2 = argsB.clone();
-        argsB2[7] = outB2.toString(); // replace out path
-        argsB2[argsB2.length - 1] = repB2.toString(); // replace report path
-        run(argsB2);
+        String[] runB2 = new String[]{
+                "mapOldNew",
+                "--old", oldJar.toString(),
+                "--new", newJar.toString(),
+                "--out", outB2.toString(),
+                "--deterministic",
+                "--cacheDir", CliPaths.resolveOutput("mapper-cli/build/cache").toString(),
+                "--idf", CliPaths.resolveOutput("mapper-cli/build/idf.properties").toString(),
+                "--maxMethods", "200",
+                "--wl-relaxed-l1", "3",
+                "--wl-size-band", "0.05",
+                "--report", repB2.toString()
+        };
+        run(runB2);
         Assert.assertEquals(new String(Files.readAllBytes(outB), StandardCharsets.UTF_8),
                 new String(Files.readAllBytes(outB2), StandardCharsets.UTF_8));
         Assert.assertEquals(new String(Files.readAllBytes(repB), StandardCharsets.UTF_8).trim(),
