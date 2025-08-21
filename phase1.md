@@ -1,10 +1,13 @@
-### Files & snippets
+# Phase 1 — NSFv2 and NSF index
+
+## Files & snippets
 
 Note: phase1.json was not found in this repository, so method-by-method cross‑checks against it could not be performed. The notes below were verified directly against the current code in this repo.
 
 * `mapper-cli/src/main/java/io/bytecodemapper/core/index/NsfIndex.java#add/exact/near`
 
   ```java
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\src\main\java\io\bytecodemapper\core\index\NsfIndex.java
   // Index is keyed by (owner, desc). Each entry stores NewRef{owner,name,desc,nsf64,bucket}
   // bucket is "nsf64" (canonical) or "nsf_surrogate"; canonical is preferred on dedup.
   public void add(String owner, String desc, String name, long nsf64, Mode mode) {
@@ -28,6 +31,7 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
   // Exact match with deterministic dedup (favor canonical) and stable sort
   public java.util.List<NewRef> exact(String owner, String desc, long nsf64) {
     ArrayList<NewRef> b = byKey.get(key(owner, desc)); if (b==null) return Collections.emptyList();
+    // Union, dedup by (owner,name,desc,nsf64), favor canonical
     LinkedHashMap<String,NewRef> dedup = new LinkedHashMap<>();
     for (NewRef r : b) {
       if (r.nsf64 == nsf64) {
@@ -59,9 +63,7 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
     int MAX = Math.min(512, out.size());
     return new ArrayList<>(out.subList(0, MAX));
   }
-  ```
 
-  ```java
   private static void sort(ArrayList<NewRef> xs){
     Collections.sort(xs, new Comparator<NewRef>() {
       public int compare(NewRef a, NewRef b){
@@ -75,6 +77,7 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 * `mapper-cli/src/main/java/io/bytecodemapper/cli/MapOldNew.java#parseFlags`
 
   ```java
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\src\main\java\io\bytecodemapper\cli\MapOldNew.java
   // Initial flags
   boolean deterministic = false;
   String cacheDirStr = "mapper-cli/build/cache";
@@ -86,9 +89,11 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
     else if ("--cacheDir".equals(args[i]) && i+1<args.length) { cacheDirStr = args[++i]; }
     else if ("--idf".equals(args[i]) && i+1<args.length) { idfPathStr = args[++i]; }
     else if (args[i].startsWith("--dump-normalized-features")) {
+      // forms: --dump-normalized-features or --dump-normalized-features=dir
       String a = args[i];
       int eq = a.indexOf('=');
       if (eq > 0 && eq < a.length()-1) dumpNormalizedDir = a.substring(eq+1);
+      // if flag provided without value, we'll assign default later
     } else if ("--report".equals(args[i]) && i+1<args.length) {
       reportPathStr = args[++i];
     }
@@ -113,6 +118,7 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 * `mapper-cli/src/main/java/io/bytecodemapper/core/match/MethodMatcher.java#tiers`
 
   ```java
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\src\main\java\io\bytecodemapper\core\match\MethodMatcher.java
   // Compute near budget with flattening detection
   boolean anyNewFlattened = newSideAnyFlattenedForOwnerDesc(newClasses, newOwner, desc);
   boolean flattened = oldFlattened || anyNewFlattened;
@@ -129,22 +135,29 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
           for (NsfIndex.NewRef r : xs) {
             candsExact.add(new NewRef(r.owner, r.name, r.desc, 0));
             String k = r.owner + "\u0000" + r.desc + "\u0000" + r.name;
-            if (!candProv.containsKey(k)) candProv.put(k, "nsf64");
+            if (!candProv.containsKey(k)) {
+              String pv = nsfProvByKeyFp.get(nsfKey(r.owner, r.desc, r.name, qfp.longValue()));
+              candProv.put(k, pv != null ? pv : (qfp.longValue() == oldCanonical && oldCanonical != 0L ? "nsf64" : "nsf_surrogate"));
+            }
           }
         }
       }
     } else if ("near".equals(t)) {
       if (nsfIdx != null) {
+        int hamBudget = nearBudget; // widen when flattening is detected
         java.util.List<Long> fps = queryFps(oldCanonical, oldSurrogate, NSF_MODE);
         for (Long qfp : fps) {
-          java.util.List<NsfIndex.NewRef> xs = nsfIdx.near(newOwner, desc, qfp.longValue(), nearBudget);
+          java.util.List<NsfIndex.NewRef> xs = nsfIdx.near(newOwner, desc, qfp.longValue(), hamBudget);
           for (NsfIndex.NewRef r : xs) {
             candsNear.add(new NewRef(r.owner, r.name, r.desc, 0));
             String k = r.owner + "\u0000" + r.desc + "\u0000" + r.name;
-            if (!candProv.containsKey(k)) candProv.put(k, "nsf64");
+            if (!candProv.containsKey(k)) {
+              String pv = nsfProvByKeyFp.get(nsfKey(r.owner, r.desc, r.name, qfp.longValue()));
+              candProv.put(k, pv != null ? pv : (qfp.longValue() == oldCanonical && oldCanonical != 0L ? "nsf64" : "nsf_surrogate"));
+            }
           }
         }
-        if (flattened && nearBudget > 1 && !candsNear.isEmpty()) {
+        if (flattened && hamBudget > 1 && !candsNear.isEmpty()) {
           out.nearBeforeGates += candsNear.size();
           candsNear = applyFlatteningGatesIfNeeded(true, oldNormFeatures, candsNear, options.stackCosineThreshold, newClasses, newOwner, desc);
           out.nearAfterGates += candsNear.size();
@@ -168,8 +181,9 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 * `mapper-signals/src/main/java/io/bytecodemapper/signals/normalized/NormalizedMethod.java#normalizedStackDeltaHistogram`
 
   ```java
-  // Stack histogram {-2,-1,0,+1,+2} in fixed key order over filteredInsns
-  private Map<String,Integer> normalizedStackDeltaHistogram() {
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-signals\src\main\java\io\bytecodemapper\signals\normalized\NormalizedMethod.java
+  // Coarse stack-delta histogram over filtered instructions, clamped to [-2..+2]
+  private LinkedHashMap<String,Integer> normalizedStackDeltaHistogram() {
     final String[] keys = new String[]{"-2","-1","0","+1","+2"};
     LinkedHashMap<String,Integer> hist = new LinkedHashMap<String,Integer>();
     for (String k : keys) hist.put(k, Integer.valueOf(0));
@@ -177,7 +191,7 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 
     for (AbstractInsnNode insn : filteredInsns) {
       int op = insn.getOpcode();
-      if (op < 0) continue;
+      if (op < 0) continue; // skip pseudo-insns
       int delta = stackDeltaSlots(insn);
       if (delta < -2) delta = -2; else if (delta > 2) delta = 2;
       switch (delta) {
@@ -195,11 +209,12 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 * `NormalizedMethod.java#try/catch shape`
 
   ```java
-  // [CODEGEN] try-depth, fanout, catch-types hash over filteredTryCatch
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-signals\src\main\java\io\bytecodemapper\signals\normalized\NormalizedMethod.java
   private int normalizedTryDepth() {
     if (filteredTryCatch == null || filteredTryCatch.isEmpty() || filteredInsns == null || filteredInsns.length==0) return 0;
     Map<LabelNode,Integer> labelIndex = buildLabelIndex();
-    ArrayList<int[]> events = new ArrayList<int[]>();
+    // Build events for sweep-line depth computation
+    ArrayList<int[]> events = new ArrayList<int[]>(); // [index, +1/-1]
     for (TryCatchBlockNode t : filteredTryCatch) {
       Integer s = labelIndex.get(t.start);
       Integer e = labelIndex.get(t.end);
@@ -217,6 +232,7 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
   }
   private int normalizedTryFanout() {
     if (filteredTryCatch == null || filteredTryCatch.isEmpty()) return 0;
+    // Group by (start,end) to count multi-catch fanout
     Map<String,Integer> counts = new LinkedHashMap<String,Integer>();
     for (TryCatchBlockNode t : filteredTryCatch) {
       String key = System.identityHashCode(t.start) + ":" + System.identityHashCode(t.end);
@@ -243,7 +259,8 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 * `NormalizedMethod.java#normalizedLiteralsMinHash64`
 
   ```java
-  // [CODEGEN] numeric-literal MinHash (64 buckets, ignore -1..5)
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-signals\src\main\java\io\bytecodemapper\signals\normalized\NormalizedMethod.java
+  // Numeric-literal MinHash (64 buckets), ignores small JVM ints (-1..5)
   private int[] normalizedLiteralsMinHash64() {
     if (filteredInsns == null || filteredInsns.length == 0) return null;
     final int BUCKETS = 64;
@@ -256,14 +273,14 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
       if (op == BIPUSH || op == SIPUSH) {
         if (insn instanceof IntInsnNode) {
           int v = ((IntInsnNode) insn).operand;
-          if (v >= -1 && v <= 5) continue;
+          if (v >= -1 && v <= 5) continue; // ignore JVM small ints noise
           saw |= updateSketch(sketch, String.valueOf(v));
         }
       } else if (insn instanceof LdcInsnNode) {
         Object c = ((LdcInsnNode) insn).cst;
         if (c instanceof Integer) {
           int v = ((Integer) c).intValue();
-          if (v >= -1 && v <= 5) continue;
+          if (v >= -1 && v <= 5) continue; // ignore
           saw |= updateSketch(sketch, String.valueOf(v));
         } else if (c instanceof Long) {
           saw |= updateSketch(sketch, String.valueOf(((Long) c).longValue()));
@@ -282,44 +299,53 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 * `NormalizedMethod.java#invoke-kind encoding`
 
   ```java
-  // [CODEGEN] invoke kind counts [VIRT, STATIC, INTERFACE, CTOR]
-  private int[] invokeKindCounts() {
-  int virt = getOpCount(INVOKEVIRTUAL);
-  int stat = getOpCount(INVOKESTATIC);
-  int itf  = getOpCount(INVOKEINTERFACE);
-  int ctor = 0;
-  for (String sig : this.invokedSignatures) if (sig.indexOf(".<init>(") >= 0) ctor++;
-  return new int[]{virt, stat, itf, ctor};
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-signals\src\main\java\io\bytecodemapper\signals\normalized\NormalizedMethod.java
+  // Invoke kind counts [VIRT, STATIC, INTERFACE, CTOR]
+  private int[] invokeKindCounts() { // length=4, order: VIRT, STATIC, INTERFACE, CTOR
+    int virt = getOpCount(INVOKEVIRTUAL);
+    int stat = getOpCount(INVOKESTATIC);
+    int itf  = getOpCount(INVOKEINTERFACE);
+    int ctor = 0;
+    for (String sig : this.invokedSignatures) if (sig.indexOf(".<init>(") >= 0) ctor++;
+    return new int[]{virt, stat, itf, ctor};
   }
   ```
 
-* `NormalizedMethod.java#buildNsfPayloadV2`
+
 
   ```java
-  // NSFv2 payload (sorted, deterministic). Tags and order in current code:
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-signals\src\main\java\io\bytecodemapper\signals\normalized\NormalizedMethod.java
+  // 5) Build NSFv2 payload (sorted pieces; include version header)
   private String buildNsfPayloadV2() {
     StringBuilder out = new StringBuilder();
     out.append("NSFv2\n");
+    // Descriptor
     out.append("D|").append(this.normalizedDescriptor).append('\n');
+    // Sorted opcode keys (as integers turned into strings)
     ArrayList<String> opcodeKeys = new ArrayList<String>();
     for (Integer k : this.opcodeHistogram.keySet()) opcodeKeys.add(String.valueOf(k));
     Collections.sort(opcodeKeys);
     out.append("O|").append(join(opcodeKeys, ",")).append('\n');
+    // Sorted invoked signatures
     ArrayList<String> invokes = new ArrayList<String>(this.invokedSignatures);
     Collections.sort(invokes);
     out.append("S|").append(join(invokes, ",")).append('\n');
+    // Sorted strings
     ArrayList<String> strs = new ArrayList<String>(this.stringConstants);
     Collections.sort(strs);
     out.append("T|").append(join(strs, ",")).append('\n');
+    // Stack histogram in fixed order
     LinkedHashMap<String,Integer> sh = normalizedStackDeltaHistogram();
     out.append("H|")
-       .append("-2:").append(String.valueOf(sh.get("-2")))
-       .append(',').append("-1:").append(String.valueOf(sh.get("-1")))
-       .append(',').append("0:").append(String.valueOf(sh.get("0")))
-       .append(',').append("+1:").append(String.valueOf(sh.get("+1")))
-       .append(',').append("+2:").append(String.valueOf(sh.get("+2")))
-       .append('\n');
+     .append("-2:").append(String.valueOf(sh.get("-2")))
+     .append(',').append("-1:").append(String.valueOf(sh.get("-1")))
+     .append(',').append("0:").append(String.valueOf(sh.get("0")))
+     .append(',').append("+1:").append(String.valueOf(sh.get("+1")))
+     .append(',').append("+2:").append(String.valueOf(sh.get("+2")))
+     .append('\n');
+    // Try shape triple
     out.append("Y|").append(normalizedTryDepth()).append('|').append(normalizedTryFanout()).append('|').append(normalizedCatchTypesHash()).append('\n');
+    // Literals sketch
     int[] sketch = normalizedLiteralsMinHash64();
     if (sketch == null) {
       out.append("L|∅\n");
@@ -328,6 +354,7 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
       for (int i=0;i<sketch.length;i++) { if (i>0) out.append(','); out.append(sketch[i]); }
       out.append('\n');
     }
+    // Invoke-kind counts
     int[] kinds = invokeKindCounts();
     out.append("K|").append(kinds[0]).append(',').append(kinds[1]).append(',').append(kinds[2]).append(',').append(kinds[3]);
     return out.toString();
@@ -337,29 +364,32 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 * `mapper-signals/src/main/java/io/bytecodemapper/signals/normalized/NormalizedFeatures.java#getters`
 
   ```java
-  // [CODEGEN] nsf64 source of truth + new feature accessors
-  public long   getNsf64()                   { return nsf64; }
-  public Map<String,Integer> getStackHist()  { return stackHist; }
-  public int    getTryDepth()                { return tryDepth; }
-  public int    getTryFanout()               { return tryFanout; }
-  public int    getCatchTypesHash()          { return catchTypesHash; }
-  public int[]  getLitsMinHash64()           { return litsMinHash64; }
-  public int[]  getInvokeKindCounts()        { return invokeKindCounts; }
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-signals\src\main\java\io\bytecodemapper\signals\normalized\NormalizedFeatures.java
+  public Map<String,Integer> getStackHist() { return this.stackHist; }
+  public int getTryDepth() { return this.tryDepth; }
+  public int getTryFanout() { return this.tryFanout; }
+  public int getCatchTypesHash() { return this.catchTypesHash; }
+  public int[] getLitsMinHash64() { return this.litsMinHash64; }
+  public int[] getInvokeKindCounts() { return this.invokeKindCounts; }
+  public long getNsf64() { return this.nsf64; }
   ```
 
 * `mapper-cli/src/main/java/io/bytecodemapper/cli/util/NormalizedDumpWriter.java#write`
 
   ```java
+  // c:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\src\main\java\io\bytecodemapper\cli\util\NormalizedDumpWriter.java
   private static void writeJsonl(BufferedWriter bw, String owner, String name, String desc,
                  NormalizedMethod nm,
                  io.bytecodemapper.signals.normalized.NormalizedFeatures nf) throws IOException {
     StringBuilder sb = new StringBuilder(512);
     sb.append('{');
+    // Stable top-level ordering (NSFv2 canonical)
     field(sb, "owner", owner).append(',');
     field(sb, "name", name).append(',');
     field(sb, "desc", desc).append(',');
     field(sb, "nsf_version", "NSFv2").append(',');
     field(sb, "nsf64_hex", toHex16(nf.getNsf64())).append(',');
+    // stackHist in fixed order
     sb.append("\"stackHist\":{");
     {
       java.util.Map<String,Integer> sh = nf.getStackHist();
@@ -371,9 +401,11 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
       }
     }
     sb.append('}').append(',');
+    // try shape scalars
     sb.append("\"tryDepth\":").append(nf.getTryDepth()).append(',');
     sb.append("\"tryFanout\":").append(nf.getTryFanout()).append(',');
     sb.append("\"catchTypesHash\":").append(nf.getCatchTypesHash()).append(',');
+    // literals minhash 64 or "∅"
     sb.append("\"litsMinHash64\":");
     int[] sk = nf.getLitsMinHash64();
     if (sk == null) {
@@ -384,12 +416,15 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
       sb.append(']');
     }
     sb.append(',');
+    // invoke kind counts
     sb.append("\"invokeKindCounts\":");
     int[] kc = nf.getInvokeKindCounts();
     sb.append('[').append(kc[0]).append(',').append(kc[1]).append(',').append(kc[2]).append(',').append(kc[3]).append(']').append(',');
+    // strings sorted
     java.util.List<String> strings = new java.util.ArrayList<String>(nm.stringConstants);
     java.util.Collections.sort(strings);
     sb.append("\"strings\":"); writeStringArray(sb, strings); sb.append(',');
+    // invokes sorted
     java.util.List<String> invs = new java.util.ArrayList<String>(nm.invokedSignatures);
     java.util.Collections.sort(invs);
     sb.append("\"invokes\":"); writeStringArray(sb, invs);
@@ -397,10 +432,9 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
     bw.write(sb.toString());
   }
   ```
-
 ---
 
-### Flags & defaults
+## Flags & defaults
 
 | Flag                               | Values                               | Default     | Effect                                                                    | Notes                                                                                                                         |
 | ---------------------------------- | ------------------------------------ | ----------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -411,18 +445,19 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 
 ---
 
-### Tests present
+## Tests present
 
-* `NormalizedFeaturesNsfV2StabilityTest` — benign LDC reorder yields identical `nsf64`.
-* `NormalizedFeaturesNsfV2SensitivityTest` — opcode perturbation changes `nsf64`.
-* `NormalizedFeaturesNsfV2WrapperInvarianceTest` — wrapper handler unwrap invariance.
-* `NormalizedDumpTest` — deterministic JSONL dump; sorted keys.
-* `ReportCandidateStatsSmokeTest` — deterministic report JSON; candidate stats present.
-* `DeterminismEndToEndTest` — identical Tiny + report across repeated runs with `--deterministic`.
+
+* `mapper-signals/src/test/java/io/bytecodemapper/signals/normalized/NormalizedFeaturesNsfV2StabilityTest.java`
+* `mapper-signals/src/test/java/io/bytecodemapper/signals/normalized/NormalizedFeaturesNsfV2SensitivityTest.java`
+* `mapper-signals/src/test/java/io/bytecodemapper/signals/normalized/NormalizedFeaturesNsfV2WrapperInvarianceTest.java`
+* `mapper-cli/src/test/java/io/bytecodemapper/cli/NormalizedDumpTest.java`
+* `mapper-cli/src/test/java/io/bytecodemapper/cli/ReportCandidateStatsSmokeTest.java`
+* `mapper-cli/src/test/java/io/bytecodemapper/cli/DeterminismEndToEndTest.java`
 
 ---
 
-### Determinism notes
+## Determinism notes
 
 * **Stable hashing**: all payloads hashed with `StableHash64.hashUtf8()`.
 * **Sorted concatenation**: strings, invokes, opcode keys, and catch types are **sorted**; stack hist uses fixed key order `{-2,-1,0,+1,+2}`.
@@ -430,7 +465,7 @@ Note: phase1.json was not found in this repository, so method-by-method cross‑
 
 ---
 
-### Machine summary (JSON)
+## Machine summary (JSON)
 
 ```json
 {
@@ -464,7 +499,7 @@ Acceptance checks (optional):
 * Build all modules and run tests
   * Windows PowerShell
     * gradlew.bat build
-* Verify CLI flags are recognized
-  * mapper-cli/build/install/mapper-cli/bin/mapper-cli.bat mapOldNew --help | Select-String "--use-nsf64"
-* Generate a small NSF dump
-  * Run the workspace task "Mapper: mapOldNew" and check that mapper-cli/build/nsf-jsonl contains old.jsonl and new.jsonl with nsf_version="NSFv2".
+* Generate a small NSF dump (deterministic JSONL)
+  * Run the CLI with --dump-normalized-features (optionally provide a directory) and confirm mapper-cli/build/nsf-jsonl (or the provided dir) contains old.jsonl and new.jsonl with nsf_version="NSFv2".
+* Write a report JSON and verify flags
+  * Run the CLI with --report mapper-cli/build/report.json and confirm the file exists and includes fields like use_nsf64 and nsf_tier_order under candidate/report sections.
