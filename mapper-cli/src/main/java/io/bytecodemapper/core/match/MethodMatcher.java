@@ -194,6 +194,7 @@ public final class MethodMatcher {
                 java.util.ArrayList<NewRef> candsRelax = new java.util.ArrayList<NewRef>();
                 // Precompute old canonical nsf64 (from NormalizedMethod) and surrogate fallback
                 long oldCanonical = 0L;
+                NormalizedFeatures oldNormFeatures = null; // for flattening gates
                 boolean oldFlattened = false; // CODEGEN: flattening-near-widen (old side)
                 {
                     ClassNode ocn = oldClasses.get(oldOwner);
@@ -203,6 +204,7 @@ public final class MethodMatcher {
                             try {
                                 NormalizedMethod norm = new NormalizedMethod(oldOwner, omn, java.util.Collections.<Integer>emptySet());
                                 NormalizedFeatures nf = norm.extract();
+                                oldNormFeatures = nf;
                                 oldCanonical = nf != null ? nf.nsf64 : 0L;
                                 // CODEGEN-BEGIN: flattening-near-widen old-detect
                                 oldFlattened = isLikelyFlattened(omn);
@@ -223,7 +225,7 @@ public final class MethodMatcher {
                 boolean flattened = oldFlattened || anyNewFlattened;
                 final int nearBudget = flattened ? Math.max(1, options.nsfNearBudgetWhenFlattened) : 1;
                 if (flattened && debugStats) {
-                    System.out.println("[match] flattening detected for " + oldOwner + "#" + oldName + desc + 
+                    System.out.println("[match] flattening detected for " + oldOwner + "#" + oldName + desc +
                             " → nearBudget=" + nearBudget);
                 }
                 // CODEGEN-END: flattening-near-widen compute-near-budget
@@ -262,6 +264,20 @@ public final class MethodMatcher {
                                     }
                                 }
                             }
+                            // CODEGEN-BEGIN: flattening-gates apply
+                            // Apply call-degree band and stack-hist cosine gates only when flattening is detected
+                            if (!candsNear.isEmpty()) {
+                                candsNear = applyFlatteningGatesIfNeeded(
+                                        flattened,
+                                        oldNormFeatures,
+                                        candsNear,
+                                        options.stackCosineThreshold,
+                                        newClasses,
+                                        newOwner,
+                                        desc
+                                );
+                            }
+                            // CODEGEN-END: flattening-gates apply
                         }
                     } else if ("wl".equals(t)) {
                         java.util.List<NewRef> xs = wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList());
@@ -563,6 +579,74 @@ public final class MethodMatcher {
         }
         return list;
     }
+
+    // CODEGEN-BEGIN: flattening-gates
+    // Use invoke-kind counts added in Phase 2 to derive call-degree
+    private static int callDegree(NormalizedFeatures nf) {
+        if (nf == null) return 0;
+        int[] k = nf.getInvokeKindCounts(); // [VIRT, STATIC, INTERFACE, CTOR]
+        int sum = 0;
+        if (k != null) { for (int v : k) sum += v; }
+        return sum;
+    }
+
+    // Banding: same bucket or +/-1 (0,1,2,3,4,5,10+) deterministically
+    private static int degreeBucket(int d) {
+        if (d <= 5) return d;
+        return 10; // 10+ cap
+    }
+
+    private static boolean degreeBandOK(NormalizedFeatures a, NormalizedFeatures b) {
+        int A = degreeBucket(callDegree(a));
+        int B = degreeBucket(callDegree(b));
+        return Math.abs(A - B) <= 1;
+    }
+
+    // Deterministic cosine over the fixed 5-key stack histogram {-2,-1,0,+1,+2}
+    private static double stackCosine(NormalizedFeatures a, NormalizedFeatures b) {
+        final String[] KEYS = new String[]{"-2","-1","0","+1","+2"};
+        long dot=0, na=0, nb=0;
+        java.util.Map<String,Integer> ha = (a==null?null:a.getStackHist());
+        java.util.Map<String,Integer> hb = (b==null?null:b.getStackHist());
+        for (String k : KEYS) {
+            int x = (ha != null && ha.get(k) != null) ? ha.get(k).intValue() : 0;
+            int y = (hb != null && hb.get(k) != null) ? hb.get(k).intValue() : 0;
+            dot += (long)x * (long)y; na += (long)x * (long)x; nb += (long)y * (long)y;
+        }
+        if (na==0 || nb==0) return 0.0; // conservative
+        return dot / (Math.sqrt(na) * Math.sqrt(nb));
+    }
+
+    // Apply both gates only when flattening was detected
+    private static java.util.ArrayList<NewRef> applyFlatteningGatesIfNeeded(boolean flattened,
+                                                     NormalizedFeatures oldNF,
+                                                     java.util.ArrayList<NewRef> near,
+                                                     double cosThresh,
+                                                     java.util.Map<String, org.objectweb.asm.tree.ClassNode> newClasses,
+                                                     String newOwner,
+                                                     String desc) {
+        if (!flattened || near == null || near.isEmpty()) return near;
+        java.util.ArrayList<NewRef> out = new java.util.ArrayList<NewRef>(near.size());
+        // Cache per-candidate NormalizedFeatures deterministically by name
+        org.objectweb.asm.tree.ClassNode ncn = newClasses.get(newOwner);
+        for (NewRef c : near) {
+            NormalizedFeatures nf = null;
+            if (ncn != null) {
+                org.objectweb.asm.tree.MethodNode nmn = findMethod(ncn, c.name, desc);
+                if (nmn != null) {
+                    try {
+                        NormalizedMethod nm = new NormalizedMethod(newOwner, nmn, java.util.Collections.<Integer>emptySet());
+                        nf = nm.extract();
+                    } catch (Throwable ignore) { nf = null; }
+                }
+            }
+            boolean ok = degreeBandOK(oldNF, nf) && (stackCosine(oldNF, nf) >= cosThresh);
+            if (ok) out.add(c);
+            // No reordering: preserve input order which is already deterministic
+        }
+        return out;
+    }
+    // CODEGEN-END: flattening-gates
 
     private static Map<Key, List<NewRef>> buildNewSideWlIndex(
             Map<String, Map<String, MethodFeatureCacheEntry>> newFeat) {
