@@ -55,6 +55,8 @@ public final class MethodMatcher {
     // Candidate counts per old-side method (post-dedup, pre-score)
     public final java.util.List<Integer> exactCounts = new java.util.ArrayList<Integer>();
     public final java.util.List<Integer> nearCounts  = new java.util.ArrayList<Integer>();
+    // Telemetry: count accepted matches whose winning candidate came from WL-relaxed tier
+    public int wlRelaxedHits = 0;
     }
 
     // >>> AUTOGEN: BYTECODEMAPPER MATCH NSF TIERS BEGIN
@@ -230,8 +232,19 @@ public final class MethodMatcher {
                     } else if ("wl".equals(t)) {
                         java.util.List<NewRef> xs = wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList());
                         candsWl.addAll(xs);
+                        // provenance for WL exact tier
+                        for (NewRef r : xs) {
+                            String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
+                            if (!candProv.containsKey(k)) candProv.put(k, "wl");
+                        }
                     } else if ("wlrelaxed".equals(t)) {
-                        candsRelax.addAll(relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic));
+                        java.util.List<NewRef> xs = relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic);
+                        candsRelax.addAll(xs);
+                        // provenance for WL-relaxed tier
+                        for (NewRef r : xs) {
+                            String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
+                            if (!candProv.containsKey(k)) candProv.put(k, "wl_relaxed");
+                        }
                     }
                 }
                 // Deduplicate deterministically by (owner,desc,name) preserving tier order
@@ -306,6 +319,12 @@ public final class MethodMatcher {
                 + " str=" + String.format(java.util.Locale.ROOT, "%.4f", r.sStrings)
                 + (fpMode!=null? " fp_mode=" + fpMode : "")
                         );
+                    }
+                    // telemetry: WL-relaxed winning candidate
+                    String bestKey2 = r.best.ref.owner + "\u0000" + r.best.ref.desc + "\u0000" + r.best.ref.name;
+                    String pv2 = candsProvenance.get(bestKey2);
+                    if (pv2 != null && "wl_relaxed".equals(pv2)) {
+                        out.wlRelaxedHits++;
                     }
                 } else {
                     // Abstain: compute candidate scores for diagnostics/output

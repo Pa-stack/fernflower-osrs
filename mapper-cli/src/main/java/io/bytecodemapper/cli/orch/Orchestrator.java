@@ -119,13 +119,16 @@ public final class Orchestrator {
     public final int candCountExactP95;
     public final int candCountNearMedian;
     public final int candCountNearP95;
+    // Telemetry: number of accepted matches where the winning candidate came from WL-relaxed
+    public final int wlRelaxedHits;
 
         public Result(java.util.Map<String,String> classMap,
                        java.util.List<io.bytecodemapper.io.tiny.TinyV2Writer.MethodEntry> methods,
                        java.util.List<io.bytecodemapper.io.tiny.TinyV2Writer.FieldEntry> fields,
                int classesOld, int classesNew, int methodsOld, int methodsNew,
                int candCountExactMedian, int candCountExactP95,
-               int candCountNearMedian, int candCountNearP95) {
+                    int candCountNearMedian, int candCountNearP95,
+                    int wlRelaxedHits) {
             this.classMap = classMap;
             this.methods = methods;
             this.fields = fields;
@@ -137,6 +140,7 @@ public final class Orchestrator {
         this.candCountExactP95 = candCountExactP95;
         this.candCountNearMedian = candCountNearMedian;
         this.candCountNearP95 = candCountNearP95;
+                this.wlRelaxedHits = wlRelaxedHits;
         }
     }
 
@@ -230,6 +234,7 @@ public final class Orchestrator {
 
         java.util.List<MethodPair> methodPairs = new java.util.ArrayList<MethodPair>();
         int exactMedian = 0, exactP95 = 0, nearMedian = 0, nearP95 = 0;
+        int wlRelaxedHits = 0;
         {
             MethodMatchResult mm = MethodMatcher.matchMethods(oldClasses, newClasses, classMap, oldFeat, newFeat, idf, opt.deterministic, opt.debugStats);
             for (MethodMatcher.Pair p : mm.accepted) methodPairs.add(new MethodPair(p.oldOwner, p.oldName, p.desc, p.newName));
@@ -238,6 +243,8 @@ public final class Orchestrator {
             exactP95    = percentile(mm.exactCounts, 95);
             nearMedian  = percentile(mm.nearCounts, 50);
             nearP95     = percentile(mm.nearCounts, 95);
+            // carry telemetry to result
+            wlRelaxedHits = mm.wlRelaxedHits;
         }
         java.util.List<FieldPair> fieldPairs = new java.util.ArrayList<FieldPair>();
 
@@ -273,7 +280,8 @@ public final class Orchestrator {
 
     return new Result(tinyClasses, tinyMethods, tinyFields,
         oldClasses.size(), newClasses.size(), countMethods(oldClasses), countMethods(newClasses),
-        exactMedian, exactP95, nearMedian, nearP95);
+        exactMedian, exactP95, nearMedian, nearP95,
+        wlRelaxedHits);
     }
 
     // Deterministic percentile: sort copy ascending; for p in [0,100], use nearest-rank (ceil) index
@@ -307,6 +315,8 @@ public final class Orchestrator {
             bw.write(',');
             bw.write("\"cand_count_near_p95\":" + r.candCountNearP95);
             bw.write('}');
+            bw.write(',');
+            bw.write("\"wl_relaxed_hits\":" + r.wlRelaxedHits);
             bw.write('}');
             bw.newLine();
         } finally {
