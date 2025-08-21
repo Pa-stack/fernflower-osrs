@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.WLRefinementTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:13:17" hostname="PRAGMATIQPASCAL" time="0.013">
+<testsuite name="io.bytecodemapper.core.WLRefinementTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-21T06:05:47" hostname="PRAGMATIQPASCAL" time="0.013">
   <properties/>
   <testcase name="stableUnderNoopReorder" classname="io.bytecodemapper.core.WLRefinementTest" time="0.009"/>
   <testcase name="differentConstantsSameWL" classname="io.bytecodemapper.core.WLRefinementTest" time="0.003"/>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.WLStabilityTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:13:18" hostname="PRAGMATIQPASCAL" time="0.001">
+<testsuite name="io.bytecodemapper.core.WLStabilityTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-21T06:05:47" hostname="PRAGMATIQPASCAL" time="0.004">
   <properties/>
-  <testcase name="wl_has_same_signature_under_noop_reordering" classname="io.bytecodemapper.core.WLStabilityTest" time="0.001"/>
+  <testcase name="wl_has_same_signature_under_noop_reordering" classname="io.bytecodemapper.core.WLStabilityTest" time="0.004"/>
   <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=1
 [DF] iter=1, changed=false
 [DF] iterateToFixpoint start, nodes=1

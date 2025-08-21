@@ -1,5 +1,14 @@
-io/bytecodemapper/cli/method/MethodRef.java
- io.bytecodemapper.cli.method.MethodRef
+io/bytecodemapper/cli/orch/Orchestrator.java
+ io.bytecodemapper.cli.orch.Orchestrator
+ io.bytecodemapper.cli.orch.Orchestrator$1
+ io.bytecodemapper.cli.orch.Orchestrator$2
+ io.bytecodemapper.cli.orch.Orchestrator$3
+ io.bytecodemapper.cli.orch.Orchestrator$4
+ io.bytecodemapper.cli.orch.Orchestrator$BenchPairResult
+ io.bytecodemapper.cli.orch.Orchestrator$FieldPair
+ io.bytecodemapper.cli.orch.Orchestrator$MethodFeature
+ io.bytecodemapper.cli.orch.Orchestrator$MethodPair
+ io.bytecodemapper.cli.orch.Orchestrator$Result
 io/bytecodemapper/cli/method/CallGraphRefiner.java
  io.bytecodemapper.cli.method.CallGraphRefiner
  io.bytecodemapper.cli.method.CallGraphRefiner$CandidateSet
@@ -32,11 +41,20 @@ io/bytecodemapper/cli/Router.java
  io.bytecodemapper.cli.Router
 io/bytecodemapper/cli/PrintIdf.java
  io.bytecodemapper.cli.PrintIdf
-io/bytecodemapper/cli/Bench.java
- io.bytecodemapper.cli.Bench
- io.bytecodemapper.cli.Bench$1
- io.bytecodemapper.cli.Bench$Metrics
- io.bytecodemapper.cli.Bench$Pair
+io/bytecodemapper/core/match/MethodMatcher.java
+ io.bytecodemapper.core.match.MethodMatcher
+ io.bytecodemapper.core.match.MethodMatcher$1
+ io.bytecodemapper.core.match.MethodMatcher$2
+ io.bytecodemapper.core.match.MethodMatcher$3
+ io.bytecodemapper.core.match.MethodMatcher$4
+ io.bytecodemapper.core.match.MethodMatcher$5
+ io.bytecodemapper.core.match.MethodMatcher$6
+ io.bytecodemapper.core.match.MethodMatcher$Abstention
+ io.bytecodemapper.core.match.MethodMatcher$CandidateScore
+ io.bytecodemapper.core.match.MethodMatcher$Key
+ io.bytecodemapper.core.match.MethodMatcher$MethodMatchResult
+ io.bytecodemapper.core.match.MethodMatcher$NewRef
+ io.bytecodemapper.core.match.MethodMatcher$Pair
 io/bytecodemapper/cli/bench/BenchMetrics.java
  io.bytecodemapper.cli.bench.BenchMetrics
 io/bytecodemapper/cli/orch/OrchestratorOptions.java
@@ -52,10 +70,10 @@ io/bytecodemapper/cli/bench/BenchCommand.java
 io/bytecodemapper/cli/util/MethodMapParser.java
  io.bytecodemapper.cli.util.MethodMapParser
  io.bytecodemapper.cli.util.MethodMapParser$Parsed
-io/bytecodemapper/cli/util/DebugNormalizedDump.java
- io.bytecodemapper.cli.util.DebugNormalizedDump
- io.bytecodemapper.cli.util.DebugNormalizedDump$1
- io.bytecodemapper.cli.util.DebugNormalizedDump$2
+io/bytecodemapper/cli/util/NormalizedDumpWriter.java
+ io.bytecodemapper.cli.util.NormalizedDumpWriter
+ io.bytecodemapper.cli.util.NormalizedDumpWriter$1
+ io.bytecodemapper.cli.util.NormalizedDumpWriter$2
 io/bytecodemapper/cli/MethodMatch.java
  io.bytecodemapper.cli.MethodMatch
  io.bytecodemapper.cli.MethodMatch$1
@@ -65,8 +83,11 @@ io/bytecodemapper/cli/MethodMatch.java
 io/bytecodemapper/cli/method/MethodScorer.java
  io.bytecodemapper.cli.method.MethodScorer
  io.bytecodemapper.cli.method.MethodScorer$Result
-io/bytecodemapper/cli/TinyStats.java
- io.bytecodemapper.cli.TinyStats
+io/bytecodemapper/cli/method/MethodFeatureExtractor.java
+ io.bytecodemapper.cli.method.MethodFeatureExtractor
+ io.bytecodemapper.cli.method.MethodFeatureExtractor$1
+ io.bytecodemapper.cli.method.MethodFeatureExtractor$ClassOwnerMapper
+ io.bytecodemapper.cli.method.MethodFeatureExtractor$IdentityMapper
 io/bytecodemapper/cli/ApplyMappings.java
  io.bytecodemapper.cli.ApplyMappings
 io/bytecodemapper/cli/method/AppCallGraph.java
@@ -92,40 +113,17 @@ io/bytecodemapper/cli/bench/BenchPairs.java
  io.bytecodemapper.cli.bench.BenchPairs
  io.bytecodemapper.cli.bench.BenchPairs$1
  io.bytecodemapper.cli.bench.BenchPairs$BenchPair
-io/bytecodemapper/cli/orch/Orchestrator.java
- io.bytecodemapper.cli.orch.Orchestrator
- io.bytecodemapper.cli.orch.Orchestrator$1
- io.bytecodemapper.cli.orch.Orchestrator$2
- io.bytecodemapper.cli.orch.Orchestrator$3
- io.bytecodemapper.cli.orch.Orchestrator$4
- io.bytecodemapper.cli.orch.Orchestrator$BenchPairResult
- io.bytecodemapper.cli.orch.Orchestrator$FieldPair
- io.bytecodemapper.cli.orch.Orchestrator$MethodFeature
- io.bytecodemapper.cli.orch.Orchestrator$MethodPair
- io.bytecodemapper.cli.orch.Orchestrator$Result
-io/bytecodemapper/core/match/MethodMatcher.java
- io.bytecodemapper.core.match.MethodMatcher
- io.bytecodemapper.core.match.MethodMatcher$1
- io.bytecodemapper.core.match.MethodMatcher$2
- io.bytecodemapper.core.match.MethodMatcher$3
- io.bytecodemapper.core.match.MethodMatcher$4
- io.bytecodemapper.core.match.MethodMatcher$5
- io.bytecodemapper.core.match.MethodMatcher$6
- io.bytecodemapper.core.match.MethodMatcher$Abstention
- io.bytecodemapper.core.match.MethodMatcher$CandidateScore
- io.bytecodemapper.core.match.MethodMatcher$Key
- io.bytecodemapper.core.match.MethodMatcher$MethodMatchResult
- io.bytecodemapper.core.match.MethodMatcher$NewRef
- io.bytecodemapper.core.match.MethodMatcher$Pair
-io/bytecodemapper/cli/util/NormalizedDumpWriter.java
- io.bytecodemapper.cli.util.NormalizedDumpWriter
- io.bytecodemapper.cli.util.NormalizedDumpWriter$1
- io.bytecodemapper.cli.util.NormalizedDumpWriter$2
-io/bytecodemapper/cli/method/MethodFeatureExtractor.java
- io.bytecodemapper.cli.method.MethodFeatureExtractor
- io.bytecodemapper.cli.method.MethodFeatureExtractor$1
- io.bytecodemapper.cli.method.MethodFeatureExtractor$ClassOwnerMapper
- io.bytecodemapper.cli.method.MethodFeatureExtractor$IdentityMapper
+io/bytecodemapper/cli/Bench.java
+ io.bytecodemapper.cli.Bench
+ io.bytecodemapper.cli.Bench$1
+ io.bytecodemapper.cli.Bench$Metrics
+ io.bytecodemapper.cli.Bench$Pair
+io/bytecodemapper/cli/TinyStats.java
+ io.bytecodemapper.cli.TinyStats
+io/bytecodemapper/cli/util/DebugNormalizedDump.java
+ io.bytecodemapper.cli.util.DebugNormalizedDump
+ io.bytecodemapper.cli.util.DebugNormalizedDump$1
+ io.bytecodemapper.cli.util.DebugNormalizedDump$2
 io/bytecodemapper/cli/MapOldNew.java
  io.bytecodemapper.cli.MapOldNew
  io.bytecodemapper.cli.MapOldNew$1
@@ -135,3 +133,5 @@ io/bytecodemapper/cli/MapOldNew.java
  io.bytecodemapper.cli.MapOldNew$5
  io.bytecodemapper.cli.MapOldNew$6
  io.bytecodemapper.cli.MapOldNew$Result
+io/bytecodemapper/cli/method/MethodRef.java
+ io.bytecodemapper.cli.method.MethodRef

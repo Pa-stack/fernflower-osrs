@@ -187,7 +187,7 @@
 [match] abstain ad#x(II)Z reason=low_margin+below_tau best=0.3970 second=0.3970 top=ab#q top_fp_mode=- cands=2
 [match] abstain ad#y(II)Z reason=no candidates best=0.0000 second=0.0000 top=- top_fp_mode=- cands=0
 [match] ok ae#<clinit>()V -> ae#<clinit> total=0.8500 margin=0.6143 calls=1.0000 micro=1.0000 hist=1.0000 str=0.0000 fp_mode=nsf64
-[match] ok ae#<init>()V -> ae#<init> total=0.8264 margin=0.1000 calls=0.7253 micro=1.0000 hist=1.0000 str=1.0000 fp_mode=nsf64
+[match] ok ae#<init>()V -> ae#<init> total=0.8264 margin=0.1000 calls=0.7253 micro=1.0000 hist=1.0000 str=1.0000
 [match] abstain ae#g(Llh;I)V reason=no candidates best=0.0000 second=0.0000 top=- top_fp_mode=- cands=0
 [match] abstain ae#m([B)Llc; reason=no candidates best=0.0000 second=0.0000 top=- top_fp_mode=- cands=0
 [match] abstain ae#q([B)Llc; reason=no candidates best=0.0000 second=0.0000 top=- top_fp_mode=- cands=0

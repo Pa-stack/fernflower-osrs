@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.CoreApisTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:13:17" hostname="PRAGMATIQPASCAL" time="0.057">
+<testsuite name="io.bytecodemapper.core.CoreApisTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-21T06:05:47" hostname="PRAGMATIQPASCAL" time="0.076">
   <properties/>
-  <testcase name="apiSurfacesExist" classname="io.bytecodemapper.core.CoreApisTest" time="0.057"/>
+  <testcase name="apiSurfacesExist" classname="io.bytecodemapper.core.CoreApisTest" time="0.076"/>
   <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=0
 [DF] iter=1, changed=false
 ]]></system-out>
