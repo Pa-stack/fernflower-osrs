@@ -22,7 +22,7 @@ public final class NormalizedFeatures {
     private final int[] invokeKindCounts; // length 4: VIRT, STATIC, INTERFACE, CTOR
     // CODEGEN-END: nsfv2-features
 
-    public NormalizedFeatures(Map<String,Integer> opcodeBag,
+    public NormalizedFeatures(Map<String,Integer> opcodeBag, 
                               Map<String,Integer> callKinds,
                               Map<String,Integer> stackDeltaHist,
                               TryCatchShape tryShape,

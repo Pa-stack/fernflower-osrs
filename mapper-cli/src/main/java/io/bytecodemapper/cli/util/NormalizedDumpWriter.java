@@ -61,7 +61,7 @@ public final class NormalizedDumpWriter implements Opcodes {
                 for (MethodNode mn : methods) {
                     if ((mn.access & (ACC_ABSTRACT | ACC_NATIVE)) != 0) continue;
                     NormalizedMethod nm = new NormalizedMethod(owner, mn, Collections.<Integer>emptySet());
-                    writeJsonl(bw, owner, mn.name, mn.desc, nm.extract());
+                    writeJsonl(bw, owner, mn.name, mn.desc, nm, nm.extract());
                 }
             }
         } finally {
@@ -70,42 +70,57 @@ public final class NormalizedDumpWriter implements Opcodes {
         }
     }
 
-    // Minimal JSON writer with deterministic key order. No escaping beyond common cases.
+    // Minimal JSON writer with deterministic key order for NSFv2 dump.
     private static void writeJsonl(BufferedWriter bw, String owner, String name, String desc,
+                                   NormalizedMethod nm,
                                    io.bytecodemapper.signals.normalized.NormalizedFeatures nf) throws IOException {
         StringBuilder sb = new StringBuilder(512);
         sb.append('{');
-        // Stable top-level ordering
+        // Stable top-level ordering (NSFv2 canonical)
         field(sb, "owner", owner).append(',');
         field(sb, "name", name).append(',');
         field(sb, "desc", desc).append(',');
-        sb.append("\"nsf64\":").append(String.valueOf(nf.nsf64)).append(',');
-        // opcodeBag
-        sb.append("\"opcodeBag\":"); writeStringIntMap(sb, nf.opcodeBag); sb.append(',');
-        // callKinds
-        sb.append("\"callKinds\":"); writeStringIntMap(sb, nf.callKinds); sb.append(',');
-        // stackDeltaHist
-        sb.append("\"stackDeltaHist\":"); writeStringIntMap(sb, nf.stackDeltaHist); sb.append(',');
-        // tryShape
-        sb.append("\"tryShape\":{");
-        sb.append("\"depth\":").append(nf.tryShape.depth).append(',');
-        sb.append("\"fanout\":").append(nf.tryShape.fanout).append(',');
-        sb.append("\"catchTypeHash\":").append(nf.tryShape.catchTypeHash).append('}').append(',');
-        // literalsSketch
-        sb.append("\"literalsSketch\":");
-        if (nf.literalsSketch != null && nf.literalsSketch.sketch != null) {
-            sb.append('[');
-            for (int i=0;i<nf.literalsSketch.sketch.length;i++) {
+        field(sb, "nsf_version", "NSFv2").append(',');
+        field(sb, "nsf64_hex", toHex16(nf.getNsf64())).append(',');
+        // stackHist in fixed order
+        sb.append("\"stackHist\":{");
+        {
+            java.util.Map<String,Integer> sh = nf.getStackHist();
+            String[] order = new String[]{"-2","-1","0","+1","+2"};
+            for (int i=0;i<order.length;i++) {
                 if (i>0) sb.append(',');
-                sb.append(nf.literalsSketch.sketch[i]);
+                String k = order[i];
+                sb.append('"').append(escapeJson(k)).append('"').append(':').append(String.valueOf(sh.get(k)));
             }
-            sb.append(']');
+        }
+        sb.append('}').append(',');
+        // try shape scalars
+        sb.append("\"tryDepth\":").append(nf.getTryDepth()).append(',');
+        sb.append("\"tryFanout\":").append(nf.getTryFanout()).append(',');
+        sb.append("\"catchTypesHash\":").append(nf.getCatchTypesHash()).append(',');
+        // literals minhash 64 or "∅"
+        sb.append("\"litsMinHash64\":");
+        int[] sk = nf.getLitsMinHash64();
+        if (sk == null) {
+            sb.append('"').append("∅").append('"');
         } else {
-            sb.append("null");
+            sb.append('[');
+            for (int i=0;i<sk.length;i++) { if (i>0) sb.append(','); sb.append(sk[i]); }
+            sb.append(']');
         }
         sb.append(',');
-        // stringsSketch (tf)
-        sb.append("\"stringsTf\":"); writeStringFloatMap(sb, nf.stringsSketch != null ? nf.stringsSketch.tf : null);
+        // invoke kind counts
+        sb.append("\"invokeKindCounts\":");
+        int[] kc = nf.getInvokeKindCounts();
+        sb.append('[').append(kc[0]).append(',').append(kc[1]).append(',').append(kc[2]).append(',').append(kc[3]).append(']').append(',');
+        // strings sorted
+        java.util.List<String> strings = new java.util.ArrayList<String>(nm.stringConstants);
+        java.util.Collections.sort(strings);
+        sb.append("\"strings\":"); writeStringArray(sb, strings); sb.append(',');
+        // invokes sorted
+        java.util.List<String> invs = new java.util.ArrayList<String>(nm.invokedSignatures);
+        java.util.Collections.sort(invs);
+        sb.append("\"invokes\":"); writeStringArray(sb, invs);
         sb.append('}').append('\n');
         bw.write(sb.toString());
     }
@@ -116,6 +131,7 @@ public final class NormalizedDumpWriter implements Opcodes {
         return sb;
     }
 
+    @SuppressWarnings("unused")
     private static void writeStringIntMap(StringBuilder sb, Map<String,Integer> m) {
         if (m == null) { sb.append("{}"); return; }
         List<String> keys = new ArrayList<String>(m.keySet());
@@ -129,6 +145,7 @@ public final class NormalizedDumpWriter implements Opcodes {
         sb.append('}');
     }
 
+    @SuppressWarnings("unused")
     private static void writeStringFloatMap(StringBuilder sb, Map<String,Float> m) {
         if (m == null) { sb.append("{}"); return; }
         List<String> keys = new ArrayList<String>(m.keySet());
@@ -142,6 +159,24 @@ public final class NormalizedDumpWriter implements Opcodes {
             sb.append(String.format(java.util.Locale.ROOT, "%.6f", new Object[]{Float.valueOf(v)}));
         }
         sb.append('}');
+    }
+
+    private static void writeStringArray(StringBuilder sb, java.util.List<String> vals) {
+        sb.append('[');
+        for (int i=0;i<vals.size();i++) { if (i>0) sb.append(','); sb.append('"').append(escapeJson(vals.get(i))).append('"'); }
+        sb.append(']');
+    }
+
+    private static String toHex16(long v) {
+        String s = Long.toHexString(v);
+        if (s.length() < 16) {
+            StringBuilder p = new StringBuilder(16);
+            for (int i=0;i<16-s.length();i++) p.append('0');
+            p.append(s);
+            return p.toString();
+        }
+        if (s.length() > 16) return s.substring(s.length()-16);
+        return s;
     }
 
     private static String escapeJson(String s) {
