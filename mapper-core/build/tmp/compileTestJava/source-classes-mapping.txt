@@ -8,6 +8,8 @@ io/bytecodemapper/core/WLSignatureSmokeTest.java
  io.bytecodemapper.core.WLSignatureSmokeTest
 io/bytecodemapper/core/assign/GreedyAssignTest.java
  io.bytecodemapper.core.assign.GreedyAssignTest
+io/bytecodemapper/core/wl/WLTokenBagDeterminismTest.java
+ io.bytecodemapper.core.wl.WLTokenBagDeterminismTest
 io/bytecodemapper/core/testutil/AsmSynth.java
  io.bytecodemapper.core.testutil.AsmSynth
 io/bytecodemapper/core/index/NsfIndexTest.java

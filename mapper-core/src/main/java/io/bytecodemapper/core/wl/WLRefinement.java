@@ -51,6 +51,124 @@ public final class WLRefinement {
         }
     }
 
+    // CODEGEN-BEGIN: wl-bag-api
+    // Deterministic WL token bag for final iteration.
+    // Returns a sorted map (by token) to guarantee stable iteration order.
+    public static it.unimi.dsi.fastutil.longs.Long2IntSortedMap tokenBagFinal(
+            io.bytecodemapper.core.cfg.ReducedCFG cfg,
+            io.bytecodemapper.core.dom.Dominators dom,
+            java.util.Map<java.lang.Integer,int[]> df,
+            java.util.Map<java.lang.Integer,int[]> tdf,
+            int iterations) {
+        // Defensive clamp on iterations (mirror computeSignature)
+        if (iterations < 0) iterations = 0;
+        if (iterations > 8) iterations = 8;
+
+        // Deterministic node order
+        final int[] nodes = cfg.allBlockIds();
+        java.util.Arrays.sort(nodes);
+        if (nodes.length == 0) {
+            return new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
+        }
+
+        // Precompute DF/TDF metadata
+        final it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap dfHash = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap();
+        final it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap tdfHash = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap();
+        final it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap dfSize = new it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap();
+        final it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap tdfSize = new it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap();
+        for (int b : nodes) {
+            int[] d = df.get(b); if (d == null) d = new int[0];
+            int[] t = tdf.get(b); if (t == null) t = new int[0];
+            dfSize.put(b, d.length);
+            tdfSize.put(b, t.length);
+            dfHash.put(b, hashSortedInts(d));
+            tdfHash.put(b, hashSortedInts(t));
+        }
+
+        // Neighbor arrays cached
+        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<int[]> preds = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<int[]>();
+        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<int[]> succs = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<int[]>();
+        for (int b : nodes) {
+            io.bytecodemapper.core.cfg.ReducedCFG.Block bb = cfg.block(b);
+            int[] p = bb.preds();
+            int[] s = bb.succs();
+            preds.put(b, p == null ? new int[0] : java.util.Arrays.copyOf(p, p.length));
+            succs.put(b, s == null ? new int[0] : java.util.Arrays.copyOf(s, s.length));
+        }
+
+        // Loop headers by dominator back-edge
+        final it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap loopHeaderById = new it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap();
+        for (int b : nodes) {
+            io.bytecodemapper.core.cfg.ReducedCFG.Block bb = cfg.block(b);
+            boolean header = false;
+            int[] p = bb.preds();
+            for (int i = 0; i < p.length; i++) {
+                int pred = p[i];
+                if (pred == b) continue;
+                if (dom.dominates(b, pred)) { header = true; break; }
+            }
+            loopHeaderById.put(b, header);
+        }
+
+        // Initial labels
+        it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap labels = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap();
+        for (int b : nodes) {
+            io.bytecodemapper.core.cfg.ReducedCFG.Block bb = cfg.block(b);
+            int[] p = bb.preds();
+            int[] s = bb.succs();
+            long init = hashTuple(
+                    p == null ? 0 : p.length,
+                    s == null ? 0 : s.length,
+                    dom.domDepth(b),
+                    cfgDomChildrenCount(dom, b),
+                    dfSize.get(b),
+                    dfHash.get(b),
+                    tdfSize.get(b),
+                    tdfHash.get(b),
+                    loopHeaderById.get(b) ? 1 : 0
+            );
+            labels.put(b, init);
+        }
+
+        // WL iterations to final
+        for (int k = 0; k < java.lang.Math.max(0, iterations); k++) {
+            it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap next = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap(labels.size());
+            for (int b : nodes) {
+                long cur = labels.get(b);
+                long predsHash = multisetHash(labels, preds.get(b));
+                long succsHash = multisetHash(labels, succs.get(b));
+                long lbl = hashConcat(cur, predsHash, succsHash, dfHash.get(b), tdfHash.get(b));
+                next.put(b, lbl);
+            }
+            labels = next;
+        }
+
+        // Accumulate multiset of final labels (token = label value as unsigned long)
+        final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap counts = new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
+        counts.defaultReturnValue(0);
+        for (int b : nodes) {
+            long token = labels.get(b);
+            counts.put(token, counts.get(token) + 1);
+        }
+        // Copy into sorted map for stable iteration
+        it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap sorted = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
+        for (it.unimi.dsi.fastutil.longs.Long2IntMap.Entry e : counts.long2IntEntrySet()) {
+            sorted.put(e.getLongKey(), e.getIntValue());
+        }
+        return sorted;
+    }
+
+    /** Convenience overload: compute DF/TDF internally. */
+    public static it.unimi.dsi.fastutil.longs.Long2IntSortedMap tokenBagFinal(
+            io.bytecodemapper.core.cfg.ReducedCFG cfg,
+            io.bytecodemapper.core.dom.Dominators dom,
+            int iterations) {
+        java.util.Map<java.lang.Integer,int[]> df = io.bytecodemapper.core.df.DF.compute(cfg, dom);
+        java.util.Map<java.lang.Integer,int[]> tdf = io.bytecodemapper.core.df.DF.iterateToFixpoint(df);
+        return tokenBagFinal(cfg, dom, df, tdf, iterations);
+    }
+    // CODEGEN-END: wl-bag-api
+
     /** Convenience: compute DF and TDF inside, then signature. */
     public static MethodSignature computeSignature(ReducedCFG cfg, Dominators dom, int iterations) {
         Map<Integer,int[]> df  = DF.compute(cfg, dom);
