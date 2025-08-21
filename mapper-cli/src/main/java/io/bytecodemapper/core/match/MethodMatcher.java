@@ -83,6 +83,12 @@ public final class MethodMatcher {
         public int wlRelaxedL1 = 2;
         /** WL-relaxed size band (default ±10%) */
         public double wlSizeBand = 0.10;
+    // CODEGEN-BEGIN: flattening-near-widen options
+    /** If flattening is detected on either side, widen NSF near-tier to this Hamming budget (default 2). */
+    public int nsfNearBudgetWhenFlattened = 2;   // default 2
+    /** Stack-hist cosine threshold for later gating (wired by Phase 4, default 0.60). */
+    public double stackCosineThreshold = 0.60;   // default 0.60
+    // CODEGEN-END: flattening-near-widen options
     }
     // CODEGEN-END: wl-relaxed-defaults-in-options
 
@@ -188,6 +194,7 @@ public final class MethodMatcher {
                 java.util.ArrayList<NewRef> candsRelax = new java.util.ArrayList<NewRef>();
                 // Precompute old canonical nsf64 (from NormalizedMethod) and surrogate fallback
                 long oldCanonical = 0L;
+                boolean oldFlattened = false; // CODEGEN: flattening-near-widen (old side)
                 {
                     ClassNode ocn = oldClasses.get(oldOwner);
                     if (ocn != null) {
@@ -197,6 +204,9 @@ public final class MethodMatcher {
                                 NormalizedMethod norm = new NormalizedMethod(oldOwner, omn, java.util.Collections.<Integer>emptySet());
                                 NormalizedFeatures nf = norm.extract();
                                 oldCanonical = nf != null ? nf.nsf64 : 0L;
+                                // CODEGEN-BEGIN: flattening-near-widen old-detect
+                                oldFlattened = isLikelyFlattened(omn);
+                                // CODEGEN-END: flattening-near-widen old-detect
                             } catch (Throwable ignore) { oldCanonical = 0L; }
                         }
                     }
@@ -207,6 +217,16 @@ public final class MethodMatcher {
                 NsfIndex nsfIdx = nsfIndexByNewOwner.get(newOwner);
                 // Track provenance for candidates (first occurrence wins)
                 final java.util.LinkedHashMap<String,String> candProv = new java.util.LinkedHashMap<String,String>();
+                // CODEGEN-BEGIN: flattening-near-widen compute-near-budget
+                // Detect flattening on either side (old or any new with same owner+desc)
+                boolean anyNewFlattened = newSideAnyFlattenedForOwnerDesc(newClasses, newOwner, desc);
+                boolean flattened = oldFlattened || anyNewFlattened;
+                final int nearBudget = flattened ? Math.max(1, options.nsfNearBudgetWhenFlattened) : 1;
+                if (flattened && debugStats) {
+                    System.out.println("[match] flattening detected for " + oldOwner + "#" + oldName + desc + 
+                            " → nearBudget=" + nearBudget);
+                }
+                // CODEGEN-END: flattening-near-widen compute-near-budget
                 boolean hadHigherTierCandidates = false; // set at the moment we evaluate wlrelaxed tier
                 for (String tier : NSFTierOrder.split(",")) {
                     String t = tier.trim().toLowerCase(java.util.Locale.ROOT);
@@ -227,7 +247,9 @@ public final class MethodMatcher {
                         }
                     } else if ("near".equals(t)) {
                         if (nsfIdx != null) {
-                            int hamBudget = 1; // see optional flattening gate later
+                            // CODEGEN-BEGIN: flattening-near-widen apply-budget
+                            int hamBudget = nearBudget; // widen when flattening is detected
+                            // CODEGEN-END: flattening-near-widen apply-budget
                             java.util.List<Long> fps = queryFps(oldCanonical, oldSurrogate, NSF_MODE);
                             for (Long qfp : fps) {
                                 java.util.List<NsfIndex.NewRef> xs = nsfIdx.near(newOwner, desc, qfp.longValue(), hamBudget);
@@ -475,6 +497,60 @@ public final class MethodMatcher {
         return owner + "\u0000" + desc + "\u0000" + name + "\u0000" + Long.toString(fp);
     }
 
+    // CODEGEN-BEGIN: flattening-near-widen helpers
+    /** Heuristic flattening detector: looks for a central dispatcher (switch) with many successors. */
+    private static boolean isLikelyFlattened(org.objectweb.asm.tree.MethodNode mn) {
+        if (mn == null || mn.instructions == null) return false;
+        try {
+            io.bytecodemapper.core.cfg.ReducedCFG cfg = io.bytecodemapper.core.cfg.ReducedCFG.build(mn);
+            // Quick thresholds tuned conservatively for Java-8 obfuscators
+            final int MIN_BLOCKS = 8;
+            final int MIN_SUCC = 6; // many-way dispatcher
+            int blockCount = cfg.allBlockIds().length;
+            if (blockCount < MIN_BLOCKS) return false;
+
+            // Find a block ending in a switch with many successors or any block with high out-degree
+            for (io.bytecodemapper.core.cfg.ReducedCFG.Block b : cfg.blocks()) {
+                int[] succs = b.succs();
+                if (succs != null && succs.length >= MIN_SUCC) return true;
+                // Switch check (less strict succ count)
+                org.objectweb.asm.tree.AbstractInsnNode last = insnAt(mn, b.endIdx);
+                if (last instanceof org.objectweb.asm.tree.TableSwitchInsnNode || last instanceof org.objectweb.asm.tree.LookupSwitchInsnNode) {
+                    if (succs != null && succs.length >= 4) return true;
+                }
+            }
+        } catch (Throwable ignore) {
+            // stay conservative on analysis failure
+        }
+        return false;
+    }
+
+    /** Return true if any method on the new side with the same owner+desc appears flattened. */
+    private static boolean newSideAnyFlattenedForOwnerDesc(java.util.Map<String, org.objectweb.asm.tree.ClassNode> newClasses,
+                                                           String owner,
+                                                           String desc) {
+        if (newClasses == null) return false;
+        org.objectweb.asm.tree.ClassNode cn = newClasses.get(owner);
+        if (cn == null || cn.methods == null) return false;
+        for (Object o : cn.methods) {
+            org.objectweb.asm.tree.MethodNode mn = (org.objectweb.asm.tree.MethodNode) o;
+            if (desc.equals(mn.desc)) {
+                if (isLikelyFlattened(mn)) return true;
+            }
+        }
+        return false;
+    }
+
+    private static org.objectweb.asm.tree.AbstractInsnNode insnAt(org.objectweb.asm.tree.MethodNode mn, int idx) {
+        if (mn == null || mn.instructions == null) return null;
+        int i = 0;
+        for (org.objectweb.asm.tree.AbstractInsnNode p = mn.instructions.getFirst(); p != null; p = p.getNext()) {
+            if (i == idx) return p; i++;
+        }
+        return null;
+    }
+    // CODEGEN-END: flattening-near-widen helpers
+
     private static java.util.List<Long> queryFps(long canonical, long surrogate, io.bytecodemapper.cli.flags.UseNsf64Mode mode) {
         java.util.ArrayList<Long> list = new java.util.ArrayList<Long>();
         if (mode == io.bytecodemapper.cli.flags.UseNsf64Mode.CANONICAL) {
@@ -617,6 +693,7 @@ public final class MethodMatcher {
     // >>> AUTOGEN: BYTECODEMAPPER RELAXED_CANDIDATES_DISTANCE BEGIN
     // Required by tests: exact signature (String,String)
     // Computes L1 distance between token multisets split by '|'. Deterministic.
+    @SuppressWarnings("unused")
     private static int wlMultisetDistance(String a, String b) {
         java.util.Map<String, Integer> ca = new java.util.TreeMap<String, Integer>();
         java.util.Map<String, Integer> cb = new java.util.TreeMap<String, Integer>();
