@@ -270,12 +270,13 @@ public final class MethodMatcher {
                                 }
                             }
                             // CODEGEN-BEGIN: flattening-gates apply
-                            // Apply call-degree band and stack-hist cosine gates only when flattening is detected
-                            if (!candsNear.isEmpty()) {
-                                // telemetry: count before applying gates
+                            // Apply call-degree band and stack-hist cosine gates and emit telemetry
+                            // ONLY when flattening is detected AND widened near (hamBudget > 1) is in effect.
+                            if (flattened && hamBudget > 1 && !candsNear.isEmpty()) {
+                                // telemetry: count before applying gates (widened near only)
                                 out.nearBeforeGates += candsNear.size();
                                 candsNear = applyFlatteningGatesIfNeeded(
-                                        flattened,
+                                        true,
                                         oldNormFeatures,
                                         candsNear,
                                         options.stackCosineThreshold,
@@ -505,7 +506,9 @@ public final class MethodMatcher {
 
     private static final class NewRef {
         final String owner, name;
-        NewRef(String o, String n, String d, long w) { owner=o; name=n; }
+    // Optional per-candidate metadata for diagnostics/telemetry
+    final java.util.Map<String,String> meta = new java.util.LinkedHashMap<String,String>();
+    NewRef(String o, String n, String d, long w) { owner=o; name=n; }
     }
 
     private static MethodNode findMethod(ClassNode cn, String name, String desc) {
@@ -625,7 +628,7 @@ public final class MethodMatcher {
         return dot / (Math.sqrt(na) * Math.sqrt(nb));
     }
 
-    // Apply both gates only when flattening was detected
+    // Apply both gates only when flattening was detected (fast-fail: degree band first, then cosine)
     private static java.util.ArrayList<NewRef> applyFlatteningGatesIfNeeded(boolean flattened,
                                                      NormalizedFeatures oldNF,
                                                      java.util.ArrayList<NewRef> near,
@@ -635,6 +638,12 @@ public final class MethodMatcher {
                                                      String desc) {
         if (!flattened || near == null || near.isEmpty()) return near;
         java.util.ArrayList<NewRef> out = new java.util.ArrayList<NewRef>(near.size());
+        // Precompute old stack vector in fixed 5-key order to avoid repeated lookups
+        final String[] KEYS = new String[]{"-2","-1","0","+1","+2"};
+        final int[] oldVec = new int[5];
+        java.util.Map<String,Integer> ha = (oldNF==null?null:oldNF.getStackHist());
+        for (int i=0;i<5;i++) oldVec[i] = (ha != null && ha.get(KEYS[i]) != null) ? ha.get(KEYS[i]).intValue() : 0;
+
         // Cache per-candidate NormalizedFeatures deterministically by name
         org.objectweb.asm.tree.ClassNode ncn = newClasses.get(newOwner);
         for (NewRef c : near) {
@@ -648,8 +657,24 @@ public final class MethodMatcher {
                     } catch (Throwable ignore) { nf = null; }
                 }
             }
-            boolean ok = degreeBandOK(oldNF, nf) && (stackCosine(oldNF, nf) >= cosThresh);
-            if (ok) out.add(c);
+            // Fast-fail: check degree band first (integer math)
+            boolean bandOK = degreeBandOK(oldNF, nf);
+            c.meta.put("gate_flattening_degreeBand", java.lang.Boolean.toString(bandOK));
+
+            boolean cosOK = false;
+            if (bandOK) {
+                // Compute cosine only when degree band passes
+                java.util.Map<String,Integer> hb = (nf==null?null:nf.getStackHist());
+                long dot = 0L, na = 0L, nb = 0L;
+                for (int i=0;i<5;i++) {
+                    int x = oldVec[i];
+                    int y = (hb != null && hb.get(KEYS[i]) != null) ? hb.get(KEYS[i]).intValue() : 0;
+                    dot += (long)x * (long)y; na += (long)x * (long)x; nb += (long)y * (long)y;
+                }
+                cosOK = (na != 0L && nb != 0L) && (dot / (Math.sqrt(na) * Math.sqrt(nb)) >= cosThresh);
+            }
+            c.meta.put("gate_flattening_stackCosOK", java.lang.Boolean.toString(cosOK));
+            if (bandOK && cosOK) out.add(c);
             // No reordering: preserve input order which is already deterministic
         }
         return out;
