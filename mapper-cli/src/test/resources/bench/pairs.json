@@ -1,6 +1,16 @@
 {
   "pairs": [
-    { "id": "w169_170", "old": "data/weeks/osrs-169.jar", "new": "data/weeks/osrs-170.jar", "note": "weekly" },
-    { "id": "w170_171", "old": "data/weeks/osrs-170.jar", "new": "data/weeks/osrs-171.jar", "note": "weekly" }
+    { "id": "w220_221", "old": "data/weeks/osrs-220.jar", "new": "data/weeks/osrs-221.jar", "note": "weekly" },
+    { "id": "w221_222", "old": "data/weeks/osrs-221.jar", "new": "data/weeks/osrs-222.jar", "note": "weekly" },
+    { "id": "w222_223", "old": "data/weeks/osrs-222.jar", "new": "data/weeks/osrs-223.jar", "note": "weekly" },
+    { "id": "w223_224", "old": "data/weeks/osrs-223.jar", "new": "data/weeks/osrs-224.jar", "note": "weekly" },
+    { "id": "w224_225", "old": "data/weeks/osrs-224.jar", "new": "data/weeks/osrs-225.jar", "note": "weekly" },
+    { "id": "w225_226", "old": "data/weeks/osrs-225.jar", "new": "data/weeks/osrs-226.jar", "note": "weekly" },
+    { "id": "w226_227", "old": "data/weeks/osrs-226.jar", "new": "data/weeks/osrs-227.jar", "note": "weekly" },
+    { "id": "w227_228", "old": "data/weeks/osrs-227.jar", "new": "data/weeks/osrs-228.jar", "note": "weekly" },
+    { "id": "w228_229", "old": "data/weeks/osrs-228.jar", "new": "data/weeks/osrs-229.jar", "note": "weekly" },
+    { "id": "w229_230", "old": "data/weeks/osrs-229.jar", "new": "data/weeks/osrs-230.jar", "note": "weekly" },
+    { "id": "w230_231", "old": "data/weeks/osrs-230.jar", "new": "data/weeks/osrs-231.jar", "note": "weekly" },
+    { "id": "w231_232", "old": "data/weeks/osrs-231.jar", "new": "data/weeks/osrs-232.jar", "note": "weekly" }
   ]
 }

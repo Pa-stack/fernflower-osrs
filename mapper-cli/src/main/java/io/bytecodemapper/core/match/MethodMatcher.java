@@ -223,6 +223,7 @@ public final class MethodMatcher {
                 NsfIndex nsfIdx = nsfIndexByNewOwner.get(newOwner);
                 // Track provenance for candidates (first occurrence wins)
                 final java.util.LinkedHashMap<String,String> candProv = new java.util.LinkedHashMap<String,String>();
+                // CODEGEN-BEGIN: flattening-near-order
                 // CODEGEN-BEGIN: flattening-near-widen compute-near-budget
                 // Detect flattening on either side (old or any new with same owner+desc)
                 boolean anyNewFlattened = newSideAnyFlattenedForOwnerDesc(newClasses, newOwner, desc);
@@ -234,6 +235,7 @@ public final class MethodMatcher {
                             " → nearBudget=" + nearBudget);
                 }
                 // CODEGEN-END: flattening-near-widen compute-near-budget
+                // CODEGEN-END: flattening-near-order
                 boolean hadHigherTierCandidates = false; // set at the moment we evaluate wlrelaxed tier
                 for (String tier : NSFTierOrder.split(",")) {
                     String t = tier.trim().toLowerCase(java.util.Locale.ROOT);
