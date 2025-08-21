@@ -126,6 +126,10 @@ public final class Orchestrator {
     public final double wlSizeBand;
     // Alias field to match spec naming in DTO for external readers
     public final double wlRelaxedSizeBand;
+    // Gate activity counters
+    public final int wlRelaxedGatePasses;
+    public final int wlRelaxedCandidates;
+    public final int wlRelaxedAccepted;
 
         public Result(java.util.Map<String,String> classMap,
                        java.util.List<io.bytecodemapper.io.tiny.TinyV2Writer.MethodEntry> methods,
@@ -135,7 +139,10 @@ public final class Orchestrator {
                     int candCountNearMedian, int candCountNearP95,
                             int wlRelaxedHits,
                             int wlRelaxedL1,
-                            double wlSizeBand) {
+                            double wlSizeBand,
+                            int wlRelaxedGatePasses,
+                            int wlRelaxedCandidates,
+                            int wlRelaxedAccepted) {
             this.classMap = classMap;
             this.methods = methods;
             this.fields = fields;
@@ -151,6 +158,9 @@ public final class Orchestrator {
                         this.wlRelaxedL1 = wlRelaxedL1;
                         this.wlSizeBand = wlSizeBand;
                         this.wlRelaxedSizeBand = wlSizeBand;
+                        this.wlRelaxedGatePasses = wlRelaxedGatePasses;
+                        this.wlRelaxedCandidates = wlRelaxedCandidates;
+                        this.wlRelaxedAccepted = wlRelaxedAccepted;
         }
     }
 
@@ -244,7 +254,10 @@ public final class Orchestrator {
 
         java.util.List<MethodPair> methodPairs = new java.util.ArrayList<MethodPair>();
         int exactMedian = 0, exactP95 = 0, nearMedian = 0, nearP95 = 0;
-        int wlRelaxedHits = 0;
+    int wlRelaxedHits = 0;
+    int wlGatePasses = 0;
+    int wlCandidates = 0;
+    int wlAccepted = 0;
         {
             io.bytecodemapper.core.match.MethodMatcher.MethodMatcherOptions mopts = new io.bytecodemapper.core.match.MethodMatcher.MethodMatcherOptions();
             mopts.wlRelaxedL1 = opt.wlRelaxedL1;
@@ -258,6 +271,9 @@ public final class Orchestrator {
             nearP95     = percentile(mm.nearCounts, 95);
             // carry telemetry to result
             wlRelaxedHits = mm.wlRelaxedHits;
+            wlGatePasses = mm.wlRelaxedGatePasses;
+            wlCandidates = mm.wlRelaxedCandidates;
+            wlAccepted = mm.wlRelaxedAccepted;
         }
         java.util.List<FieldPair> fieldPairs = new java.util.ArrayList<FieldPair>();
 
@@ -294,9 +310,12 @@ public final class Orchestrator {
     return new Result(tinyClasses, tinyMethods, tinyFields,
         oldClasses.size(), newClasses.size(), countMethods(oldClasses), countMethods(newClasses),
         exactMedian, exactP95, nearMedian, nearP95,
-        wlRelaxedHits,
-        opt.wlRelaxedL1,
-        opt.wlSizeBand);
+    wlRelaxedHits,
+    opt.wlRelaxedL1,
+    opt.wlSizeBand,
+    wlGatePasses,
+    wlCandidates,
+    wlAccepted);
     }
 
     // Deterministic percentile: sort copy ascending; for p in [0,100], use nearest-rank (ceil) index
@@ -340,7 +359,13 @@ public final class Orchestrator {
             java.text.DecimalFormat df = new java.text.DecimalFormat("0.00", sym);
             bw.write("\"wl_relaxed_size_band\":" + df.format(r.wlRelaxedSizeBand));
             bw.write(',');
+            bw.write("\"wl_relaxed_gate_passes\":" + r.wlRelaxedGatePasses);
+            bw.write(',');
+            bw.write("\"wl_relaxed_candidates\":" + r.wlRelaxedCandidates);
+            bw.write(',');
             bw.write("\"wl_relaxed_hits\":" + r.wlRelaxedHits);
+            bw.write(',');
+            bw.write("\"wl_relaxed_accepted\":" + r.wlRelaxedAccepted);
             bw.write('}');
             bw.newLine();
         } finally {

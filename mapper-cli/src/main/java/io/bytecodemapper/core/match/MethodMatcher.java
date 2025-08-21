@@ -57,6 +57,11 @@ public final class MethodMatcher {
     public final java.util.List<Integer> nearCounts  = new java.util.ArrayList<Integer>();
     // Telemetry: count accepted matches whose winning candidate came from WL-relaxed tier
     public int wlRelaxedHits = 0;
+    // CODEGEN-BEGIN: wl-relaxed-counters-fields
+    public int wlRelaxedGatePasses = 0;   // number of old methods where WL-relaxed contributed >=1 candidate
+    public int wlRelaxedCandidates = 0;   // total WL-relaxed candidates contributed (pre-dedup)
+    public int wlRelaxedAccepted = 0;     // accepted due to WL-relaxed (no higher-tier cands before relax)
+    // CODEGEN-END: wl-relaxed-counters-fields
     }
 
     // >>> AUTOGEN: BYTECODEMAPPER MATCH NSF TIERS BEGIN
@@ -202,6 +207,7 @@ public final class MethodMatcher {
                 NsfIndex nsfIdx = nsfIndexByNewOwner.get(newOwner);
                 // Track provenance for candidates (first occurrence wins)
                 final java.util.LinkedHashMap<String,String> candProv = new java.util.LinkedHashMap<String,String>();
+                boolean hadHigherTierCandidates = false; // set at the moment we evaluate wlrelaxed tier
                 for (String tier : NSFTierOrder.split(",")) {
                     String t = tier.trim().toLowerCase(java.util.Locale.ROOT);
                     if ("exact".equals(t)) {
@@ -249,6 +255,13 @@ public final class MethodMatcher {
                         final double band = options.wlSizeBand;
                         // CODEGEN-END: wl-relaxed-use-options
                         java.util.List<NewRef> xs = relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic, l1Tau, band);
+                        // CODEGEN-BEGIN: wl-relaxed-counters-increment
+                        hadHigherTierCandidates = (!candsExact.isEmpty() || !candsNear.isEmpty() || !candsWl.isEmpty());
+                        if (!xs.isEmpty()) {
+                            out.wlRelaxedGatePasses++;
+                            out.wlRelaxedCandidates += xs.size();
+                        }
+                        // CODEGEN-END: wl-relaxed-counters-increment
                         candsRelax.addAll(xs);
                         // provenance for WL-relaxed tier
                         for (NewRef r : xs) {
@@ -289,11 +302,31 @@ public final class MethodMatcher {
                 }
 
                 // Keep back-compat safety: if nothing from tiers, fall back to WL exact, then relaxed
-                if (cands.isEmpty()) cands = new java.util.ArrayList<NewRef>(wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList()));
+                if (cands.isEmpty()) {
+                    // fallback to WL exact
+                    java.util.List<NewRef> xsExact = wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList());
+                    cands = new java.util.ArrayList<NewRef>(xsExact);
+                    for (NewRef r : xsExact) {
+                        String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
+                        if (!candProv.containsKey(k)) candProv.put(k, "wl");
+                    }
+                }
                 if (cands.isEmpty()) {
                     final int l1Tau = options.wlRelaxedL1;
                     final double band = options.wlSizeBand;
-                    cands = new java.util.ArrayList<NewRef>(relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic, l1Tau, band));
+                    java.util.List<NewRef> xs = relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic, l1Tau, band);
+                    // Record counters for fallback gate as well
+                    if (!xs.isEmpty()) {
+                        out.wlRelaxedGatePasses++;
+                        out.wlRelaxedCandidates += xs.size();
+                    }
+                    cands = new java.util.ArrayList<NewRef>(xs);
+                    for (NewRef r : xs) {
+                        String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
+                        if (!candProv.containsKey(k)) candProv.put(k, "wl_relaxed");
+                    }
+                    // No higher-tier candidates existed in this fallback path
+                    hadHigherTierCandidates = false;
                 }
 
                 // Deterministic cap to prevent excessive memory on large classes/signature collisions
@@ -318,7 +351,7 @@ public final class MethodMatcher {
 
                 // Score and decide
                 MethodScorer.Result r = MethodScorer.scoreOne(src, candFeat, idf);
-        if (r.accepted && r.best != null) {
+    if (r.accepted && r.best != null) {
                     out.accepted.add(new Pair(oldOwner, oldName, r.best.ref.name, desc));
                     if (debugStats) {
             String bestKey = r.best.ref.owner + "\u0000" + r.best.ref.desc + "\u0000" + r.best.ref.name;
@@ -339,6 +372,11 @@ public final class MethodMatcher {
                     String pv2 = candsProvenance.get(bestKey2);
                     if (pv2 != null && "wl_relaxed".equals(pv2)) {
                         out.wlRelaxedHits++;
+                        // CODEGEN-BEGIN: wl-relaxed-accepted
+                        if (!hadHigherTierCandidates) {
+                            out.wlRelaxedAccepted++;
+                        }
+                        // CODEGEN-END: wl-relaxed-accepted
                     }
                 } else {
                     // Abstain: compute candidate scores for diagnostics/output
