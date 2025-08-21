@@ -83,6 +83,9 @@ final class MapOldNew {
     // WL-relaxed gate flags (per-run via orchestrator options)
     Integer wlRelaxedL1 = null; // e.g., 0..N; default 2
     Double wlSizeBand = null;   // 0..1; default 0.10
+    // Phase 4 flattening-aware flags
+    Integer nsfNearBudgetWhenFlattened = null; // default 2
+    Double stackCosineThreshold = null;        // default 0.60
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS BEGIN
         double tauAcceptMethods = 0.60;
         double marginMethods = 0.05;
@@ -163,6 +166,14 @@ final class MapOldNew {
                 try { wFieldsFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
             } else if ("--alphaMicro".equals(a) && i+1<args.length) {
                 try { alphaMicroFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--nsf-near".equals(a) && i+1<args.length) {
+                try { nsfNearBudgetWhenFlattened = Integer.valueOf(Integer.parseInt(args[++i])); } catch (NumberFormatException ignore) {}
+            } else if (a.startsWith("--nsf-near=")) {
+                try { nsfNearBudgetWhenFlattened = Integer.valueOf(Integer.parseInt(a.substring("--nsf-near=".length()))); } catch (NumberFormatException ignore) {}
+            } else if ("--stack-cos".equals(a) && i+1<args.length) {
+                try { stackCosineThreshold = Double.valueOf(Double.parseDouble(args[++i])); } catch (NumberFormatException ignore) {}
+            } else if (a.startsWith("--stack-cos=")) {
+                try { stackCosineThreshold = Double.valueOf(Double.parseDouble(a.substring("--stack-cos=".length()))); } catch (NumberFormatException ignore) {}
             }
         }
         // Apply method matching thresholds (global static for this run)
@@ -258,6 +269,8 @@ final class MapOldNew {
     // Map WL-relaxed flags to orchestrator options; defaults remain if unset
     if (wlRelaxedL1 != null) o.wlRelaxedL1 = wlRelaxedL1.intValue();
     if (wlSizeBand != null) o.wlSizeBand = wlSizeBand.doubleValue();
+    if (nsfNearBudgetWhenFlattened != null) o.nsfNearBudgetWhenFlattened = nsfNearBudgetWhenFlattened.intValue();
+    if (stackCosineThreshold != null) o.stackCosineThreshold = stackCosineThreshold.doubleValue();
 
     Orchestrator orch = new Orchestrator();
     Orchestrator.Result r = orch.run(oldPath, newPath, o);

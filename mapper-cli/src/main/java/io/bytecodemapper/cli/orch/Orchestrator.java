@@ -130,6 +130,10 @@ public final class Orchestrator {
     public final int wlRelaxedGatePasses;
     public final int wlRelaxedCandidates;
     public final int wlRelaxedAccepted;
+    // Phase 4 telemetry fields
+    public final int flatteningDetected;
+    public final int nearBeforeGates;
+    public final int nearAfterGates;
 
         public Result(java.util.Map<String,String> classMap,
                        java.util.List<io.bytecodemapper.io.tiny.TinyV2Writer.MethodEntry> methods,
@@ -142,7 +146,10 @@ public final class Orchestrator {
                             double wlSizeBand,
                             int wlRelaxedGatePasses,
                             int wlRelaxedCandidates,
-                            int wlRelaxedAccepted) {
+                            int wlRelaxedAccepted,
+                            int flatteningDetected,
+                            int nearBeforeGates,
+                            int nearAfterGates) {
             this.classMap = classMap;
             this.methods = methods;
             this.fields = fields;
@@ -161,6 +168,9 @@ public final class Orchestrator {
                         this.wlRelaxedGatePasses = wlRelaxedGatePasses;
                         this.wlRelaxedCandidates = wlRelaxedCandidates;
                         this.wlRelaxedAccepted = wlRelaxedAccepted;
+                        this.flatteningDetected = flatteningDetected;
+                        this.nearBeforeGates = nearBeforeGates;
+                        this.nearAfterGates = nearAfterGates;
         }
     }
 
@@ -258,10 +268,15 @@ public final class Orchestrator {
     int wlGatePasses = 0;
     int wlCandidates = 0;
     int wlAccepted = 0;
+    int flatteningDetected = 0;
+    int nearBeforeGates = 0;
+    int nearAfterGates = 0;
         {
             io.bytecodemapper.core.match.MethodMatcher.MethodMatcherOptions mopts = new io.bytecodemapper.core.match.MethodMatcher.MethodMatcherOptions();
             mopts.wlRelaxedL1 = opt.wlRelaxedL1;
             mopts.wlSizeBand = opt.wlSizeBand;
+            mopts.nsfNearBudgetWhenFlattened = opt.nsfNearBudgetWhenFlattened;
+            mopts.stackCosineThreshold = opt.stackCosineThreshold;
             MethodMatchResult mm = MethodMatcher.matchMethods(oldClasses, newClasses, classMap, oldFeat, newFeat, idf, mopts, opt.deterministic, opt.debugStats);
             for (MethodMatcher.Pair p : mm.accepted) methodPairs.add(new MethodPair(p.oldOwner, p.oldName, p.desc, p.newName));
             // Aggregate stats deterministically
@@ -274,7 +289,10 @@ public final class Orchestrator {
             wlGatePasses = mm.wlRelaxedGatePasses;
             wlCandidates = mm.wlRelaxedCandidates;
             wlAccepted = mm.wlRelaxedAccepted;
-        }
+            flatteningDetected = mm.flatteningDetected;
+            nearBeforeGates = mm.nearBeforeGates;
+            nearAfterGates = mm.nearAfterGates;
+    }
         java.util.List<FieldPair> fieldPairs = new java.util.ArrayList<FieldPair>();
 
     // --- Phase 5: prepare Tiny v2 mapping entries deterministically ---
@@ -315,7 +333,10 @@ public final class Orchestrator {
     opt.wlSizeBand,
     wlGatePasses,
     wlCandidates,
-    wlAccepted);
+    wlAccepted,
+    flatteningDetected,
+    nearBeforeGates,
+    nearAfterGates);
     }
 
     // Deterministic percentile: sort copy ascending; for p in [0,100], use nearest-rank (ceil) index
@@ -366,6 +387,12 @@ public final class Orchestrator {
             bw.write("\"wl_relaxed_hits\":" + r.wlRelaxedHits);
             bw.write(',');
             bw.write("\"wl_relaxed_accepted\":" + r.wlRelaxedAccepted);
+            bw.write(',');
+            bw.write("\"flattening_detected\":" + r.flatteningDetected);
+            bw.write(',');
+            bw.write("\"near_before_gates\":" + r.nearBeforeGates);
+            bw.write(',');
+            bw.write("\"near_after_gates\":" + r.nearAfterGates);
             bw.write('}');
             bw.newLine();
         } finally {

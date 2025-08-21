@@ -61,6 +61,10 @@ public final class MethodMatcher {
     public int wlRelaxedGatePasses = 0;   // number of old methods where WL-relaxed contributed >=1 candidate
     public int wlRelaxedCandidates = 0;   // total WL-relaxed candidates contributed (pre-dedup)
     public int wlRelaxedAccepted = 0;     // accepted due to WL-relaxed (no higher-tier cands before relax)
+    // Phase 4 telemetry: flattening-aware gating
+    public int flatteningDetected = 0;        // number of old methods where flattening was detected (either side)
+    public int nearBeforeGates = 0;           // aggregate near-candidate count before gates
+    public int nearAfterGates = 0;            // aggregate near-candidate count after gates
     // CODEGEN-END: wl-relaxed-counters-fields
     }
 
@@ -223,6 +227,7 @@ public final class MethodMatcher {
                 // Detect flattening on either side (old or any new with same owner+desc)
                 boolean anyNewFlattened = newSideAnyFlattenedForOwnerDesc(newClasses, newOwner, desc);
                 boolean flattened = oldFlattened || anyNewFlattened;
+                if (flattened) out.flatteningDetected++;
                 final int nearBudget = flattened ? Math.max(1, options.nsfNearBudgetWhenFlattened) : 1;
                 if (flattened && debugStats) {
                     System.out.println("[match] flattening detected for " + oldOwner + "#" + oldName + desc +
@@ -267,6 +272,8 @@ public final class MethodMatcher {
                             // CODEGEN-BEGIN: flattening-gates apply
                             // Apply call-degree band and stack-hist cosine gates only when flattening is detected
                             if (!candsNear.isEmpty()) {
+                                // telemetry: count before applying gates
+                                out.nearBeforeGates += candsNear.size();
                                 candsNear = applyFlatteningGatesIfNeeded(
                                         flattened,
                                         oldNormFeatures,
@@ -276,6 +283,7 @@ public final class MethodMatcher {
                                         newOwner,
                                         desc
                                 );
+                                out.nearAfterGates += candsNear.size();
                             }
                             // CODEGEN-END: flattening-gates apply
                         }

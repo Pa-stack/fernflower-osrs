@@ -17,6 +17,9 @@ public final class OrchestratorOptions {
     // Per-run WL-relaxed thresholds
     public int wlRelaxedL1 = 2;
     public double wlSizeBand = 0.10;
+    // Phase 4: flattening-aware widening + gates
+    public int nsfNearBudgetWhenFlattened = 2; // widen near-tier Hamming budget when flattening
+    public double stackCosineThreshold = 0.60; // stack-hist cosine threshold gate
 
     // >>> AUTOGEN: BYTECODEMAPPER CLI OrchestratorOptions ABLATE BEGIN
     // Weights already exist; add ablation/toggles if missing.
@@ -71,6 +74,9 @@ public final class OrchestratorOptions {
     // WL-relaxed defaults per run
     o.wlRelaxedL1 = 2;
     o.wlSizeBand = 0.10;
+    // Phase 4 defaults
+    o.nsfNearBudgetWhenFlattened = 2;
+    o.stackCosineThreshold = 0.60;
     return o;
     }
 }
