@@ -1,11 +1,39 @@
 # FILE: bench/run_bench.sh
 # CODEGEN-BEGIN: bench-run-bash
 #!/usr/bin/env bash
+# Note: uses bash array 'mapfile' and 'find -maxdepth' (GNU). For macOS default bash/BSD find,
+#       use Homebrew bash/findutils or run this on Linux. A portable variant can be added if needed.
 set -euo pipefail
+
+# CODEGEN-BEGIN: bench-jars-dir-bash
+# Resolve repo root (directory above bench/)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Accept optional CLI arg as jars dir, else env JARS_DIR, else default to repo-root/data/weeks
+CLI_JARS_DIR="${1:-}"
+if [[ -n "$CLI_JARS_DIR" ]]; then
+  JARS_DIR="$CLI_JARS_DIR"
+elif [[ -n "${JARS_DIR:-}" ]]; then
+  JARS_DIR="${JARS_DIR}"
+else
+  JARS_DIR="data/weeks"
+fi
+
+# If JARS_DIR is relative, make it absolute relative to repo root
+case "$JARS_DIR" in
+  /*) ;; # absolute
+  *) JARS_DIR="${REPO_ROOT}/${JARS_DIR}" ;;
+esac
+
+echo "[INFO] Using JARS_DIR=$JARS_DIR"
+if [[ ! -d "$JARS_DIR" ]]; then
+  echo "[ERROR] JARS_DIR does not exist: $JARS_DIR" >&2
+  exit 1
+fi
+# CODEGEN-END: bench-jars-dir-bash
 
 # Path to your installed CLI; adjust if needed.
 CLI="./mapper-cli/build/install/mapper-cli/bin/mapper-cli"
-JARS_DIR="${JARS_DIR:-/data/weeks}"   # default to /data/weeks, can override env
 OUT_DIR="bench/out"
 CACHE_DIR="bench/cache"
 mkdir -p "$OUT_DIR" "$CACHE_DIR"
@@ -50,7 +78,9 @@ run_cfg() {
 }
 
 # Discover jars like osrs-231.jar, osrs-232.jar; sort numerically; make consecutive pairs.
-mapfile -t jars < <(find "$JARS_DIR" -maxdepth 1 -type f -name 'osrs-*.jar' | sort)
+# CODEGEN-BEGIN: bench-jars-find-bash
+mapfile -t jars < <(find "$JARS_DIR" -type f -name 'osrs-*.jar' | sort)
+# CODEGEN-END: bench-jars-find-bash
 if [[ ${#jars[@]} -lt 2 ]]; then
   echo "Need at least two jars in $JARS_DIR (e.g., osrs-231.jar, osrs-232.jar)" >&2
   exit 1
@@ -70,6 +100,13 @@ done
 
 IFS=$'\n' versions_sorted=($(printf "%s\n" "${versions[@]}" | sort -n))
 unset IFS
+
+# CODEGEN-BEGIN: bench-jars-sanity-bash
+if [[ "${#versions_sorted[@]}" -lt 2 ]]; then
+  echo "[ERROR] Found fewer than two osrs-*.jar in $JARS_DIR" >&2
+  exit 1
+fi
+# CODEGEN-END: bench-jars-sanity-bash
 
 # Build consecutive pairs: v[i-1] -> v[i]
 for ((i=1; i<${#versions_sorted[@]}; i++)); do
