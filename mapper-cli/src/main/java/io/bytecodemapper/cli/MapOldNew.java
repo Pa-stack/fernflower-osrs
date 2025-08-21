@@ -133,10 +133,18 @@ final class MapOldNew {
                 try { wlRelaxedL1 = Integer.valueOf(Integer.parseInt(args[++i])); } catch (NumberFormatException ignore) {}
             } else if (a.startsWith("--wlRelaxedL1=")) {
                 try { wlRelaxedL1 = Integer.valueOf(Integer.parseInt(a.substring("--wlRelaxedL1=".length()))); } catch (NumberFormatException ignore) {}
+            } else if ("--wl-relaxed-l1".equals(a) && i+1<args.length) {
+                try { wlRelaxedL1 = Integer.valueOf(Integer.parseInt(args[++i])); } catch (NumberFormatException ignore) {}
+            } else if (a.startsWith("--wl-relaxed-l1=")) {
+                try { wlRelaxedL1 = Integer.valueOf(Integer.parseInt(a.substring("--wl-relaxed-l1=".length()))); } catch (NumberFormatException ignore) {}
             } else if ("--wlSizeBand".equals(a) && i+1<args.length) {
                 try { wlSizeBand = Double.valueOf(Double.parseDouble(args[++i])); } catch (NumberFormatException ignore) {}
             } else if (a.startsWith("--wlSizeBand=")) {
                 try { wlSizeBand = Double.valueOf(Double.parseDouble(a.substring("--wlSizeBand=".length()))); } catch (NumberFormatException ignore) {}
+            } else if ("--wl-size-band".equals(a) && i+1<args.length) {
+                try { wlSizeBand = Double.valueOf(Double.parseDouble(args[++i])); } catch (NumberFormatException ignore) {}
+            } else if (a.startsWith("--wl-size-band=")) {
+                try { wlSizeBand = Double.valueOf(Double.parseDouble(a.substring("--wl-size-band=".length()))); } catch (NumberFormatException ignore) {}
             } else if ("--includeIdentity".equals(a)) {
                 includeIdentity = true;
             } else if ("--demoRemapCount".equals(a) && i+1<args.length) {
