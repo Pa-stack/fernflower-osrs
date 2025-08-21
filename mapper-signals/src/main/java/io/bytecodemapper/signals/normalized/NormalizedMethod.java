@@ -43,6 +43,12 @@ public final class NormalizedMethod implements Opcodes {
     public final Set<String> invokedSignatures = new LinkedHashSet<String>();
     public final String normalizedDescriptor;
     public final String fingerprint;
+    // CODEGEN-BEGIN: nsfv2-state
+    // Filtered instruction array (after unwrap/exclusions) used for NSFv2 analysis
+    private AbstractInsnNode[] filteredInsns = new AbstractInsnNode[0];
+    // Try/catch blocks after unwrap (original handler list may be cleared on unwrap)
+    private List<TryCatchBlockNode> filteredTryCatch = java.util.Collections.emptyList();
+    // CODEGEN-END: nsfv2-state
 
     /**
      * Build a normalized feature view for the given (already normalized) MethodNode.
@@ -79,6 +85,22 @@ public final class NormalizedMethod implements Opcodes {
 
         // 5) Process instructions to fill opcodeHistogram, strings, invoked signatures
         processInstructions(working, toExclude, wrapperNoisyStrings);
+
+        // CODEGEN-BEGIN: nsfv2-state
+        // Snapshot filtered instructions and try/catch for NSFv2 computations
+        if (working.instructions != null) {
+            ArrayList<AbstractInsnNode> list = new ArrayList<AbstractInsnNode>();
+            for (AbstractInsnNode insn : working.instructions.toArray()) {
+                if (!toExclude.contains(insn)) list.add(insn);
+            }
+            this.filteredInsns = list.toArray(new AbstractInsnNode[list.size()]);
+        } else {
+            this.filteredInsns = new AbstractInsnNode[0];
+        }
+        this.filteredTryCatch = (working.tryCatchBlocks == null)
+                ? java.util.Collections.<TryCatchBlockNode>emptyList()
+                : new ArrayList<TryCatchBlockNode>(working.tryCatchBlocks);
+        // CODEGEN-END: nsfv2-state
 
         // 6) Stable fingerprint
         this.fingerprint = fingerprint();
@@ -409,12 +431,16 @@ public final class NormalizedMethod implements Opcodes {
             new NormalizedFeatures.TryCatchShape(tryDepth(), tryFanout(), tryCatchTypesHash());
         NormalizedFeatures.MinHash32 lits = new NormalizedFeatures.MinHash32(buildLiteralsSketch());
         NormalizedFeatures.TfIdfSketch strs = new NormalizedFeatures.TfIdfSketch(buildStringsTf());
-
-        long nsf64 = buildFingerprintNSFv1(opcodeBag, callKinds, stackHist, tc, lits, strs);
+    // CODEGEN-BEGIN: nsfv2-wire
+    // Build NSFv2 payload and hash deterministically
+    final String payload = buildNsfPayloadV2();
+    final long nsf64 = StableHash64.hashUtf8(payload);
+    // CODEGEN-END: nsfv2-wire
         return new NormalizedFeatures(opcodeBag, callKinds, stackHist, tc, lits, strs, nsf64);
     }
 
     /** NSFv1: stable 64-bit over sorted, compact tuples. */
+    @SuppressWarnings("unused")
     private static long buildFingerprintNSFv1(Map<String,Integer> op,
                                               Map<String,Integer> ck,
                                               Map<String,Integer> sh,
@@ -451,6 +477,7 @@ public final class NormalizedMethod implements Opcodes {
         return StableHash64.hashUtf8(payload);
     }
 
+    @SuppressWarnings("unused")
     private static void addSorted(ArrayList<String> out, String tag, Map<String,? extends Object> m) {
         ArrayList<String> keys = new ArrayList<String>(m.keySet());
         Collections.sort(keys);
@@ -464,7 +491,7 @@ public final class NormalizedMethod implements Opcodes {
     private int tryDepth(){ return normalizedTryDepth(); }
     private int tryFanout(){ return normalizedTryFanout(); }
     private int tryCatchTypesHash(){ return normalizedCatchTypesHash(); }
-    private int[] buildLiteralsSketch(){ return normalizedLiteralsMinHash(); }
+    private int[] buildLiteralsSketch(){ return normalizedLiteralsMinHash64(); }
     private Map<String,Float> buildStringsTf(){ return normalizedStringsTf(); }
 
     // Implementations using existing collected data for determinism (coarse but stable)
@@ -499,16 +526,267 @@ public final class NormalizedMethod implements Opcodes {
         return (v==null?0:v.intValue());
     }
 
-    private Map<String,Integer> normalizedStackDeltaHistogram() {
-        // Coarse, deterministic stub: currently leave empty (caller treats as optional)
-        return new LinkedHashMap<String,Integer>();
+    private LinkedHashMap<String,Integer> normalizedStackDeltaHistogram() {
+        // CODEGEN-BEGIN: nsfv2-core
+        // Coarse stack-delta histogram over filtered instructions, clamped to [-2..+2]
+        final String[] keys = new String[]{"-2","-1","0","+1","+2"};
+        LinkedHashMap<String,Integer> hist = new LinkedHashMap<String,Integer>();
+        for (String k : keys) hist.put(k, Integer.valueOf(0));
+        if (filteredInsns == null) return hist;
+
+        for (AbstractInsnNode insn : filteredInsns) {
+            int op = insn.getOpcode();
+            if (op < 0) continue; // skip pseudo-insns
+            int delta = stackDeltaSlots(insn);
+            if (delta < -2) delta = -2; else if (delta > 2) delta = 2;
+            switch (delta) {
+                case -2: hist.put("-2", Integer.valueOf(hist.get("-2").intValue()+1)); break;
+                case -1: hist.put("-1", Integer.valueOf(hist.get("-1").intValue()+1)); break;
+                case 0:  hist.put("0",  Integer.valueOf(hist.get("0").intValue()+1)); break;
+                case 1:  hist.put("+1", Integer.valueOf(hist.get("+1").intValue()+1)); break;
+                case 2:  hist.put("+2", Integer.valueOf(hist.get("+2").intValue()+1)); break;
+            }
+        }
+        return hist;
+        // CODEGEN-END: nsfv2-core
     }
 
-    private int normalizedTryDepth() { return 0; }
-    private int normalizedTryFanout() { return 0; }
-    private int normalizedCatchTypesHash() { return 0; }
+    private int normalizedTryDepth() {
+        // CODEGEN-BEGIN: nsfv2-core
+        if (filteredTryCatch == null || filteredTryCatch.isEmpty() || filteredInsns == null || filteredInsns.length==0) return 0;
+        Map<LabelNode,Integer> labelIndex = buildLabelIndex();
+        // Build events for sweep-line depth computation
+        ArrayList<int[]> events = new ArrayList<int[]>(); // [index, +1/-1]
+        for (TryCatchBlockNode t : filteredTryCatch) {
+            Integer s = labelIndex.get(t.start);
+            Integer e = labelIndex.get(t.end);
+            if (s == null || e == null) continue;
+            events.add(new int[]{s.intValue(), +1});
+            events.add(new int[]{e.intValue(), -1});
+        }
+        if (events.isEmpty()) return 0;
+        Collections.sort(events, new Comparator<int[]>() {
+            public int compare(int[] a, int[] b) { int c = Integer.compare(a[0], b[0]); if (c!=0) return c; return Integer.compare(a[1], b[1]); }
+        });
+        int depth = 0, maxDepth = 0;
+        for (int[] ev : events) { depth += ev[1]; if (depth > maxDepth) maxDepth = depth; }
+        return maxDepth;
+        // CODEGEN-END: nsfv2-core
+    }
+    private int normalizedTryFanout() {
+        // CODEGEN-BEGIN: nsfv2-core
+        if (filteredTryCatch == null || filteredTryCatch.isEmpty()) return 0;
+        // Group by (start,end) to count multi-catch fanout
+        Map<String,Integer> counts = new LinkedHashMap<String,Integer>();
+        for (TryCatchBlockNode t : filteredTryCatch) {
+            String key = System.identityHashCode(t.start) + ":" + System.identityHashCode(t.end);
+            Integer cur = counts.get(key);
+            counts.put(key, Integer.valueOf(cur==null?1:cur.intValue()+1));
+        }
+        int max = 0; for (Integer v : counts.values()) if (v!=null && v.intValue()>max) max = v.intValue();
+        return max;
+        // CODEGEN-END: nsfv2-core
+    }
+    private int normalizedCatchTypesHash() {
+        // CODEGEN-BEGIN: nsfv2-core
+        if (filteredTryCatch == null || filteredTryCatch.isEmpty()) return 0;
+        ArrayList<String> types = new ArrayList<String>();
+        for (TryCatchBlockNode t : filteredTryCatch) {
+            if (t.type != null) types.add(t.type);
+        }
+        if (types.isEmpty()) return 0;
+        Collections.sort(types);
+        String joined = join(types, ",");
+        long h = StableHash64.hashUtf8(joined);
+        return (int)(h ^ (h >>> 32));
+        // CODEGEN-END: nsfv2-core
+    }
 
-    private int[] normalizedLiteralsMinHash() { return null; }
+
+
+    // CODEGEN-BEGIN: nsfv2-core
+    // 3) Numeric-literal MinHash (64 buckets)
+    private int[] normalizedLiteralsMinHash64() {
+        if (filteredInsns == null || filteredInsns.length == 0) return null;
+        final int BUCKETS = 64;
+        int[] sketch = new int[BUCKETS];
+        Arrays.fill(sketch, Integer.MAX_VALUE);
+        boolean saw = false;
+        for (AbstractInsnNode insn : filteredInsns) {
+            int op = insn.getOpcode();
+            if (op < 0) continue;
+            if (op == BIPUSH || op == SIPUSH) {
+                if (insn instanceof IntInsnNode) {
+                    int v = ((IntInsnNode) insn).operand;
+                    if (v >= -1 && v <= 5) continue; // ignore JVM small ints noise
+                    saw |= updateSketch(sketch, String.valueOf(v));
+                }
+            } else if (insn instanceof LdcInsnNode) {
+                Object c = ((LdcInsnNode) insn).cst;
+                if (c instanceof Integer) {
+                    int v = ((Integer) c).intValue();
+                    if (v >= -1 && v <= 5) continue; // ignore
+                    saw |= updateSketch(sketch, String.valueOf(v));
+                } else if (c instanceof Long) {
+                    saw |= updateSketch(sketch, String.valueOf(((Long) c).longValue()));
+                } else if (c instanceof Float) {
+                    saw |= updateSketch(sketch, Float.toString(((Float) c).floatValue()));
+                } else if (c instanceof Double) {
+                    saw |= updateSketch(sketch, Double.toString(((Double) c).doubleValue()));
+                }
+            }
+        }
+        if (!saw) return null;
+        return sketch;
+    }
+
+    private boolean updateSketch(int[] sketch, String canonical) {
+        long h64 = StableHash64.hashUtf8(canonical);
+        int b = (int)(h64 & 63L);
+        int v = (int)(h64 ^ (h64 >>> 32));
+        if (v < sketch[b]) { sketch[b] = v; return true; }
+        return true; // saw literal even if not min
+    }
+
+    // 4) Invoke-kind encoding (counts of VIRT/STATIC/INTERFACE/CTOR)
+    private int[] invokeKindCounts() { // length=4, order: VIRT, STATIC, INTERFACE, CTOR
+        int virt = getOpCount(INVOKEVIRTUAL);
+        int stat = getOpCount(INVOKESTATIC);
+        int itf  = getOpCount(INVOKEINTERFACE);
+        int ctor = 0;
+        for (String sig : this.invokedSignatures) if (sig.indexOf(".<init>(") >= 0) ctor++;
+        return new int[]{virt, stat, itf, ctor};
+    }
+
+    // 5) Build NSFv2 payload (sorted pieces; include version header)
+    private String buildNsfPayloadV2() {
+        StringBuilder out = new StringBuilder();
+        out.append("NSFv2\n");
+        // Descriptor
+        out.append("D|").append(this.normalizedDescriptor).append('\n');
+        // Sorted opcode keys (as integers turned into strings)
+        ArrayList<String> opcodeKeys = new ArrayList<String>();
+        for (Integer k : this.opcodeHistogram.keySet()) opcodeKeys.add(String.valueOf(k));
+        Collections.sort(opcodeKeys);
+        out.append("O|").append(join(opcodeKeys, ",")).append('\n');
+        // Sorted invoked signatures
+        ArrayList<String> invokes = new ArrayList<String>(this.invokedSignatures);
+        Collections.sort(invokes);
+        out.append("S|").append(join(invokes, ",")).append('\n');
+        // Sorted strings
+        ArrayList<String> strs = new ArrayList<String>(this.stringConstants);
+        Collections.sort(strs);
+        out.append("T|").append(join(strs, ",")).append('\n');
+        // Stack histogram in fixed order
+        LinkedHashMap<String,Integer> sh = normalizedStackDeltaHistogram();
+        out.append("H|")
+           .append("-2:").append(String.valueOf(sh.get("-2")))
+           .append(',').append("-1:").append(String.valueOf(sh.get("-1")))
+           .append(',').append("0:").append(String.valueOf(sh.get("0")))
+           .append(',').append("+1:").append(String.valueOf(sh.get("+1")))
+           .append(',').append("+2:").append(String.valueOf(sh.get("+2")))
+           .append('\n');
+        // Try shape triple
+        out.append("Y|").append(normalizedTryDepth()).append('|').append(normalizedTryFanout()).append('|').append(normalizedCatchTypesHash()).append('\n');
+        // Literals sketch
+        int[] sketch = normalizedLiteralsMinHash64();
+        if (sketch == null) {
+            out.append("L|∅\n");
+        } else {
+            out.append("L|");
+            for (int i=0;i<sketch.length;i++) { if (i>0) out.append(','); out.append(sketch[i]); }
+            out.append('\n');
+        }
+        // Invoke-kind counts
+        int[] kinds = invokeKindCounts();
+        out.append("K|").append(kinds[0]).append(',').append(kinds[1]).append(',').append(kinds[2]).append(',').append(kinds[3]);
+        return out.toString();
+    }
+    // CODEGEN-END: nsfv2-core
+
+    // Helper: approximate stack delta in slots (coarse, covers common opcodes deterministically)
+    private static int stackDeltaSlots(AbstractInsnNode insn) {
+        int op = insn.getOpcode();
+        switch (op) {
+            // Constants push (+1 or +2 for long/double)
+            case ACONST_NULL:
+            case ICONST_M1:
+            case ICONST_0:
+            case ICONST_1:
+            case ICONST_2:
+            case ICONST_3:
+            case ICONST_4:
+            case ICONST_5:
+            case BIPUSH:
+            case SIPUSH:
+            case LDC: return +1;
+            // Loads push
+            case ILOAD: case LLOAD: case FLOAD: case DLOAD: case ALOAD: return +1;
+            // Stores pop
+            case ISTORE: case LSTORE: case FSTORE: case DSTORE: case ASTORE: return -1;
+            // Stack ops
+            case POP: return -1;
+            case POP2: return -2;
+            case DUP: return +1;
+            case DUP_X1: return +1;
+            case DUP_X2: return +1;
+            case DUP2: return +2; // approximate
+            case DUP2_X1: return +1; // approximate
+            case DUP2_X2: return +1; // approximate
+            case SWAP: return 0;
+            // Arithmetic (binary ops pop2 push1 => -1)
+            case IADD: case ISUB: case IMUL: case IDIV: case IREM:
+            case FADD: case FSUB: case FMUL: case FDIV: case FREM:
+            case LADD: case LSUB: case LMUL: case LDIV: case LREM:
+            case DADD: case DSUB: case DMUL: case DDIV: case DREM:
+                return -1;
+            case INEG: case FNEG: case LNEG: case DNEG: return 0;
+            // Conversions (pop1 push1)
+            case I2F: case I2L: case I2D: case F2I: case F2L: case F2D:
+            case L2I: case L2F: case L2D: case D2I: case D2F: case D2L:
+            case I2B: case I2C: case I2S: return 0;
+            // Comparisons/if
+            case IFEQ: case IFNE: case IFLT: case IFGE: case IFGT: case IFLE:
+            case IF_ICMPEQ: case IF_ICMPNE: case IF_ICMPLT: case IF_ICMPGE: case IF_ICMPGT: case IF_ICMPLE:
+            case IF_ACMPEQ: case IF_ACMPNE:
+            case TABLESWITCH: case LOOKUPSWITCH:
+                return -1; // consume condition value(s)
+            case GOTO: return 0;
+            // Returns
+            case RETURN: return 0;
+            case IRETURN: case FRETURN: case ARETURN: return -1;
+            case LRETURN: case DRETURN: return -2;
+            case ATHROW: return -1;
+            // Field access
+            case GETSTATIC: return +1;
+            case PUTSTATIC: return -1;
+            case GETFIELD: return 0; // pop obj, push value => 0 approx
+            case PUTFIELD: return -2; // pop obj + value
+            // Array
+            case NEWARRAY: case ANEWARRAY: case ARRAYLENGTH: return 0; // approx
+            case AALOAD: case IALOAD: case LALOAD: case FALOAD: case DALOAD: case BALOAD: case CALOAD: case SALOAD: return -1;
+            case AASTORE: case IASTORE: case LASTORE: case FASTORE: case DASTORE: case BASTORE: case CASTORE: case SASTORE: return -3;
+            // Object
+            case NEW: return +1;
+            case CHECKCAST: case INSTANCEOF: return 0;
+            case MONITORENTER: case MONITOREXIT: return -1;
+            // Method calls (approx: args-returns; we can't parse desc here reliably without node)
+            case INVOKEVIRTUAL: case INVOKESTATIC: case INVOKEINTERFACE: case INVOKESPECIAL:
+                // Without signature, a coarse 0 keeps histogram meaningful
+                return 0;
+            default:
+                return 0;
+        }
+    }
+
+    private Map<LabelNode,Integer> buildLabelIndex() {
+        LinkedHashMap<LabelNode,Integer> map = new LinkedHashMap<LabelNode,Integer>();
+        for (int i=0;i<filteredInsns.length;i++) {
+            AbstractInsnNode n = filteredInsns[i];
+            if (n instanceof LabelNode) map.put((LabelNode)n, Integer.valueOf(i));
+        }
+        return map;
+    }
 
     private Map<String,Float> normalizedStringsTf() {
         LinkedHashMap<String,Float> tf = new LinkedHashMap<String,Float>();

@@ -29,10 +29,8 @@ io/bytecodemapper/signals/score/MicroScore.java
  io.bytecodemapper.signals.score.MicroScore
 io/bytecodemapper/signals/strings/StringBagExtractor.java
  io.bytecodemapper.signals.strings.StringBagExtractor
-io/bytecodemapper/signals/normalized/NormalizedMethod.java
- io.bytecodemapper.signals.normalized.NormalizedMethod
- io.bytecodemapper.signals.normalized.NormalizedMethod$1
- io.bytecodemapper.signals.normalized.NormalizedMethod$MethodKey
+io/bytecodemapper/signals/micro/MicroPattern.java
+ io.bytecodemapper.signals.micro.MicroPattern
 io/bytecodemapper/signals/calls/CallBagTfidf.java
  io.bytecodemapper.signals.calls.CallBagTfidf
 io/bytecodemapper/signals/strings/StringTfidf.java
@@ -43,5 +41,8 @@ io/bytecodemapper/signals/micro/MicroScoringService.java
  io.bytecodemapper.signals.micro.MicroScoringService
 io/bytecodemapper/signals/micro/MicroPatternProviderImpl.java
  io.bytecodemapper.signals.micro.MicroPatternProviderImpl
-io/bytecodemapper/signals/micro/MicroPattern.java
- io.bytecodemapper.signals.micro.MicroPattern
+io/bytecodemapper/signals/normalized/NormalizedMethod.java
+ io.bytecodemapper.signals.normalized.NormalizedMethod
+ io.bytecodemapper.signals.normalized.NormalizedMethod$1
+ io.bytecodemapper.signals.normalized.NormalizedMethod$2
+ io.bytecodemapper.signals.normalized.NormalizedMethod$MethodKey
