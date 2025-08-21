@@ -38,7 +38,7 @@ public class MapOldNewWlRelaxedFlagsTest {
         String json = new String(Files.readAllBytes(report), "UTF-8");
         // Default wl_relaxed_l1=2 and wl_size_band=0.10
         assertTrue("Expected wl_relaxed_l1 default 2", json.contains("\"wl_relaxed_l1\":2"));
-        assertTrue("Expected wl_size_band default 0.10", json.contains("\"wl_size_band\":0.10"));
+    assertTrue("Expected wl_relaxed_size_band default 0.10", json.contains("\"wl_relaxed_size_band\":0.10"));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class MapOldNewWlRelaxedFlagsTest {
         assertTrue("report.json must exist", Files.isRegularFile(report));
         String json = new String(Files.readAllBytes(report), "UTF-8");
         assertTrue("Expected wl_relaxed_l1 override 3", json.contains("\"wl_relaxed_l1\":3"));
-        assertTrue("Expected wl_size_band override 0.25", json.contains("\"wl_size_band\":0.25"));
+    assertTrue("Expected wl_relaxed_size_band override 0.25", json.contains("\"wl_relaxed_size_band\":0.25"));
     }
 }
 // <<< AUTOGEN: BYTECODEMAPPER TEST MapOldNewWlRelaxedFlagsTest END

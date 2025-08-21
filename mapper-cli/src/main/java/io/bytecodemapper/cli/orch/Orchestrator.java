@@ -124,6 +124,8 @@ public final class Orchestrator {
     // Echo per-run WL-relaxed thresholds for observability
     public final int wlRelaxedL1;
     public final double wlSizeBand;
+    // Alias field to match spec naming in DTO for external readers
+    public final double wlRelaxedSizeBand;
 
         public Result(java.util.Map<String,String> classMap,
                        java.util.List<io.bytecodemapper.io.tiny.TinyV2Writer.MethodEntry> methods,
@@ -148,6 +150,7 @@ public final class Orchestrator {
                 this.wlRelaxedHits = wlRelaxedHits;
                         this.wlRelaxedL1 = wlRelaxedL1;
                         this.wlSizeBand = wlSizeBand;
+                        this.wlRelaxedSizeBand = wlSizeBand;
         }
     }
 
@@ -328,15 +331,16 @@ public final class Orchestrator {
             bw.write("\"cand_count_near_p95\":" + r.candCountNearP95);
             bw.write('}');
             bw.write(',');
-            bw.write("\"wl_relaxed_hits\":" + r.wlRelaxedHits);
-            bw.write(',');
+            // Emit thresholds first in fixed order, then hits
             bw.write("\"wl_relaxed_l1\":" + r.wlRelaxedL1);
             bw.write(',');
-            // write wl_size_band with 2 decimal places for readability
+            // write wl_relaxed_size_band with 2 decimal places for readability
             java.text.DecimalFormatSymbols sym = new java.text.DecimalFormatSymbols(java.util.Locale.ROOT);
             sym.setDecimalSeparator('.');
             java.text.DecimalFormat df = new java.text.DecimalFormat("0.00", sym);
-            bw.write("\"wl_size_band\":" + df.format(r.wlSizeBand));
+            bw.write("\"wl_relaxed_size_band\":" + df.format(r.wlRelaxedSizeBand));
+            bw.write(',');
+            bw.write("\"wl_relaxed_hits\":" + r.wlRelaxedHits);
             bw.write('}');
             bw.newLine();
         } finally {

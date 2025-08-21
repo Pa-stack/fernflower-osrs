@@ -49,17 +49,20 @@ public class ReportCandidateStatsSmokeTest {
         io.bytecodemapper.cli.Main.main(args2);
         Assert.assertTrue("report2.json should exist", Files.exists(report2));
 
-        // Validate keys present
+    // Validate keys present and thresholds included
         String json1 = new String(Files.readAllBytes(report1), StandardCharsets.UTF_8);
         Assert.assertTrue(json1.contains("\"candidate_stats\""));
         Assert.assertTrue(json1.contains("\"cand_count_exact_median\""));
         Assert.assertTrue(json1.contains("\"cand_count_exact_p95\""));
         Assert.assertTrue(json1.contains("\"cand_count_near_median\""));
         Assert.assertTrue(json1.contains("\"cand_count_near_p95\""));
+    Assert.assertTrue(json1.contains("\"wl_relaxed_l1\""));
+    Assert.assertTrue(json1.contains("\"wl_relaxed_size_band\""));
+    Assert.assertTrue(json1.contains("\"wl_relaxed_hits\""));
 
         // Determinism: contents identical across runs
         String json2 = new String(Files.readAllBytes(report2), StandardCharsets.UTF_8);
-        Assert.assertEquals("report JSON must be deterministic", json1.trim(), json2.trim());
+    Assert.assertEquals("report JSON must be deterministic", json1.trim(), json2.trim());
     }
 }
 // <<< AUTOGEN: BYTECODEMAPPER TEST ReportCandidateStatsSmokeTest END
