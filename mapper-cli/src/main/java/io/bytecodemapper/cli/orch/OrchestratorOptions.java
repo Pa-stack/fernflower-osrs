@@ -14,6 +14,9 @@ public final class OrchestratorOptions {
     public final boolean debugNormalized; // dump normalized sample in mapOldNew (already exists)
     public final int debugNormalizedSample;
     public final int maxMethods; // 0 = unlimited; test-only throttle
+    // Per-run WL-relaxed thresholds
+    public int wlRelaxedL1 = 2;
+    public double wlSizeBand = 0.10;
 
     // >>> AUTOGEN: BYTECODEMAPPER CLI OrchestratorOptions ABLATE BEGIN
     // Weights already exist; add ablation/toggles if missing.
@@ -65,6 +68,9 @@ public final class OrchestratorOptions {
     o.useNormalizedHistogram = true;
     o.weightCalls = 0.45; o.weightMicropatterns = 0.25; o.weightOpcode = 0.15; o.weightStrings = 0.10; o.weightFields = 0.05;
     o.alphaMicropattern = 0.60; o.tauAccept = 0.60;
+    // WL-relaxed defaults per run
+    o.wlRelaxedL1 = 2;
+    o.wlSizeBand = 0.10;
     return o;
     }
 }

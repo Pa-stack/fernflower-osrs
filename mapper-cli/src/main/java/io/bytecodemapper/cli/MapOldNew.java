@@ -80,9 +80,9 @@ final class MapOldNew {
     String nsfTierOrder = "exact,near,wl,wlrelaxed";
     // nsf64 rollout flag
     io.bytecodemapper.cli.flags.UseNsf64Mode useNsf64Mode = io.bytecodemapper.cli.flags.UseNsf64Mode.CANONICAL;
-    // WL-relaxed gate flags
-    Integer wlRelaxedL1 = null; // e.g., 0..N, default stays matcher default
-    Double wlSizeBand = null;   // 0..1 proportion, default stays matcher default
+    // WL-relaxed gate flags (per-run via orchestrator options)
+    Integer wlRelaxedL1 = null; // e.g., 0..N; default 2
+    Double wlSizeBand = null;   // 0..1; default 0.10
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS BEGIN
         double tauAcceptMethods = 0.60;
         double marginMethods = 0.05;
@@ -255,8 +255,9 @@ final class MapOldNew {
     // Apply nsf64 tiering and rollout mode before matching
     io.bytecodemapper.core.match.MethodMatcher.setNsftierOrder(nsfTierOrder);
     io.bytecodemapper.core.match.MethodMatcher.setUseNsf64Mode(useNsf64Mode);
-    if (wlRelaxedL1 != null) io.bytecodemapper.core.match.MethodMatcher.setWlRelaxedL1(wlRelaxedL1.intValue());
-    if (wlSizeBand != null) io.bytecodemapper.core.match.MethodMatcher.setWlSizeBand(wlSizeBand.doubleValue());
+    // Map WL-relaxed flags to orchestrator options; defaults remain if unset
+    if (wlRelaxedL1 != null) o.wlRelaxedL1 = wlRelaxedL1.intValue();
+    if (wlSizeBand != null) o.wlSizeBand = wlSizeBand.doubleValue();
 
     Orchestrator orch = new Orchestrator();
     Orchestrator.Result r = orch.run(oldPath, newPath, o);

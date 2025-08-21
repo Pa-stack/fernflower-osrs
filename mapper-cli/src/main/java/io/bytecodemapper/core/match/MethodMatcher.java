@@ -71,11 +71,15 @@ public final class MethodMatcher {
         if (m != null) NSF_MODE = m;
     }
 
-    // WL-relaxed options (candidate gate only)
-    private static int WL_RELAXED_L1 = 2;
-    private static double WL_SIZE_BAND = 0.10; // ±10%
-    public static void setWlRelaxedL1(int n) { if (n >= 0) WL_RELAXED_L1 = n; }
-    public static void setWlSizeBand(double p) { if (p >= 0.0 && p <= 1.0) WL_SIZE_BAND = p; }
+    // CODEGEN-BEGIN: wl-relaxed-defaults-in-options
+    /** Per-run options for MethodMatcher behavior. */
+    public static final class MethodMatcherOptions {
+        /** WL-relaxed L1 threshold (default 2 if flag not provided) */
+        public int wlRelaxedL1 = 2;
+        /** WL-relaxed size band (default ±10%) */
+        public double wlSizeBand = 0.10;
+    }
+    // CODEGEN-END: wl-relaxed-defaults-in-options
 
     /**
      * Overload that accepts feature caches. Builds WL index on NEW side and, for each OLD
@@ -90,9 +94,11 @@ public final class MethodMatcher {
             Map<String, Map<String, MethodFeatureCacheEntry>> oldFeat,
             Map<String, Map<String, MethodFeatureCacheEntry>> newFeat,
             IdfStore idf,
+            MethodMatcherOptions options,
             boolean deterministic,
             boolean debugStats) {
         MethodMatchResult out = new MethodMatchResult();
+        if (options == null) options = new MethodMatcherOptions();
 
         // 1) Build NEW-side index by (desc, wl)
         Map<Key, List<NewRef>> wlIndex = buildNewSideWlIndex(newFeat);
@@ -238,7 +244,11 @@ public final class MethodMatcher {
                             if (!candProv.containsKey(k)) candProv.put(k, "wl");
                         }
                     } else if ("wlrelaxed".equals(t)) {
-                        java.util.List<NewRef> xs = relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic);
+                        // CODEGEN-BEGIN: wl-relaxed-use-options
+                        final int l1Tau = options.wlRelaxedL1;
+                        final double band = options.wlSizeBand;
+                        // CODEGEN-END: wl-relaxed-use-options
+                        java.util.List<NewRef> xs = relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic, l1Tau, band);
                         candsRelax.addAll(xs);
                         // provenance for WL-relaxed tier
                         for (NewRef r : xs) {
@@ -280,7 +290,11 @@ public final class MethodMatcher {
 
                 // Keep back-compat safety: if nothing from tiers, fall back to WL exact, then relaxed
                 if (cands.isEmpty()) cands = new java.util.ArrayList<NewRef>(wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList()));
-                if (cands.isEmpty()) cands = new java.util.ArrayList<NewRef>(relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic));
+                if (cands.isEmpty()) {
+                    final int l1Tau = options.wlRelaxedL1;
+                    final double band = options.wlSizeBand;
+                    cands = new java.util.ArrayList<NewRef>(relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic, l1Tau, band));
+                }
 
                 // Deterministic cap to prevent excessive memory on large classes/signature collisions
                 if (cands.size() > MAX_CANDIDATES) {
@@ -491,7 +505,9 @@ public final class MethodMatcher {
             String desc,
             java.util.Map<String, java.util.Map<String, MethodFeatureCacheEntry>> newFeat,
             String newOwner,
-            boolean deterministic) {
+            boolean deterministic,
+            int l1Tau,
+            double sizeBand) {
 
         java.util.Map<String, MethodFeatureCacheEntry> nm = newFeat.get(newOwner);
         if (nm == null) return java.util.Collections.emptyList();
@@ -532,8 +548,8 @@ public final class MethodMatcher {
                 newBags.put(name, nb);
             }
             int dist = io.bytecodemapper.core.wl.WLBags.l1(oldBag, nb);
-            boolean band = io.bytecodemapper.core.wl.WLBags.withinBand(oldBag, nb, WL_SIZE_BAND);
-            if (dist <= WL_RELAXED_L1 && band) {
+            boolean band = io.bytecodemapper.core.wl.WLBags.withinBand(oldBag, nb, sizeBand);
+            if (dist <= l1Tau && band) {
                 pool.add(new NewRef(newOwner, name, desc, mfe.wlSignature));
             }
         }

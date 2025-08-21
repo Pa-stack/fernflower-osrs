@@ -121,6 +121,9 @@ public final class Orchestrator {
     public final int candCountNearP95;
     // Telemetry: number of accepted matches where the winning candidate came from WL-relaxed
     public final int wlRelaxedHits;
+    // Echo per-run WL-relaxed thresholds for observability
+    public final int wlRelaxedL1;
+    public final double wlSizeBand;
 
         public Result(java.util.Map<String,String> classMap,
                        java.util.List<io.bytecodemapper.io.tiny.TinyV2Writer.MethodEntry> methods,
@@ -128,7 +131,9 @@ public final class Orchestrator {
                int classesOld, int classesNew, int methodsOld, int methodsNew,
                int candCountExactMedian, int candCountExactP95,
                     int candCountNearMedian, int candCountNearP95,
-                    int wlRelaxedHits) {
+                            int wlRelaxedHits,
+                            int wlRelaxedL1,
+                            double wlSizeBand) {
             this.classMap = classMap;
             this.methods = methods;
             this.fields = fields;
@@ -141,6 +146,8 @@ public final class Orchestrator {
         this.candCountNearMedian = candCountNearMedian;
         this.candCountNearP95 = candCountNearP95;
                 this.wlRelaxedHits = wlRelaxedHits;
+                        this.wlRelaxedL1 = wlRelaxedL1;
+                        this.wlSizeBand = wlSizeBand;
         }
     }
 
@@ -236,7 +243,10 @@ public final class Orchestrator {
         int exactMedian = 0, exactP95 = 0, nearMedian = 0, nearP95 = 0;
         int wlRelaxedHits = 0;
         {
-            MethodMatchResult mm = MethodMatcher.matchMethods(oldClasses, newClasses, classMap, oldFeat, newFeat, idf, opt.deterministic, opt.debugStats);
+            io.bytecodemapper.core.match.MethodMatcher.MethodMatcherOptions mopts = new io.bytecodemapper.core.match.MethodMatcher.MethodMatcherOptions();
+            mopts.wlRelaxedL1 = opt.wlRelaxedL1;
+            mopts.wlSizeBand = opt.wlSizeBand;
+            MethodMatchResult mm = MethodMatcher.matchMethods(oldClasses, newClasses, classMap, oldFeat, newFeat, idf, mopts, opt.deterministic, opt.debugStats);
             for (MethodMatcher.Pair p : mm.accepted) methodPairs.add(new MethodPair(p.oldOwner, p.oldName, p.desc, p.newName));
             // Aggregate stats deterministically
             exactMedian = percentile(mm.exactCounts, 50);
@@ -281,7 +291,9 @@ public final class Orchestrator {
     return new Result(tinyClasses, tinyMethods, tinyFields,
         oldClasses.size(), newClasses.size(), countMethods(oldClasses), countMethods(newClasses),
         exactMedian, exactP95, nearMedian, nearP95,
-        wlRelaxedHits);
+        wlRelaxedHits,
+        opt.wlRelaxedL1,
+        opt.wlSizeBand);
     }
 
     // Deterministic percentile: sort copy ascending; for p in [0,100], use nearest-rank (ceil) index
@@ -317,6 +329,14 @@ public final class Orchestrator {
             bw.write('}');
             bw.write(',');
             bw.write("\"wl_relaxed_hits\":" + r.wlRelaxedHits);
+            bw.write(',');
+            bw.write("\"wl_relaxed_l1\":" + r.wlRelaxedL1);
+            bw.write(',');
+            // write wl_size_band with 2 decimal places for readability
+            java.text.DecimalFormatSymbols sym = new java.text.DecimalFormatSymbols(java.util.Locale.ROOT);
+            sym.setDecimalSeparator('.');
+            java.text.DecimalFormat df = new java.text.DecimalFormat("0.00", sym);
+            bw.write("\"wl_size_band\":" + df.format(r.wlSizeBand));
             bw.write('}');
             bw.newLine();
         } finally {
