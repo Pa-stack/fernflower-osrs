@@ -16,6 +16,9 @@ public final class MethodScorer {
     public static double W_OPCODE= 0.15; // legacy/raw histogram path only when enabled
     public static double W_STR   = 0.10;
     public static double W_FIELDS= 0.05; // stubbed contribution
+    // New: conservative weights for stack histogram cosine and numeric-literal MinHash similarity
+    public static double W_STACK = 0.10;   // stack histogram cosine (fixed-5 bins)
+    public static double W_LITS  = 0.08;   // numeric-literal MinHash similarity (64)
 
     // >>> AUTOGEN: BYTECODEMAPPER CLI MethodScorer NORM WEIGHTS BEGIN
     // New: normalized histogram weight (generalized)
@@ -71,13 +74,22 @@ public final class MethodScorer {
             }
             double sStr   = StringTfidf.cosineSimilarity(strModel, src.stringBag, t.stringBag);
             double sFields= 0.0; // stub
+            // New terms: stack histogram cosine (fixed 5 keys) and numeric-literal MinHash similarity (64)
+            java.util.Map<String, Integer> shA = safeStackHist(src);
+            java.util.Map<String, Integer> shB = safeStackHist(t);
+            double sStack = io.bytecodemapper.signals.normalized.NormalizedAdapters.cosineStackFixed5(shA, shB);
+            int[] litsA = safeLits64(src);
+            int[] litsB = safeLits64(t);
+            double sLits = io.bytecodemapper.signals.normalized.NormalizedAdapters.minhashSimilarity64(litsA, litsB);
 
         double s = W_CALLS*sCalls
             + W_MICRO*sMicro
             + W_NORM*sNorm
             + (LEGACY_OPCODE_ENABLED ? (W_OPCODE_LEGACY*sOpcLegacy) : 0.0)
             + W_STR*sStr
-            + W_FIELDS*sFields;
+            + W_FIELDS*sFields
+            + W_STACK*sStack
+            + W_LITS*sLits;
         // <<< AUTOGEN: BYTECODEMAPPER CLI MethodScorer NORM COMPOSITION END
             if (src.leaf != t.leaf) s -= PEN_LEAF_MISMATCH;
             if (src.recursive != t.recursive) s -= PEN_RECUR_MISMATCH;
@@ -121,13 +133,22 @@ public final class MethodScorer {
             }
             double sStr   = StringTfidf.cosineSimilarity(strModel, src.stringBag, t.stringBag);
             double sFields= 0.0; // stub
+        // New terms
+        java.util.Map<String, Integer> shA = safeStackHist(src);
+        java.util.Map<String, Integer> shB = safeStackHist(t);
+        double sStack = io.bytecodemapper.signals.normalized.NormalizedAdapters.cosineStackFixed5(shA, shB);
+        int[] litsA = safeLits64(src);
+        int[] litsB = safeLits64(t);
+        double sLits = io.bytecodemapper.signals.normalized.NormalizedAdapters.minhashSimilarity64(litsA, litsB);
 
             double s = W_CALLS*sCalls
                     + W_MICRO*sMicro
                     + W_NORM*sNorm
                     + (LEGACY_OPCODE_ENABLED ? (W_OPCODE_LEGACY*sOpcLegacy) : 0.0)
                     + W_STR*sStr
-                    + W_FIELDS*sFields;
+            + W_FIELDS*sFields
+            + W_STACK*sStack
+            + W_LITS*sLits;
 
             // smart filters: penalties
             if (src.leaf != t.leaf) s -= PEN_LEAF_MISMATCH;
@@ -181,6 +202,67 @@ public final class MethodScorer {
     }
 
     private MethodScorer(){}
+
+    // Optional small refactor: null-safe fetchers to keep loops compact and resilient
+    private static java.util.Map<String, Integer> safeStackHist(MethodFeatures m) {
+        if (m == null) return null;
+        // Try reflective access to a nested normalized features object with getStackHist()
+        try {
+            // Common candidates: features, normalizedFeatures
+            Object nf = null;
+            try {
+                java.lang.reflect.Field f = m.getClass().getDeclaredField("features");
+                f.setAccessible(true);
+                nf = f.get(m);
+            } catch (Throwable ignore) { nf = null; }
+            if (nf == null) {
+                try {
+                    java.lang.reflect.Method gm = m.getClass().getMethod("getNormalizedFeatures");
+                    nf = gm.invoke(m);
+                } catch (Throwable ignore) { nf = null; }
+            }
+            if (nf != null) {
+                try {
+                    java.lang.reflect.Method getter = nf.getClass().getMethod("getStackHist");
+                    Object res = getter.invoke(nf);
+                    if (res instanceof java.util.Map) {
+                        @SuppressWarnings("unchecked")
+                        java.util.Map<String,Integer> cast = (java.util.Map<String,Integer>) res;
+                        return cast;
+                    }
+                } catch (Throwable ignore) { /* fallthrough */ }
+            }
+        } catch (Throwable ignoreOuter) { /* fallthrough to null */ }
+        return null;
+    }
+
+    private static int[] safeLits64(MethodFeatures m) {
+        if (m == null) return null;
+        try {
+            Object nf = null;
+            try {
+                java.lang.reflect.Field f = m.getClass().getDeclaredField("features");
+                f.setAccessible(true);
+                nf = f.get(m);
+            } catch (Throwable ignore) { nf = null; }
+            if (nf == null) {
+                try {
+                    java.lang.reflect.Method gm = m.getClass().getMethod("getNormalizedFeatures");
+                    nf = gm.invoke(m);
+                } catch (Throwable ignore) { nf = null; }
+            }
+            if (nf != null) {
+                try {
+                    java.lang.reflect.Method getter = nf.getClass().getMethod("getLitsMinHash64");
+                    Object res = getter.invoke(nf);
+                    if (res instanceof int[]) {
+                        return (int[]) res;
+                    }
+                } catch (Throwable ignore) { /* fallthrough */ }
+            }
+        } catch (Throwable ignoreOuter) { /* fallthrough to null */ }
+        return null;
+    }
 
     // >>> AUTOGEN: BYTECODEMAPPER CLI MethodScorer CONFIG BEGIN
     /** Configure weights/toggles from orchestrator options or callers. */
