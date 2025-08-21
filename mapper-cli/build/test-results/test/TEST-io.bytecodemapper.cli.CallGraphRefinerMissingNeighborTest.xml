@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.CallGraphRefinerMissingNeighborTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:09:49" hostname="PRAGMATIQPASCAL" time="0.011">
+<testsuite name="io.bytecodemapper.cli.CallGraphRefinerMissingNeighborTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-21T04:17:36" hostname="PRAGMATIQPASCAL" time="0.01">
   <properties/>
-  <testcase name="handlesNeighborWithoutCandidateSet" classname="io.bytecodemapper.cli.CallGraphRefinerMissingNeighborTest" time="0.011"/>
+  <testcase name="handlesNeighborWithoutCandidateSet" classname="io.bytecodemapper.cli.CallGraphRefinerMissingNeighborTest" time="0.01"/>
   <system-out><![CDATA[Refine iter=1 flips=0 maxDelta=0.05000 (prev flips=-)
 Refine iter=2 flips=0 maxDelta=0.00000 (prev flips=0)
 ]]></system-out>

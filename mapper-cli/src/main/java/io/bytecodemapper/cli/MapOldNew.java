@@ -120,6 +120,9 @@ final class MapOldNew {
                 nsfTierOrder = args[++i];
             } else if ("--use-nsf64".equals(a) && i+1<args.length) {
                 useNsf64Mode = io.bytecodemapper.cli.flags.UseNsf64Mode.parse(args[++i]);
+            } else if (a.startsWith("--use-nsf64=")) {
+                String val = a.substring("--use-nsf64=".length());
+                useNsf64Mode = io.bytecodemapper.cli.flags.UseNsf64Mode.parse(val);
             } else if ("--includeIdentity".equals(a)) {
                 includeIdentity = true;
             } else if ("--demoRemapCount".equals(a) && i+1<args.length) {

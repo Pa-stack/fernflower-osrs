@@ -114,11 +114,18 @@ public final class Orchestrator {
         public final int classesNew;
         public final int methodsOld;
         public final int methodsNew;
+    // Candidate set stats (medians/p95) computed deterministically
+    public final int candCountExactMedian;
+    public final int candCountExactP95;
+    public final int candCountNearMedian;
+    public final int candCountNearP95;
 
         public Result(java.util.Map<String,String> classMap,
                        java.util.List<io.bytecodemapper.io.tiny.TinyV2Writer.MethodEntry> methods,
                        java.util.List<io.bytecodemapper.io.tiny.TinyV2Writer.FieldEntry> fields,
-                       int classesOld, int classesNew, int methodsOld, int methodsNew) {
+               int classesOld, int classesNew, int methodsOld, int methodsNew,
+               int candCountExactMedian, int candCountExactP95,
+               int candCountNearMedian, int candCountNearP95) {
             this.classMap = classMap;
             this.methods = methods;
             this.fields = fields;
@@ -126,6 +133,10 @@ public final class Orchestrator {
             this.classesNew = classesNew;
             this.methodsOld = methodsOld;
             this.methodsNew = methodsNew;
+        this.candCountExactMedian = candCountExactMedian;
+        this.candCountExactP95 = candCountExactP95;
+        this.candCountNearMedian = candCountNearMedian;
+        this.candCountNearP95 = candCountNearP95;
         }
     }
 
@@ -218,9 +229,15 @@ public final class Orchestrator {
         }
 
         java.util.List<MethodPair> methodPairs = new java.util.ArrayList<MethodPair>();
+        int exactMedian = 0, exactP95 = 0, nearMedian = 0, nearP95 = 0;
         {
             MethodMatchResult mm = MethodMatcher.matchMethods(oldClasses, newClasses, classMap, oldFeat, newFeat, idf, opt.deterministic, opt.debugStats);
             for (MethodMatcher.Pair p : mm.accepted) methodPairs.add(new MethodPair(p.oldOwner, p.oldName, p.desc, p.newName));
+            // Aggregate stats deterministically
+            exactMedian = percentile(mm.exactCounts, 50);
+            exactP95    = percentile(mm.exactCounts, 95);
+            nearMedian  = percentile(mm.nearCounts, 50);
+            nearP95     = percentile(mm.nearCounts, 95);
         }
         java.util.List<FieldPair> fieldPairs = new java.util.ArrayList<FieldPair>();
 
@@ -255,7 +272,8 @@ public final class Orchestrator {
     idf.save(idfPath.toFile());
 
     return new Result(tinyClasses, tinyMethods, tinyFields,
-        oldClasses.size(), newClasses.size(), countMethods(oldClasses), countMethods(newClasses));
+        oldClasses.size(), newClasses.size(), countMethods(oldClasses), countMethods(newClasses),
+        exactMedian, exactP95, nearMedian, nearP95);
     }
 
     // --- Feature container used by this orchestrator ---

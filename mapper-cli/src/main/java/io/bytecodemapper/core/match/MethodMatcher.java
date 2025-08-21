@@ -52,6 +52,9 @@ public final class MethodMatcher {
         public final java.util.List<Pair> accepted = new java.util.ArrayList<Pair>();
         // New in Prompt A
         public final java.util.List<Abstention> abstained = new java.util.ArrayList<Abstention>();
+    // Candidate counts per old-side method (post-dedup, pre-score)
+    public final java.util.List<Integer> exactCounts = new java.util.ArrayList<Integer>();
+    public final java.util.List<Integer> nearCounts  = new java.util.ArrayList<Integer>();
     }
 
     // >>> AUTOGEN: BYTECODEMAPPER MATCH NSF TIERS BEGIN
@@ -125,18 +128,14 @@ public final class MethodMatcher {
                     io.bytecodemapper.cli.flags.UseNsf64Mode mode = NSF_MODE;
                     if (mode == io.bytecodemapper.cli.flags.UseNsf64Mode.CANONICAL) {
                         long use = (canonical != 0L ? canonical : surrogate);
-                        idx.add(newOwner, desc, name, use);
+                        idx.add(newOwner, desc, name, use, io.bytecodemapper.core.index.NsfIndex.Mode.CANONICAL);
                         nsfProvByKeyFp.put(nsfKey(newOwner, desc, name, use), (canonical != 0L ? "nsf64" : "nsf_surrogate"));
                     } else if (mode == io.bytecodemapper.cli.flags.UseNsf64Mode.SURROGATE) {
-                        idx.add(newOwner, desc, name, surrogate);
+                        idx.add(newOwner, desc, name, surrogate, io.bytecodemapper.core.index.NsfIndex.Mode.SURROGATE);
                         nsfProvByKeyFp.put(nsfKey(newOwner, desc, name, surrogate), "nsf_surrogate");
                     } else { // BOTH
-                        if (canonical != 0L) {
-                            idx.add(newOwner, desc, name, canonical);
-                            nsfProvByKeyFp.put(nsfKey(newOwner, desc, name, canonical), "nsf64");
-                        }
-                        idx.add(newOwner, desc, name, surrogate);
-                        nsfProvByKeyFp.put(nsfKey(newOwner, desc, name, surrogate), "nsf_surrogate");
+                        idx.add(newOwner, desc, name, canonical, io.bytecodemapper.core.index.NsfIndex.Mode.BOTH);
+                        nsfProvByKeyFp.put(nsfKey(newOwner, desc, name, canonical), canonical != 0L ? "nsf64" : "nsf_surrogate");
                     }
                 }
                 nsfIndexByNewOwner.put(newOwner, idx);
@@ -164,7 +163,10 @@ public final class MethodMatcher {
                 long oldWl = ofe.wlSignature;
 
                 // Primary candidates: collect according to tier order (nsf + wl)
-                java.util.ArrayList<NewRef> candsMerged = new java.util.ArrayList<NewRef>();
+                java.util.ArrayList<NewRef> candsExact = new java.util.ArrayList<NewRef>();
+                java.util.ArrayList<NewRef> candsNear  = new java.util.ArrayList<NewRef>();
+                java.util.ArrayList<NewRef> candsWl    = new java.util.ArrayList<NewRef>();
+                java.util.ArrayList<NewRef> candsRelax = new java.util.ArrayList<NewRef>();
                 // Precompute old canonical nsf64 (from NormalizedMethod) and surrogate fallback
                 long oldCanonical = 0L;
                 {
@@ -194,7 +196,7 @@ public final class MethodMatcher {
                             for (Long qfp : fps) {
                                 java.util.List<NsfIndex.NewRef> xs = nsfIdx.exact(newOwner, desc, qfp.longValue());
                                 for (NsfIndex.NewRef r : xs) {
-                                    candsMerged.add(new NewRef(r.owner, r.name, r.desc, 0));
+                                    candsExact.add(new NewRef(r.owner, r.name, r.desc, 0));
                                     String k = r.owner + "\u0000" + r.desc + "\u0000" + r.name;
                                     if (!candProv.containsKey(k)) {
                                         String pv = nsfProvByKeyFp.get(nsfKey(r.owner, r.desc, r.name, qfp.longValue()));
@@ -210,7 +212,7 @@ public final class MethodMatcher {
                             for (Long qfp : fps) {
                                 java.util.List<NsfIndex.NewRef> xs = nsfIdx.near(newOwner, desc, qfp.longValue(), hamBudget);
                                 for (NsfIndex.NewRef r : xs) {
-                                    candsMerged.add(new NewRef(r.owner, r.name, r.desc, 0));
+                                    candsNear.add(new NewRef(r.owner, r.name, r.desc, 0));
                                     String k = r.owner + "\u0000" + r.desc + "\u0000" + r.name;
                                     if (!candProv.containsKey(k)) {
                                         String pv = nsfProvByKeyFp.get(nsfKey(r.owner, r.desc, r.name, qfp.longValue()));
@@ -221,18 +223,34 @@ public final class MethodMatcher {
                         }
                     } else if ("wl".equals(t)) {
                         java.util.List<NewRef> xs = wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList());
-                        candsMerged.addAll(xs);
+                        candsWl.addAll(xs);
                     } else if ("wlrelaxed".equals(t)) {
-                        candsMerged.addAll(relaxedCandidates(newFeat, newOwner, desc, java.lang.Long.toString(oldWl), deterministic));
+                        candsRelax.addAll(relaxedCandidates(newFeat, newOwner, desc, java.lang.Long.toString(oldWl), deterministic));
                     }
                 }
                 // Deduplicate deterministically by (owner,desc,name) preserving tier order
+                int candsExactCount = 0, candsNearCount = 0;
                 java.util.LinkedHashMap<String, NewRef> uniq = new java.util.LinkedHashMap<String, NewRef>();
-                for (NewRef r : candsMerged) {
+                for (NewRef r : candsExact) {
                     String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
-                    if (!uniq.containsKey(k)) uniq.put(k, r);
+                    if (!uniq.containsKey(k)) { uniq.put(k, r); candsExactCount++; }
+                }
+                for (NewRef r : candsNear) {
+                    String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
+                    if (!uniq.containsKey(k)) { uniq.put(k, r); candsNearCount++; }
+                }
+                for (NewRef r : candsWl) {
+                    String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
+                    if (!uniq.containsKey(k)) { uniq.put(k, r); }
+                }
+                for (NewRef r : candsRelax) {
+                    String k = r.owner + "\u0000" + desc + "\u0000" + r.name;
+                    if (!uniq.containsKey(k)) { uniq.put(k, r); }
                 }
                 java.util.ArrayList<NewRef> cands = new java.util.ArrayList<NewRef>(uniq.values());
+                // Record candidate counts for this method (post-dedup, pre-score)
+                out.exactCounts.add(java.lang.Integer.valueOf(candsExactCount));
+                out.nearCounts.add(java.lang.Integer.valueOf(candsNearCount));
                 // Capture provenance for deduped candidate order
                 final java.util.LinkedHashMap<String,String> candsProvenance = new java.util.LinkedHashMap<String,String>();
                 for (NewRef r : cands) {

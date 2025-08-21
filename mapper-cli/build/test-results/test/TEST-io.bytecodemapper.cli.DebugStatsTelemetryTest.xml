@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.DebugStatsTelemetryTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:09:49" hostname="PRAGMATIQPASCAL" time="2.747">
+<testsuite name="io.bytecodemapper.cli.DebugStatsTelemetryTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-21T04:17:36" hostname="PRAGMATIQPASCAL" time="3.08">
   <properties/>
-  <testcase name="debugStatsEmitsDecisionLines" classname="io.bytecodemapper.cli.DebugStatsTelemetryTest" time="2.747"/>
+  <testcase name="debugStatsEmitsDecisionLines" classname="io.bytecodemapper.cli.DebugStatsTelemetryTest" time="3.08"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

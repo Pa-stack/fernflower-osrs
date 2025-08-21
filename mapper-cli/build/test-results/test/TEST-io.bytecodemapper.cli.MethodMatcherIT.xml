@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.bytecodemapper.cli.MethodMatcherIT" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-21T04:17:57" hostname="PRAGMATIQPASCAL" time="0.229">
+  <properties/>
+  <testcase name="itCanonicalVsSurrogate" classname="io.bytecodemapper.cli.MethodMatcherIT" time="0.001"/>
+  <testcase name="bothModeUnionDeterministic" classname="io.bytecodemapper.cli.MethodMatcherIT" time="0.228"/>
+  <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[DF] iterateToFixpoint start, nodes=1
+[DF] iter=1, changed=false
+[Orch] Extracted features: oldClasses=1 newClasses=1
+Wrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\mm-both-it4961237611297282789\mappings-both.tiny
+[Orch] Extracted features: oldClasses=1 newClasses=1
+Wrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\mm-both-it4961237611297282789\mappings-canon.tiny
+[Orch] Extracted features: oldClasses=1 newClasses=1
+Wrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\mm-both-it4961237611297282789\mappings-surr.tiny
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

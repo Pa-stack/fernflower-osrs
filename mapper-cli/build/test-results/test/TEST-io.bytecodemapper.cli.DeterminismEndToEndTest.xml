@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.DeterminismEndToEndTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:09:52" hostname="PRAGMATIQPASCAL" time="0.453">
+<testsuite name="io.bytecodemapper.cli.DeterminismEndToEndTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-21T04:17:39" hostname="PRAGMATIQPASCAL" time="0.451">
   <properties/>
-  <testcase name="mapOldNewTwice_producesIdenticalMappings" classname="io.bytecodemapper.cli.DeterminismEndToEndTest" time="0.453"/>
+  <testcase name="mapOldNewTwice_producesIdenticalMappings" classname="io.bytecodemapper.cli.DeterminismEndToEndTest" time="0.451"/>
   <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=1
 [DF] iter=1, changed=false
 [DF] iterateToFixpoint start, nodes=1
@@ -10,8 +10,8 @@
 [DF] iter=1, changed=false
 [DF] iterateToFixpoint start, nodes=1
 [DF] iter=1, changed=false
-Wrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e1149505342824179166\mappings1.tiny
-Wrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e1149505342824179166\mappings2.tiny
+Wrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e6813652373241690034\mappings1.tiny
+Wrote Tiny v2 to: C:\Users\pashq\AppData\Local\Temp\determinism-e2e6813652373241690034\mappings2.tiny
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

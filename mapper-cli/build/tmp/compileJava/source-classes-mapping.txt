@@ -96,6 +96,7 @@ io/bytecodemapper/cli/method/AppCallGraph.java
 io/bytecodemapper/core/index/NsfIndex.java
  io.bytecodemapper.core.index.NsfIndex
  io.bytecodemapper.core.index.NsfIndex$1
+ io.bytecodemapper.core.index.NsfIndex$Mode
  io.bytecodemapper.core.index.NsfIndex$NewRef
 io/bytecodemapper/cli/FieldMatch.java
  io.bytecodemapper.cli.FieldMatch

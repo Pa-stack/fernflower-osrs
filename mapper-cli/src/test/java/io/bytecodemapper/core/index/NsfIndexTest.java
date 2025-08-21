@@ -11,8 +11,8 @@ public class NsfIndexTest {
         String owner = "A"; String desc = "(I)I";
         long fp1 = 0b1011L;           // 11
         long fp2 = fp1 ^ 0x1L;         // differ by 1 bit
-        idx.add(owner, desc, "m1", fp1);
-        idx.add(owner, desc, "m2", fp2);
+    idx.add(owner, desc, "m1", fp1, io.bytecodemapper.core.index.NsfIndex.Mode.CANONICAL);
+    idx.add(owner, desc, "m2", fp2, io.bytecodemapper.core.index.NsfIndex.Mode.CANONICAL);
 
         java.util.List<NsfIndex.NewRef> exact = idx.exact(owner, desc, fp1);
         assertEquals(1, exact.size());
@@ -30,7 +30,7 @@ public class NsfIndexTest {
         String owner = "A"; String desc = "(I)I";
         // multiple entries in deterministic name order
         long base = 0x55AA55AA55AAL;
-        for (int i=0;i<6;i++) idx.add(owner, desc, "m"+i, base + i);
+    for (int i=0;i<6;i++) idx.add(owner, desc, "m"+i, base + i, io.bytecodemapper.core.index.NsfIndex.Mode.CANONICAL);
         java.util.List<NsfIndex.NewRef> a = idx.near(owner, desc, base, 64);
         java.util.List<NsfIndex.NewRef> b = idx.near(owner, desc, base, 64);
         String ja = join(a); String jb = join(b);

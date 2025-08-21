@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.BenchManifestTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-20T19:09:42" hostname="PRAGMATIQPASCAL" time="7.179">
+<testsuite name="io.bytecodemapper.cli.BenchManifestTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-21T04:17:28" hostname="PRAGMATIQPASCAL" time="8.158">
   <properties/>
-  <testcase name="manifestBenchProducesMetrics" classname="io.bytecodemapper.cli.BenchManifestTest" time="7.179"/>
+  <testcase name="manifestBenchProducesMetrics" classname="io.bytecodemapper.cli.BenchManifestTest" time="8.158"/>
   <system-out><![CDATA[[bench] pairs=2 totalAccepted=3 totalAbstained=13678
 [bench] Wrote metrics to C:\Users\pashq\IdeaProjects\fernflower-osrs\fernflower-osrs\mapper-cli\build\bench\metrics-test.json
 [bench] pairs=2 totalAccepted=3 totalAbstained=13678
