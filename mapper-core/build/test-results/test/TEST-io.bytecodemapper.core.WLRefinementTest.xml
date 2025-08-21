@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.WLRefinementTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-21T06:27:17" hostname="PRAGMATIQPASCAL" time="0.004">
+<testsuite name="io.bytecodemapper.core.WLRefinementTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-21T06:32:52" hostname="PRAGMATIQPASCAL" time="0.008">
   <properties/>
   <testcase name="stableUnderNoopReorder" classname="io.bytecodemapper.core.WLRefinementTest" time="0.003"/>
-  <testcase name="differentConstantsSameWL" classname="io.bytecodemapper.core.WLRefinementTest" time="0.001"/>
+  <testcase name="differentConstantsSameWL" classname="io.bytecodemapper.core.WLRefinementTest" time="0.004"/>
   <system-out><![CDATA[[DF] iterateToFixpoint start, nodes=1
 [DF] iter=1, changed=false
 [DF] iterateToFixpoint start, nodes=1

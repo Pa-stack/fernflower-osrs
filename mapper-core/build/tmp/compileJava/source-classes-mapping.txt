@@ -56,3 +56,5 @@ io/bytecodemapper/core/hash/StableHash64.java
 io/bytecodemapper/core/fingerprint/FingerprintBuilder.java
  io.bytecodemapper.core.fingerprint.FingerprintBuilder
  io.bytecodemapper.core.fingerprint.FingerprintBuilder$1
+io/bytecodemapper/core/wl/WLBags.java
+ io.bytecodemapper.core.wl.WLBags

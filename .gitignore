@@ -25,14 +25,16 @@
 **/*.log
 
 # Generated mapper-cli artifacts seen in commits
-**/mapper-cli/build/**
-**/mapper-core/build/**
-**/mapper-io/build/**
-**/mapper-signals/build/**
+**/mapper-cli/build/**/**.class
+**/mapper-core/build/**/**.class
+**/mapper-io/build/**/**.class
+**/mapper-signals/build/**/**.class
 
 # Explicit ignores requested
 /mapper-cli/build/classes/java/main/io/bytecodemapper/core/match/
 /mapper-cli/build/reports/tests/test/classes/
+**/mapper-core/build/reports/tests/test/classes/**.class
+**/mapper-cli/build/reports/tests/test/classes/**.class
 
 # Local data caches and outputs
 **/cache/

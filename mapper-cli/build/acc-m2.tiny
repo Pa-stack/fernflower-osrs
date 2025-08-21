@@ -1264,10 +1264,8 @@ m	ad	()Ljava/io/InputStream;	getInputStream	getInputStream
 m	ad	()Ljava/io/OutputStream;	getOutputStream	getOutputStream
 m	ad	()Ljavax/net/ssl/SSLSession;	getSession	getSession
 m	ad	()V	startHandshake	startHandshake
-m	ae	(I)Z	an	ac
 m	af	()Lorg/bouncycastle/crypto/tls/TlsAuthentication;	getAuthentication	getAuthentication
 m	ag	(ILjava/lang/String;ZZ)V	<init>	<init>
 m	ag	(I)Ljava/lang/String;	an	ac
 m	aj	()Ljava/lang/Object;	call	call
-m	ak	(Ljava/lang/String;II)V	<init>	<init>
 m	ak	(I)V	an	ac

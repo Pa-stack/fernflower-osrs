@@ -69,6 +69,12 @@ public final class MethodMatcher {
         if (m != null) NSF_MODE = m;
     }
 
+    // WL-relaxed options (candidate gate only)
+    private static int WL_RELAXED_L1 = 2;
+    private static double WL_SIZE_BAND = 0.10; // ±10%
+    public static void setWlRelaxedL1(int n) { if (n >= 0) WL_RELAXED_L1 = n; }
+    public static void setWlSizeBand(double p) { if (p >= 0.0 && p <= 1.0) WL_SIZE_BAND = p; }
+
     /**
      * Overload that accepts feature caches. Builds WL index on NEW side and, for each OLD
      * method, generates candidates (same desc, equal WL first; if none, relax to same desc
@@ -225,7 +231,7 @@ public final class MethodMatcher {
                         java.util.List<NewRef> xs = wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList());
                         candsWl.addAll(xs);
                     } else if ("wlrelaxed".equals(t)) {
-                        candsRelax.addAll(relaxedCandidates(newFeat, newOwner, desc, java.lang.Long.toString(oldWl), deterministic));
+                        candsRelax.addAll(relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic));
                     }
                 }
                 // Deduplicate deterministically by (owner,desc,name) preserving tier order
@@ -261,7 +267,7 @@ public final class MethodMatcher {
 
                 // Keep back-compat safety: if nothing from tiers, fall back to WL exact, then relaxed
                 if (cands.isEmpty()) cands = new java.util.ArrayList<NewRef>(wlIndex.getOrDefault(new Key(desc, oldWl), java.util.Collections.<NewRef>emptyList()));
-                if (cands.isEmpty()) cands = new java.util.ArrayList<NewRef>(relaxedCandidates(newFeat, newOwner, desc, java.lang.Long.toString(oldWl), deterministic));
+                if (cands.isEmpty()) cands = new java.util.ArrayList<NewRef>(relaxedCandidates(oldClasses, newClasses, oldOwner, oldName, desc, newFeat, newOwner, deterministic));
 
                 // Deterministic cap to prevent excessive memory on large classes/signature collisions
                 if (cands.size() > MAX_CANDIDATES) {
@@ -459,18 +465,35 @@ public final class MethodMatcher {
      * string (oldWl vs oldWl) which yields 0 and keeps ordering deterministic.
      */
     private static java.util.List<NewRef> relaxedCandidates(
+            java.util.Map<String, org.objectweb.asm.tree.ClassNode> oldClasses,
+            java.util.Map<String, org.objectweb.asm.tree.ClassNode> newClasses,
+            String oldOwner,
+            String oldName,
+            String desc,
             java.util.Map<String, java.util.Map<String, MethodFeatureCacheEntry>> newFeat,
             String newOwner,
-            String desc,
-            String oldWl,
             boolean deterministic) {
 
         java.util.Map<String, MethodFeatureCacheEntry> nm = newFeat.get(newOwner);
         if (nm == null) return java.util.Collections.emptyList();
 
+        // Build old WL token bag once (deterministic)
+        it.unimi.dsi.fastutil.longs.Long2IntSortedMap oldBag;
+        {
+            org.objectweb.asm.tree.ClassNode ocn = oldClasses.get(oldOwner);
+            org.objectweb.asm.tree.MethodNode omn = findMethod(ocn, oldName, desc);
+            if (omn == null) return java.util.Collections.emptyList();
+            io.bytecodemapper.core.cfg.ReducedCFG ocfg = io.bytecodemapper.core.cfg.ReducedCFG.build(omn);
+            io.bytecodemapper.core.dom.Dominators odom = io.bytecodemapper.core.dom.Dominators.compute(ocfg);
+            oldBag = io.bytecodemapper.core.wl.WLRefinement.tokenBagFinal(ocfg, odom, WL_K);
+        }
+
         java.util.ArrayList<NewRef> pool = new java.util.ArrayList<NewRef>();
         java.util.ArrayList<String> sigs = new java.util.ArrayList<String>(nm.keySet());
         java.util.Collections.sort(sigs); // deterministic
+
+        // Cache new-side WL bags by method name for this owner/desc scope
+        java.util.LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap> newBags = new java.util.LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap>();
 
         for (String sig : sigs) {
             String name = sig.substring(0, sig.indexOf('('));
@@ -478,9 +501,20 @@ public final class MethodMatcher {
             if (!desc.equals(d)) continue;
             MethodFeatureCacheEntry mfe = nm.get(sig);
             if (mfe == null) continue;
-            // Distance gating: placeholder uses identical strings to keep distance==0 (<=1)
-            int dist = wlMultisetDistance(oldWl, oldWl);
-            if (dist <= 1) {
+            // Compute new WL bag (cache per (owner,name,desc))
+            it.unimi.dsi.fastutil.longs.Long2IntSortedMap nb = newBags.get(name);
+            if (nb == null) {
+                org.objectweb.asm.tree.ClassNode ncn = newClasses.get(newOwner);
+                org.objectweb.asm.tree.MethodNode nmn = findMethod(ncn, name, desc);
+                if (nmn == null) continue;
+                io.bytecodemapper.core.cfg.ReducedCFG ncfg = io.bytecodemapper.core.cfg.ReducedCFG.build(nmn);
+                io.bytecodemapper.core.dom.Dominators ndom = io.bytecodemapper.core.dom.Dominators.compute(ncfg);
+                nb = io.bytecodemapper.core.wl.WLRefinement.tokenBagFinal(ncfg, ndom, WL_K);
+                newBags.put(name, nb);
+            }
+            int dist = io.bytecodemapper.core.wl.WLBags.l1(oldBag, nb);
+            boolean band = io.bytecodemapper.core.wl.WLBags.withinBand(oldBag, nb, WL_SIZE_BAND);
+            if (dist <= WL_RELAXED_L1 && band) {
                 pool.add(new NewRef(newOwner, name, desc, mfe.wlSignature));
             }
         }
@@ -488,8 +522,14 @@ public final class MethodMatcher {
         // distance asc, then owner, then name (stable deterministic order)
         java.util.Collections.sort(pool, new java.util.Comparator<NewRef>() {
             public int compare(NewRef a, NewRef b) {
-                int da = wlMultisetDistance(oldWl, oldWl);
-                int db = wlMultisetDistance(oldWl, oldWl);
+                // Compare by computed L1; fallback stable by owner/name
+                it.unimi.dsi.fastutil.longs.Long2IntSortedMap nba = newBags.get(a.name);
+                it.unimi.dsi.fastutil.longs.Long2IntSortedMap nbb = newBags.get(b.name);
+                int da = 0, db = 0;
+                if (nba != null && nbb != null) {
+                    da = io.bytecodemapper.core.wl.WLBags.l1(oldBag, nba);
+                    db = io.bytecodemapper.core.wl.WLBags.l1(oldBag, nbb);
+                }
                 int c = Integer.compare(da, db); if (c!=0) return c;
                 c = a.owner.compareTo(b.owner); if (c!=0) return c;
                 return a.name.compareTo(b.name);
@@ -536,6 +576,7 @@ public final class MethodMatcher {
         return dist;
     }
 
+    // Optional helper (unused by tests) kept for future WL Hamming checks.
     // Optional helper (unused by tests) kept for future WL Hamming checks.
     @SuppressWarnings("unused")
     private static int hammingDistance64(long a, long b) {

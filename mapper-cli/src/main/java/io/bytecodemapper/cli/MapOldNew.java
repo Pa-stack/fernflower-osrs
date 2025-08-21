@@ -80,6 +80,9 @@ final class MapOldNew {
     String nsfTierOrder = "exact,near,wl,wlrelaxed";
     // nsf64 rollout flag
     io.bytecodemapper.cli.flags.UseNsf64Mode useNsf64Mode = io.bytecodemapper.cli.flags.UseNsf64Mode.CANONICAL;
+    // WL-relaxed gate flags
+    Integer wlRelaxedL1 = null; // e.g., 0..N, default stays matcher default
+    Double wlSizeBand = null;   // 0..1 proportion, default stays matcher default
         // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew METHOD TAU FLAGS BEGIN
         double tauAcceptMethods = 0.60;
         double marginMethods = 0.05;
@@ -126,6 +129,14 @@ final class MapOldNew {
             } else if (a.startsWith("--use-nsf64=")) {
                 String val = a.substring("--use-nsf64=".length());
                 useNsf64Mode = io.bytecodemapper.cli.flags.UseNsf64Mode.parse(val);
+            } else if ("--wlRelaxedL1".equals(a) && i+1<args.length) {
+                try { wlRelaxedL1 = Integer.valueOf(Integer.parseInt(args[++i])); } catch (NumberFormatException ignore) {}
+            } else if (a.startsWith("--wlRelaxedL1=")) {
+                try { wlRelaxedL1 = Integer.valueOf(Integer.parseInt(a.substring("--wlRelaxedL1=".length()))); } catch (NumberFormatException ignore) {}
+            } else if ("--wlSizeBand".equals(a) && i+1<args.length) {
+                try { wlSizeBand = Double.valueOf(Double.parseDouble(args[++i])); } catch (NumberFormatException ignore) {}
+            } else if (a.startsWith("--wlSizeBand=")) {
+                try { wlSizeBand = Double.valueOf(Double.parseDouble(a.substring("--wlSizeBand=".length()))); } catch (NumberFormatException ignore) {}
             } else if ("--includeIdentity".equals(a)) {
                 includeIdentity = true;
             } else if ("--demoRemapCount".equals(a) && i+1<args.length) {
@@ -236,6 +247,8 @@ final class MapOldNew {
     // Apply nsf64 tiering and rollout mode before matching
     io.bytecodemapper.core.match.MethodMatcher.setNsftierOrder(nsfTierOrder);
     io.bytecodemapper.core.match.MethodMatcher.setUseNsf64Mode(useNsf64Mode);
+    if (wlRelaxedL1 != null) io.bytecodemapper.core.match.MethodMatcher.setWlRelaxedL1(wlRelaxedL1.intValue());
+    if (wlSizeBand != null) io.bytecodemapper.core.match.MethodMatcher.setWlSizeBand(wlSizeBand.doubleValue());
 
     Orchestrator orch = new Orchestrator();
     Orchestrator.Result r = orch.run(oldPath, newPath, o);

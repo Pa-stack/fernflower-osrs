@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-21T06:27:17" hostname="PRAGMATIQPASCAL" time="0.003">
+<testsuite name="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-08-21T06:32:52" hostname="PRAGMATIQPASCAL" time="0.002">
   <properties/>
   <testcase name="dfIdf_handles_loop" classname="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" time="0.001"/>
   <testcase name="dfIdf_handles_trycatch_and_switch" classname="io.bytecodemapper.core.graph.DfIdfEdgeCasesTest" time="0.001"/>

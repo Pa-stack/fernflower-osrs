@@ -24,3 +24,5 @@ io/bytecodemapper/core/NormalizerTest.java
  io.bytecodemapper.core.NormalizerTest
 io/bytecodemapper/core/ExtendedDomDfCfgTest.java
  io.bytecodemapper.core.ExtendedDomDfCfgTest
+io/bytecodemapper/core/wl/WLBagsDistanceTest.java
+ io.bytecodemapper.core.wl.WLBagsDistanceTest

@@ -24,6 +24,9 @@ dependencies {
     implementation "org.ow2.asm:asm-tree:7.3.1"
     implementation "org.ow2.asm:asm-commons:7.3.1"
 
+    // Needed for WL relaxed candidate gating types (Long2IntSortedMap)
+    implementation "it.unimi.dsi:fastutil:8.5.12"
+
     testImplementation "junit:junit:4.13.2"
 }
 
