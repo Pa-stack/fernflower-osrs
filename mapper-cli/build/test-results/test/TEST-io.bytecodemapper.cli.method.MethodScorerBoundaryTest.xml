@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.method.MethodScorerBoundaryTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-08-21T04:17:57" hostname="PRAGMATIQPASCAL" time="0.0">
-  <properties/>
-  <testcase name="abstain_when_margin_just_below" classname="io.bytecodemapper.cli.method.MethodScorerBoundaryTest" time="0.0"/>
-  <testcase name="accept_at_threshold_and_margin" classname="io.bytecodemapper.cli.method.MethodScorerBoundaryTest" time="0.0"/>
-  <testcase name="abstain_when_below_tau" classname="io.bytecodemapper.cli.method.MethodScorerBoundaryTest" time="0.0"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

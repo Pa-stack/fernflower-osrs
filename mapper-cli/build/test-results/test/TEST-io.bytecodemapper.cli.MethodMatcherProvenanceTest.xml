@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.bytecodemapper.cli.MethodMatcherProvenanceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-21T04:17:57" hostname="PRAGMATIQPASCAL" time="5.248">
-  <properties/>
-  <testcase name="provenanceLoggedCanonicalVsSurrogate" classname="io.bytecodemapper.cli.MethodMatcherProvenanceTest" time="5.248"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

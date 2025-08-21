@@ -1,3 +1,48 @@
 /.idea/
 /.gradle/
 /build/
+
+# Gradle multi-module build outputs
+**/build/
+**/.gradle/
+
+# IntelliJ/IDEA and Eclipse artifacts
+/*.iml
+**/*.iml
+.classpath
+.project
+.settings/
+/.idea/**/workspace.xml
+/.idea/**/tasks.xml
+/.idea/**/libraries/
+
+# Logs, reports, and test outputs
+**/reports/
+**/test-results/
+**/tmp/
+**/out/
+**/bench.json
+**/*.log
+
+# Generated mapper-cli artifacts seen in commits
+**/mapper-cli/build/**
+**/mapper-core/build/**
+**/mapper-io/build/**
+**/mapper-signals/build/**
+
+# Explicit ignores requested
+/mapper-cli/build/classes/java/main/io/bytecodemapper/core/match/
+/mapper-cli/build/reports/tests/test/classes/
+
+# Local data caches and outputs
+**/cache/
+**/cache/**
+**/idf.properties
+**/*.tiny
+**/report*.json
+
+# OS / tooling noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

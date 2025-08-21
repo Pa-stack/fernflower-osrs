@@ -276,6 +276,44 @@ public final class Orchestrator {
         exactMedian, exactP95, nearMedian, nearP95);
     }
 
+    // Deterministic percentile: sort copy ascending; for p in [0,100], use nearest-rank (ceil) index
+    static int percentile(java.util.List<Integer> values, int p) {
+        if (values == null || values.isEmpty()) return 0;
+        java.util.ArrayList<Integer> xs = new java.util.ArrayList<Integer>(values);
+        java.util.Collections.sort(xs);
+        int n = xs.size();
+        if (p <= 0) return xs.get(0).intValue();
+        if (p >= 100) return xs.get(n-1).intValue();
+        // nearest-rank: ceil(p/100 * n)
+        int rank = (int) Math.ceil((p / 100.0) * n);
+        int idx = Math.min(Math.max(rank - 1, 0), n - 1);
+        return xs.get(idx).intValue();
+    }
+
+    // Minimal report JSON writer (deterministic key order)
+    public static void writeReportJson(java.nio.file.Path out, Result r) throws Exception {
+        if (out == null || r == null) return;
+        if (out.getParent() != null) java.nio.file.Files.createDirectories(out.getParent());
+        java.io.BufferedWriter bw = java.nio.file.Files.newBufferedWriter(out, java.nio.charset.StandardCharsets.UTF_8);
+        try {
+            // { "candidate_stats": { "cand_count_exact_median": X, ... } }
+            bw.write('{');
+            bw.write("\"candidate_stats\":{");
+            bw.write("\"cand_count_exact_median\":" + r.candCountExactMedian);
+            bw.write(',');
+            bw.write("\"cand_count_exact_p95\":" + r.candCountExactP95);
+            bw.write(',');
+            bw.write("\"cand_count_near_median\":" + r.candCountNearMedian);
+            bw.write(',');
+            bw.write("\"cand_count_near_p95\":" + r.candCountNearP95);
+            bw.write('}');
+            bw.write('}');
+            bw.newLine();
+        } finally {
+            try { bw.close(); } catch (Exception ignore) {}
+        }
+    }
+
     // --- Feature container used by this orchestrator ---
     public static final class MethodFeature {
         public final long wlSig;

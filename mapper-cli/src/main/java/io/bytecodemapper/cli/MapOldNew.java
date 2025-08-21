@@ -49,7 +49,8 @@ final class MapOldNew {
         boolean deterministic = false;
         String cacheDirStr = "mapper-cli/build/cache";
         String idfPathStr  = "mapper-cli/build/idf.properties";
-        String dumpNormalizedDir = null; // --dump-normalized-features[=dir]
+    String dumpNormalizedDir = null; // --dump-normalized-features[=dir]
+    String reportPathStr = null; // --report <path>
         for (int i=0;i<args.length;i++) {
             if ("--deterministic".equals(args[i])) { deterministic = true; }
             else if ("--cacheDir".equals(args[i]) && i+1<args.length) { cacheDirStr = args[++i]; }
@@ -60,6 +61,8 @@ final class MapOldNew {
                 int eq = a.indexOf('=');
                 if (eq > 0 && eq < a.length()-1) dumpNormalizedDir = a.substring(eq+1);
                 // if flag provided without value, we'll assign default later
+            } else if ("--report".equals(args[i]) && i+1<args.length) {
+                reportPathStr = args[++i];
             }
         }
         java.nio.file.Path cacheDir = io.bytecodemapper.cli.util.CliPaths.resolveOutput(cacheDirStr);
@@ -251,6 +254,12 @@ final class MapOldNew {
     // Write Tiny v2 deterministically using orchestrator output
     io.bytecodemapper.io.tiny.TinyV2Writer.writeTiny2(outPath, r.classMap, r.methods, r.fields);
     System.out.println("Wrote Tiny v2 to: " + outPath);
+    // Optional: write report JSON with candidate stats
+    if (reportPathStr != null && reportPathStr.length() > 0) {
+        java.nio.file.Path rp = io.bytecodemapper.cli.util.CliPaths.resolveOutput(reportPathStr);
+        io.bytecodemapper.cli.orch.Orchestrator.writeReportJson(rp, r);
+        System.out.println("Wrote report JSON to: " + rp);
+    }
     return;
     // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH INVOKE END
 
