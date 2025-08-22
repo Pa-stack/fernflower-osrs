@@ -1,6 +1,8 @@
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC bitset.md BEGIN -->
 # Micropattern Bitset (17 bits) — Frozen ABI
 
+Frozen constant: MICRO_BITS=17
+
 Canonical order (indices) — **do not reorder**:
 
 0. **NoParams** — takes no arguments (descriptor has empty parameter list).

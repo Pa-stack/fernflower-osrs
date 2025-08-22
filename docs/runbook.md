@@ -10,6 +10,14 @@
 5. **(Optional) Refinement:** `--refine [--lambda <0..1>] [--refineIters N]`. Defaults: `λ=0.70`, `refineIters=5`. Freezes high-confidence, rescored abstentions.
 6. **Mappings:** Emit Tiny v2 (deterministic ordering); apply via TinyRemapper (default) or ASM fallback.
 
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook pipeline-order BEGIN -->
+Frozen pipeline order (verbatim — do not change):
+
+Normalize → ReducedCFG → Dominators → DF/TDF → WL → Class match →
+Method candidates → Multi-signal scoring + filters →
+Call-graph refinement (optional) → Field matching → Tiny v2 write → (optional) remap
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook pipeline-order END -->
+
 ## Determinism
 
 - Fixed WL_K=4 (`CacheMeta: wl.iterations=4`), deterministic iteration/sorting everywhere.

@@ -15,6 +15,9 @@ import io.bytecodemapper.cli.orch.OrchestratorOptions;
 // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH IMPORTS END
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.File;
@@ -24,7 +27,52 @@ import java.util.*;
 
 final class MapOldNew {
 
+    // Minimal entrypoint to support unit tests without touching other commands
+    public static void main(String[] args) throws Exception { run(args); }
+
     static void run(String[] args) throws Exception {
+        // Tiny pre-parse for demo-only refinement toggle; default ON
+        boolean refineDemo = false; boolean refineDemoEnabled = true;
+        for (int i=0;i<args.length;i++) {
+            String a = args[i];
+            if ("--refine-demo".equals(a)) refineDemo = true;
+            else if ("--no-refine".equals(a)) refineDemoEnabled = false;
+            else if ("--refine".equals(a)) refineDemoEnabled = true;
+        }
+        if (refineDemo) {
+            // Acceptance line: surface effective toggle state
+            System.out.println("cli.refine.enabled=" + (refineDemoEnabled ? "true" : "false"));
+            // Build two 3-cycles (old/new) deterministically
+            io.bytecodemapper.signals.norm.NormalizedMethod o1 = io.bytecodemapper.signals.norm.NormalizedMethod.from("o/A", m("a", "o/B#b", "o/C#c"));
+            io.bytecodemapper.signals.norm.NormalizedMethod o2 = io.bytecodemapper.signals.norm.NormalizedMethod.from("o/B", m("b", "o/A#a", "o/C#c"));
+            io.bytecodemapper.signals.norm.NormalizedMethod o3 = io.bytecodemapper.signals.norm.NormalizedMethod.from("o/C", m("c", "o/A#a", "o/B#b"));
+            io.bytecodemapper.signals.norm.NormalizedMethod n1 = io.bytecodemapper.signals.norm.NormalizedMethod.from("n/A", m("a", "n/B#b", "n/C#c"));
+            io.bytecodemapper.signals.norm.NormalizedMethod n2 = io.bytecodemapper.signals.norm.NormalizedMethod.from("n/B", m("b", "n/A#a", "n/C#c"));
+            io.bytecodemapper.signals.norm.NormalizedMethod n3 = io.bytecodemapper.signals.norm.NormalizedMethod.from("n/C", m("c", "n/A#a", "n/B#b"));
+            java.util.List<io.bytecodemapper.signals.norm.NormalizedMethod> os = java.util.Arrays.asList(o1,o2,o3);
+            java.util.List<io.bytecodemapper.signals.norm.NormalizedMethod> ns = java.util.Arrays.asList(n1,n2,n3);
+            java.util.SortedMap<String, java.util.Map<String, Double>> s0 = new java.util.TreeMap<String, java.util.Map<String, Double>>();
+            String ou = "old#" + o1.fingerprintSha256();
+            String ov = "new#" + n1.fingerprintSha256();
+            String ou2= "old#" + o2.fingerprintSha256();
+            String ov2= "new#" + n2.fingerprintSha256();
+            put(s0, ou,  ov,  0.85); // strong → freeze
+            put(s0, ou2, ov2, 0.50); // moderate
+            // Fill rows/cols to ensure keys exist
+            put(s0, ou,  "new#" + n2.fingerprintSha256(), 0.10);
+            put(s0, ou,  "new#" + n3.fingerprintSha256(), 0.10);
+            put(s0, ou2, ov, 0.10);
+            put(s0, ou2, "new#" + n3.fingerprintSha256(), 0.10);
+            String ou3 = "old#" + o3.fingerprintSha256();
+            put(s0, ou3, ov, 0.10);
+            put(s0, ou3, ov2, 0.10);
+            put(s0, ou3, "new#" + n3.fingerprintSha256(), 0.10);
+
+            java.util.SortedMap<String, java.util.SortedMap<String, Double>> sref = RefineRunner.maybeRefine(refineDemoEnabled, os, ns, s0);
+            byte[] bytes = RefineRunner.serialize(sref);
+            System.out.println("cli.refine.sha256=" + sha256(bytes));
+            return; // short-circuit: demo path avoids real file IO
+        }
         File oldJar = null, newJar = null; File out = null;
         for (int i=0;i<args.length;i++) {
             String a = args[i];
@@ -379,6 +427,37 @@ final class MapOldNew {
             }
         });
         return ms;
+    }
+
+    // --- Local helpers for --refine-demo (self-contained) ---
+    private static MethodNode m(String name, String... callees){
+        MethodNode mn = new MethodNode(Opcodes.ASM7, Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC, name, "()V", null, null);
+        InsnList ins = mn.instructions;
+        java.util.SortedSet<String> set = new java.util.TreeSet<String>(java.util.Arrays.asList(callees));
+        for (String sig : set) {
+            int h = sig.indexOf('#');
+            String owner = h >= 0 ? sig.substring(0, h) : sig;
+            String mname = h >= 0 ? sig.substring(h + 1) : "x";
+            ins.add(new MethodInsnNode(Opcodes.INVOKESTATIC, owner, mname, "()V", false));
+        }
+        ins.add(new InsnNode(Opcodes.RETURN));
+        return mn;
+    }
+
+    private static void put(java.util.Map<String, java.util.Map<String, Double>> m, String a, String b, double v){
+        java.util.Map<String, Double> r = m.get(a);
+        if (r == null) { r = new java.util.TreeMap<String, Double>(); m.put(a, r); }
+        r.put(b, v);
+    }
+
+    private static String sha256(byte[] data){
+        try{
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] d = md.digest(data);
+            StringBuilder hex = new StringBuilder(d.length * 2);
+            for (byte b: d) hex.append(String.format("%02x", b));
+            return hex.toString();
+        }catch(Exception ex){ throw new RuntimeException(ex); }
     }
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew END
