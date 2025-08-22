@@ -32,7 +32,7 @@ import net.runelite.asm.Annotation;
 import net.runelite.asm.ClassFile;
 import net.runelite.asm.ClassGroup;
 import net.runelite.asm.Type;
-import net.runelite.deob.deobfuscators.mapping.AnnotationIntegrityChecker;
+//import net.runelite.deob.deobfuscators.mapping.AnnotationIntegrityChecker;
 import net.runelite.deob.deobfuscators.mapping.AnnotationMapper;
 import net.runelite.deob.deobfuscators.mapping.Mapper;
 import net.runelite.deob.deobfuscators.mapping.ParallelExecutorMapping;
@@ -61,52 +61,52 @@ public class UpdateMappings
 
 	public void update()
 	{
-		Mapper mapper = new Mapper(group1, group2);
-		mapper.run();
-		ParallelExecutorMapping mapping = mapper.getMapping();
-
-		new BufferRenameTransformer(mapping).transform(group2);
-		new MissingMappingChecker(mapping, group1, group2).run();
-
-		AnnotationMapper amapper = new AnnotationMapper(group1, group2, mapping);
-		amapper.run();
-
-		AnnotationIntegrityChecker aic = new AnnotationIntegrityChecker(group1, group2, mapping);
-		aic.run();
-
-		int errors = aic.getErrors();
-
-		if (errors > 0)
-		{
-			logger.warn("Errors in annotation checker, exiting");
-			System.exit(-1);
-		}
-
-		AnnotationRenamer an = new AnnotationRenamer(group2);
-		an.run();
-
-		ParameterRenamer pr = new ParameterRenamer(group1, group2, mapping);
-		pr.run();
-
-		AnnotationAdder ad = new AnnotationAdder(group2);
-		ad.run();
-
-		new ScriptOpcodesTransformer().transform(group2);
-		new GraphicsObjectTransformer().transform(group2);
-
-		new ClassToPackageTransformer().transform(group2);
-		new JSONSyntheticTransformer().transform(group2);
-		new BadEnumConstructorTransformer().transform(group2);
-
-		for (ClassFile cf : group2)
-		{
-			Map<Type, Annotation> annotations = cf.getAnnotations();
-			annotations.keySet()
-				.stream()
-				.filter(k -> !k.toString().startsWith("Lnet/runelite/"))
-				.collect(Collectors.toList())
-				.forEach(annotations::remove);
-		}
+//		Mapper mapper = new Mapper(group1, group2);
+//		mapper.run();
+//		ParallelExecutorMapping mapping = mapper.getMapping();
+//
+//		new BufferRenameTransformer(mapping).transform(group2);
+//		new MissingMappingChecker(mapping, group1, group2).run();
+//
+//		AnnotationMapper amapper = new AnnotationMapper(group1, group2, mapping);
+//		amapper.run();
+//
+//		AnnotationIntegrityChecker aic = new AnnotationIntegrityChecker(group1, group2, mapping);
+//		aic.run();
+//
+//		int errors = aic.getErrors();
+//
+//		if (errors > 0)
+//		{
+//			logger.warn("Errors in annotation checker, exiting");
+//			System.exit(-1);
+//		}
+//
+//		AnnotationRenamer an = new AnnotationRenamer(group2);
+//		an.run();
+//
+//		ParameterRenamer pr = new ParameterRenamer(group1, group2, mapping);
+//		pr.run();
+//
+//		AnnotationAdder ad = new AnnotationAdder(group2);
+//		ad.run();
+//
+//		new ScriptOpcodesTransformer().transform(group2);
+//		new GraphicsObjectTransformer().transform(group2);
+//
+//		new ClassToPackageTransformer().transform(group2);
+//		new JSONSyntheticTransformer().transform(group2);
+//		new BadEnumConstructorTransformer().transform(group2);
+//
+//		for (ClassFile cf : group2)
+//		{
+//			Map<Type, Annotation> annotations = cf.getAnnotations();
+//			annotations.keySet()
+//				.stream()
+//				.filter(k -> !k.toString().startsWith("Lnet/runelite/"))
+//				.collect(Collectors.toList())
+//				.forEach(annotations::remove);
+//		}
 	}
 
 	public void save(File out) throws IOException

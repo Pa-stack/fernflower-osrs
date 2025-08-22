@@ -31,27 +31,27 @@ public class ScriptOpcodesTransformer implements Transformer // robots in disgui
 
 	static
 	{
-		for (java.lang.reflect.Field opcodeField : net.runelite.cache.script.Opcodes.class.getDeclaredFields())
-		{
-			if (opcodeField.getType() != int.class || !opcodeField.canAccess(null))
-			{
-				continue;
-			}
-
-			String opcodeName = opcodeField.getName();
-			int opcode;
-
-			try
-			{
-				opcode = opcodeField.getInt(null);
-			}
-			catch (IllegalAccessException e)
-			{
-				throw new RuntimeException(e);
-			}
-
-			OPCODE_MAP.put(opcode, opcodeName);
-		}
+//		for (java.lang.reflect.Field opcodeField : net.runelite.cache.script.Opcodes.class.getDeclaredFields())
+//		{
+//			if (opcodeField.getType() != int.class || !opcodeField.canAccess(null))
+//			{
+//				continue;
+//			}
+//
+//			String opcodeName = opcodeField.getName();
+//			int opcode;
+//
+//			try
+//			{
+//				opcode = opcodeField.getInt(null);
+//			}
+//			catch (IllegalAccessException e)
+//			{
+//				throw new RuntimeException(e);
+//			}
+//
+//			OPCODE_MAP.put(opcode, opcodeName);
+//		}
 	}
 
 	@Override
