@@ -1,0 +1,17 @@
+00: NoParams
+01: NoReturn
+02: Recursive
+03: SameName
+04: Leaf
+05: ObjectCreator
+06: FieldReader
+07: FieldWriter
+08: TypeManipulator
+09: StraightLine
+10: Looping
+11: Exceptions
+12: LocalReader
+13: LocalWriter
+14: ArrayCreator
+15: ArrayReader
+16: ArrayWriter
