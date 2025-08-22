@@ -33,7 +33,10 @@ final class MapOldNew {
             else if ("--out".equals(a) && i+1<args.length) out = new File(args[++i]);
         }
         if (oldJar == null || newJar == null || out == null) {
-            throw new IllegalArgumentException("Usage: mapOldNew --old <old.jar> --new <new.jar> --out <out.tiny>");
+            throw new IllegalArgumentException("Usage: mapOldNew --old <old.jar> --new <new.jar> --out <out.tiny>\n"
+                + "Optional weights:" + "\n"
+                + "  --wStack <double>   Weight for stack histogram cosine (default 0.10)\n"
+                + "  --wLits  <double>   Weight for numeric-literal MinHash similarity (default 0.08)");
         }
 
         // Resolve IO
@@ -99,6 +102,8 @@ final class MapOldNew {
 
     // Scoring weight flags (optional)
     Double wCallsFlag = null, wMicroFlag = null, wNormFlag = null, wStrFlag = null, wFieldsFlag = null, alphaMicroFlag = null;
+    // New optional weight flags for stack/literals
+    Double wStackFlag = null, wLitsFlag = null;
     for (int i = 0; i < args.length; i++) {
             String a = args[i];
             if ("--debug-normalized".equals(a)) {
@@ -166,6 +171,14 @@ final class MapOldNew {
                 try { wFieldsFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
             } else if ("--alphaMicro".equals(a) && i+1<args.length) {
                 try { alphaMicroFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if ("--wStack".equals(a) && i+1<args.length) {
+                try { wStackFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if (a.startsWith("--wStack=")) {
+                try { wStackFlag = Double.valueOf(a.substring("--wStack=".length())); } catch (NumberFormatException ignore) {}
+            } else if ("--wLits".equals(a) && i+1<args.length) {
+                try { wLitsFlag = Double.valueOf(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if (a.startsWith("--wLits=")) {
+                try { wLitsFlag = Double.valueOf(a.substring("--wLits=".length())); } catch (NumberFormatException ignore) {}
             } else if ("--nsf-near".equals(a) && i+1<args.length) {
                 try { nsfNearBudgetWhenFlattened = Integer.valueOf(Integer.parseInt(args[++i])); } catch (NumberFormatException ignore) {}
             } else if (a.startsWith("--nsf-near=")) {
@@ -262,6 +275,10 @@ final class MapOldNew {
     if (wStrFlag != null) o.weightStrings = wStrFlag.doubleValue();
     if (wFieldsFlag != null) o.weightFields = wFieldsFlag.doubleValue();
     if (alphaMicroFlag != null) o.alphaMicropattern = alphaMicroFlag.doubleValue();
+
+    // Apply new stack/literal weights if provided (note: these are used inside MethodScorer directly)
+    if (wStackFlag != null) io.bytecodemapper.cli.method.MethodScorer.setWStack(wStackFlag.doubleValue());
+    if (wLitsFlag  != null) io.bytecodemapper.cli.method.MethodScorer.setWLits(wLitsFlag.doubleValue());
 
     // Apply nsf64 tiering and rollout mode before matching
     io.bytecodemapper.core.match.MethodMatcher.setNsftierOrder(nsfTierOrder);

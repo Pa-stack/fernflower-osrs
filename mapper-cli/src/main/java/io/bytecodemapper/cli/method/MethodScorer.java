@@ -328,5 +328,11 @@ public final class MethodScorer {
         MIN_MARGIN = v;
     }
     // <<< AUTOGEN: BYTECODEMAPPER CLI MethodScorer CONFIG END
+
+    // --- Manual additions: expose setters for new weights (Java 8 safe) ---
+    /** Set weight for stack histogram cosine term. */
+    public static void setWStack(double v) { W_STACK = v; }
+    /** Set weight for numeric-literal MinHash similarity term. */
+    public static void setWLits(double v)  { W_LITS  = v; }
 }
 // <<< AUTOGEN: BYTECODEMAPPER CLI MethodScorer END
