@@ -23,11 +23,13 @@ public final class NormalizedMethod {
   private final SortedMap<String,Integer> calls = new TreeMap<String,Integer>();
   private final SortedMap<String,Integer> strings = new TreeMap<String,Integer>();
   private final int mask;
+  private final String owner;
+  private final String name;
   private final String desc;
   private final String fp;
 
-  private NormalizedMethod(int mask, String desc, String fp) {
-    this.mask = mask; this.desc = desc; this.fp = fp;
+  private NormalizedMethod(int mask, String owner, String name, String desc, String fp) {
+    this.mask = mask; this.owner = owner; this.name = name; this.desc = desc; this.fp = fp;
   }
 
   public static NormalizedMethod from(String owner, MethodNode mn) {
@@ -122,7 +124,7 @@ public final class NormalizedMethod {
 
     // Fingerprint over canonical string
     String fp = sha256(hexCanon(owner, mn.desc, calls, strings, hist, mask));
-    NormalizedMethod nm = new NormalizedMethod(mask, mn.desc, fp);
+  NormalizedMethod nm = new NormalizedMethod(mask, owner, mn.name, mn.desc, fp);
     System.arraycopy(hist, 0, nm.hist, 0, 256);
     nm.n2.putAll(n2); nm.n3.putAll(n3);
     nm.calls.putAll(calls); nm.strings.putAll(strings);
@@ -195,6 +197,8 @@ public final class NormalizedMethod {
   public SortedMap<String,Integer> callBag(){ return new TreeMap<String,Integer>(calls); }
   public SortedMap<String,Integer> stringBag(){ return new TreeMap<String,Integer>(strings); }
   public int microMask(){ return mask; }
+  /** Deterministic self signature owner#name(desc). */
+  public String selfSignature(){ return owner + "#" + name + desc; }
   public String normalizedDescriptor(){ return desc; }
   public String fingerprintSha256(){ return fp; }
 }
