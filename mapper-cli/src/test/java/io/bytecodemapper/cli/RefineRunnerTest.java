@@ -8,8 +8,6 @@ import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -56,17 +54,10 @@ public class RefineRunnerTest {
     r.put(b, v);
   }
 
-  private static String sha256(SortedMap<String, SortedMap<String, Double>> s){
+  private static String sha256(byte[] data){
     try{
-      MessageDigest md = MessageDigest.getInstance("SHA-256");
-      StringBuilder sb = new StringBuilder();
-      for (Map.Entry<String, SortedMap<String, Double>> e : s.entrySet()) {
-        for (Map.Entry<String, Double> e2 : e.getValue().entrySet()) {
-          sb.append(e.getKey()).append("->").append(e2.getKey()).append(':')
-            .append(String.format(java.util.Locale.ROOT, "%.4f", e2.getValue())).append('\n');
-        }
-      }
-      byte[] d = md.digest(sb.toString().getBytes(StandardCharsets.UTF_8));
+      java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+      byte[] d = md.digest(data);
       StringBuilder hex = new StringBuilder(d.length * 2);
       for (byte b: d) hex.append(String.format("%02x", b));
       return hex.toString();
@@ -101,7 +92,7 @@ public class RefineRunnerTest {
       double s1 = Sref.get(uMod).get(vMod);
       assertTrue(s1 <= s0 + 0.10 + 1e-12);
       assertTrue(s1 >= s0 - 0.05 - 1e-12);
-      String hex = sha256(Sref);
+  String hex = sha256(RefineRunner.serialize(Sref));
       System.out.println("refine.cli.sha256=" + hex);
       String out2 = new String(bout.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
       assertTrue(out2.contains("refine.cli.sha256="));
@@ -135,7 +126,7 @@ public class RefineRunnerTest {
       }
       String out = new String(bout.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
       assertFalse(out.contains("REFINE_ITER"));
-      String hex = sha256(Sref);
+  String hex = sha256(RefineRunner.serialize(Sref));
       System.out.println("refine.cli.sha256=" + hex);
       String out2 = new String(bout.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
       assertTrue(out2.contains("refine.cli.sha256="));

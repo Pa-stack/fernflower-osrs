@@ -31,4 +31,16 @@ public final class RefineRunner {
     }
     return out;
   }
+
+  /** Deterministic serialization: lines "old->new:%.4f\n" with sorted keys. */
+  static byte[] serialize(SortedMap<String, SortedMap<String, Double>> s) {
+    StringBuilder sb = new StringBuilder();
+    for (java.util.Map.Entry<String, SortedMap<String, Double>> e : s.entrySet()) {
+      for (java.util.Map.Entry<String, Double> e2 : e.getValue().entrySet()) {
+        sb.append(e.getKey()).append("->").append(e2.getKey()).append(':')
+          .append(String.format(java.util.Locale.ROOT, "%.4f", e2.getValue())).append('\n');
+      }
+    }
+    return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+  }
 }
