@@ -24,9 +24,15 @@ public class DebugStatsTelemetryTest {
             System.setOut(old);
             ps.flush(); ps.close();
         }
-        String s = new String(bout.toByteArray(), "UTF-8");
-        boolean hasDecision = s.contains("[match]") || s.contains("reason=");
-        assertTrue("Expected at least one telemetry line in --debug-stats output", hasDecision);
+    String s = new String(bout.toByteArray(), "UTF-8");
+    boolean hasDecision = s.contains("[match]") || s.contains("reason=");
+    assertTrue("Expected at least one telemetry line in --debug-stats output", hasDecision);
+    // Assert presence of key per-signal tokens to ensure telemetry includes subscores
+    assertTrue("calls token missing", s.contains("calls="));
+    assertTrue("micro token missing", s.contains("micro="));
+    // accept either historical 'hist=' or newer 'norm=' token
+    assertTrue("norm/hist token missing",  s.contains("norm=") || s.contains("hist="));
+    assertTrue("str token missing",   s.contains("str="));
         java.nio.file.Path log = java.nio.file.Paths.get("build/test-debug-stats/telemetry.txt");
         java.nio.file.Files.createDirectories(log.getParent());
         java.nio.file.Files.write(log, s.getBytes("UTF-8"));
