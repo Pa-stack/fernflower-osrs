@@ -8,9 +8,15 @@ import java.util.*;
 /** Deterministic IDF store with EMA updates, clamping, and sorted persistence (4 dp). */
 public final class IdfStore {
   private final SortedMap<String,Double> map = new TreeMap<String,Double>();
-  private final double lambda; // EMA λ
+  private double lambda; // EMA λ
 
+  /** Back-compat: default ctor expected by CLI. Uses λ=0.9. */
+  @Deprecated
+  public IdfStore() { this.lambda = 0.9; }
   public IdfStore(double lambda) { this.lambda = lambda; }
+  /** Back-compat: fluent setter used by older CLI code. */
+  @Deprecated
+  public IdfStore setLambda(double v) { this.lambda = v; return this; }
   public static IdfStore createDefault() { return new IdfStore(0.9); }
   public double get(String key, double defaultVal) { Double v = map.get(key); return v==null? defaultVal : v.doubleValue(); }
   public void put(String key, double val) { map.put(key, val); }
@@ -51,5 +57,27 @@ public final class IdfStore {
     double merged = lambda*old + (1.0 - lambda)*fresh;
     double clamped = Math.max(0.5, Math.min(3.0, merged));
     map.put(key, clamped);
+  }
+
+  /** Back-compat: CLI uses File overloads. */
+  @Deprecated
+  public static IdfStore load(java.io.File f) throws java.io.IOException {
+    IdfStore s = createDefault();
+    s.load(f.toPath());
+    return s;
+  }
+
+  /** Back-compat: CLI uses File overloads. */
+  @Deprecated
+  public void save(java.io.File f) throws java.io.IOException {
+    save(f.toPath());
+  }
+
+  /** Back-compat: some CLI paths expect a bit-IDF array; return 17×1.0 as a no-op. */
+  @Deprecated
+  public double[] computeIdf() {
+    double[] arr = new double[17];
+    java.util.Arrays.fill(arr, 1.0);
+    return arr;
   }
 }
