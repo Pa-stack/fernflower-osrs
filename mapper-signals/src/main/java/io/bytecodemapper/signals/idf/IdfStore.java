@@ -1,125 +1,55 @@
-// >>> AUTOGEN: BYTECODEMAPPER IdfStore BEGIN
 package io.bytecodemapper.signals.idf;
 
-import java.io.*;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Arrays;
-import java.util.Properties;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.*;
 
-/**
- * 17D IDF store for micropatterns with an exponential moving accumulator.
- * Policy:
- *   DF_t(p) ~= lambda * DF_{t-1}(p) + df_week(p)
- *   M_t      ~= lambda * M_{t-1}     + totalMethods_week
- *   IDF(p) = clamp( log((M+1)/(DF(p)+1)) + 1 , [0.5, 3.0] ), rounded to 4 dp
- *
- * Defaults: lambda = 0.9
- * Notes: When cold-start (M == 0), IDF defaults to 1.0.
- */
+/** Deterministic IDF store with EMA updates, clamping, and sorted persistence (4 dp). */
 public final class IdfStore {
+  private final SortedMap<String,Double> map = new TreeMap<String,Double>();
+  private final double lambda; // EMA λ
 
-    public static final int DIM = 17;
+  public IdfStore(double lambda) { this.lambda = lambda; }
+  public static IdfStore createDefault() { return new IdfStore(0.9); }
+  public double get(String key, double defaultVal) { Double v = map.get(key); return v==null? defaultVal : v.doubleValue(); }
+  public void put(String key, double val) { map.put(key, val); }
+  public SortedMap<String,Double> snapshot() { return new TreeMap<String,Double>(map); }
 
-    private double lambda = 0.9d;           // decay
-    private double mEma = 0.0d;             // total methods EMA
-    private final double[] dfEma = new double[DIM]; // per-pattern DF EMA
-    private final double[] idf = new double[DIM];   // last computed IDF
-
-    public IdfStore() {
-        Arrays.fill(idf, 1.0d);
+  public void load(Path p) throws IOException {
+    map.clear();
+    if (!Files.exists(p)) return;
+    java.util.List<String> lines = Files.readAllLines(p, StandardCharsets.UTF_8);
+    for (String s : lines) {
+      if (s.trim().isEmpty() || s.startsWith("#")) continue;
+      int i = s.indexOf('=');
+      if (i <= 0) continue;
+      String k = s.substring(0, i);
+      double v = Double.parseDouble(s.substring(i+1));
+      map.put(k, v);
     }
+  }
 
-    public double getLambda() { return lambda; }
-    public void setLambda(double lambda) {
-        if (lambda <= 0 || lambda >= 1) throw new IllegalArgumentException("lambda in (0,1)");
-        this.lambda = lambda;
+  public void save(Path p) throws IOException {
+    Files.createDirectories(p.getParent());
+    java.util.List<String> lines = new java.util.ArrayList<String>(map.size());
+    for (Map.Entry<String,Double> e : map.entrySet()) {
+      lines.add(e.getKey() + "=" + String.format(java.util.Locale.ROOT, "%.4f", e.getValue()));
     }
+    byte[] bytes = join(lines).getBytes(StandardCharsets.UTF_8);
+    Path tmp = p.resolveSibling(p.getFileName().toString()+".tmp");
+    Files.write(tmp, bytes);
+    Files.move(tmp, p, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+  }
 
-    /** Update accumulators with one week's counts. */
-    public void updateWeek(int totalMethods, int[] dfCountsPerBit) {
-        if (dfCountsPerBit == null || dfCountsPerBit.length != DIM)
-            throw new IllegalArgumentException("dfCountsPerBit must be length " + DIM);
-        if (totalMethods < 0) throw new IllegalArgumentException("totalMethods >= 0");
-        mEma = lambda * mEma + totalMethods;
-        for (int i = 0; i < DIM; i++) {
-            int df = Math.max(0, dfCountsPerBit[i]);
-            dfEma[i] = lambda * dfEma[i] + df;
-        }
-    }
+  private static String join(java.util.List<String> ls){ StringBuilder sb=new StringBuilder(); for(int i=0;i<ls.size();i++){ if(i>0) sb.append('\n'); sb.append(ls.get(i)); } return sb.toString(); }
 
-    /** Compute the IDF vector per policy; clamp to [0.5, 3.0] and round to 4 dp. */
-    public double[] computeIdf() {
-        final double M = mEma;
-        if (M <= 0.0) {
-            Arrays.fill(idf, 1.0d);
-            return Arrays.copyOf(idf, DIM);
-        }
-        for (int i = 0; i < DIM; i++) {
-            double DF = dfEma[i];
-            double v = Math.log((M + 1.0d) / (DF + 1.0d)) + 1.0d;
-            v = clamp(v, 0.5d, 3.0d);
-            idf[i] = round4(v);
-        }
-        return Arrays.copyOf(idf, DIM);
-    }
-
-    public double[] getIdfVector() {
-        return Arrays.copyOf(idf, DIM);
-    }
-
-    public double getMEma() { return mEma; }
-    public double[] getDfEma() { return Arrays.copyOf(dfEma, DIM); }
-
-    /** Save as .properties for easy inspection. */
-    public void save(File file) throws IOException {
-        Properties p = new Properties();
-        p.setProperty("lambda", Double.toString(lambda));
-        p.setProperty("M_ema", Double.toString(mEma));
-        for (int i = 0; i < DIM; i++) p.setProperty("DF_ema." + i, Double.toString(dfEma[i]));
-        // ensure IDF is up to date in the file
-        double[] cur = computeIdf();
-        for (int i = 0; i < DIM; i++) p.setProperty("idf." + i, format4(cur[i]));
-        try (OutputStream os = new FileOutputStream(file)) {
-            p.store(os, "BytecodeMapper Micropattern IDF (EMA)");
-        }
-    }
-
-    /** Load from .properties, missing keys use defaults. */
-    public static IdfStore load(File file) throws IOException {
-        IdfStore s = new IdfStore();
-        if (!file.exists()) return s;
-        Properties p = new Properties();
-        try (InputStream is = new FileInputStream(file)) {
-            p.load(is);
-        }
-        String lam = p.getProperty("lambda");
-        if (lam != null) s.setLambda(Double.parseDouble(lam));
-        String M = p.getProperty("M_ema");
-        if (M != null) s.mEma = Double.parseDouble(M);
-        for (int i = 0; i < DIM; i++) {
-            String d = p.getProperty("DF_ema." + i);
-            if (d != null) s.dfEma[i] = Double.parseDouble(d);
-            String iv = p.getProperty("idf." + i);
-            if (iv != null) s.idf[i] = Double.parseDouble(iv);
-        }
-        // recompute idf to reflect DF/M; keep persisted idf as a hint
-        s.computeIdf();
-        return s;
-    }
-
-    // --- helpers ---
-
-    private static double clamp(double v, double lo, double hi) {
-        return Math.max(lo, Math.min(hi, v));
-    }
-
-    private static double round4(double v) {
-        return new BigDecimal(v).setScale(4, RoundingMode.HALF_UP).doubleValue();
-    }
-
-    private static String format4(double v) {
-        return new BigDecimal(v).setScale(4, RoundingMode.HALF_UP).toPlainString();
-    }
+  /** Update using EMA: new = clamp( λ*old + (1-λ)*fresh ), fresh = ln((N+1)/(df+1))+1, clamp to [0.5,3.0]. */
+  public void update(String key, int N, int df) {
+    double fresh = Math.log((N + 1.0) / (df + 1.0)) + 1.0;
+    double old = get(key, fresh);
+    double merged = lambda*old + (1.0 - lambda)*fresh;
+    double clamped = Math.max(0.5, Math.min(3.0, merged));
+    map.put(key, clamped);
+  }
 }
-// <<< AUTOGEN: BYTECODEMAPPER IdfStore END

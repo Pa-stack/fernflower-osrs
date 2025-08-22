@@ -28,9 +28,33 @@ public class NormalizationFixturesTest {
     }
 
     @Test
-    public void normalization_todos_present() {
-        // Placeholder assertions to be replaced in B5.
-        Assert.fail("TODO: implement NormalizedMethod");
+    public void normalization_features_and_fingerprint() throws Exception {
+        // Build class & parse into ASM tree
+        byte[] cls = io.bytecodemapper.signals.fixtures.TestBytecodeFixtures.buildGuardWrappedClass("t/Foo");
+        org.objectweb.asm.ClassReader cr = new org.objectweb.asm.ClassReader(cls);
+        org.objectweb.asm.tree.ClassNode cn = new org.objectweb.asm.tree.ClassNode(org.objectweb.asm.Opcodes.ASM7);
+        cr.accept(cn, 0);
+        org.objectweb.asm.tree.MethodNode mn = null;
+        for (Object o : cn.methods) {
+            org.objectweb.asm.tree.MethodNode m = (org.objectweb.asm.tree.MethodNode) o;
+            if (m.name.equals("f")) { mn = m; break; }
+        }
+        io.bytecodemapper.signals.norm.NormalizedMethod nm = io.bytecodemapper.signals.norm.NormalizedMethod.from(cn.name, mn);
+        String fp = nm.fingerprintSha256();
+        System.out.println("norm.fingerprint=" + fp);
+        Assert.assertEquals(64, fp.length());
+        int mask = nm.microMask();
+        System.out.println("micro.mask=" + mask);
+        Assert.assertEquals("LEAF bit must be set", 1, mask & 1);
+        Assert.assertTrue("mask must be < 2^17", mask < (1<<17));
+        int[] hist = nm.opcodeHistogram();
+        Assert.assertTrue("histogram must count ILOAD", hist[org.objectweb.asm.Opcodes.ILOAD] > 0);
+        // Expect ILOAD,BIPUSH bigram from the guard prelude instructions present in bytecode (even if constant return is skipped)
+        int k2 = (org.objectweb.asm.Opcodes.ILOAD << 8) | org.objectweb.asm.Opcodes.BIPUSH;
+        Assert.assertTrue("2-gram ILOAD->BIPUSH must exist", nm.ngrams2().containsKey(k2));
+        System.out.println("ngram2=ILOAD,BIPUSH:" + nm.ngrams2().get(k2));
+        // No non-JDK calls expected in this method
+        Assert.assertTrue("call bag must be empty", nm.callBag().isEmpty());
     }
 
     @Test

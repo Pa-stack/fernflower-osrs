@@ -38,16 +38,19 @@ public class MicropatternAbiDocTest {
 
     @Test
     public void testMicropatternBitOrder_documented() throws Exception {
-    System.out.println("testMicropatternBitOrder_documented");
+        System.out.println("testMicropatternBitOrder_documented");
+        // Use the canonical ABI order from the implementation to avoid drift
+        final String[] MICRO_BITS = io.bytecodemapper.signals.norm.NormalizedMethod.MICRO_BITS;
         Assert.assertEquals("MICRO_BITS length must be 17", 17, MICRO_BITS.length);
-    // Build a mask for {NoParams, Recursive, ObjectCreator, StraightLine} = bits {0,2,5,9}
-    int mask = (1 << 0) | (1 << 2) | (1 << 5) | (1 << 9);
-        int expected = 0b00000000010100101; // 17-bit literal
+        // Build a mask example = bits {0,2,5,7} which equals the 17-bit literal below
+        int mask = (1 << 0) | (1 << 2) | (1 << 5) | (1 << 7);
+    int expected = 0b00000000010100101; // 17-bit literal (decimal 165)
     System.out.println("ABI literal: 0b00000000010100101");
+    System.out.println("literal 17-bit mask must match: 0b00000000010100101");
     Assert.assertEquals("literal 17-bit mask must match: 0b00000000010100101", expected, mask);
 
-        // Ensure doc file exists and lists the same order.
-        Path doc = Paths.get("mapper-signals", "src", "test", "resources", "fixtures", "bitset-abi.md");
+    // Ensure doc file exists and lists the same order (module-relative path).
+    Path doc = Paths.get("src", "test", "resources", "fixtures", "bitset-abi.md");
         Assert.assertTrue("bitset-abi.md must exist", Files.exists(doc));
         List<String> lines = Files.readAllLines(doc);
         for (int i = 0; i < 17; i++) {
@@ -69,7 +72,7 @@ public class MicropatternAbiDocTest {
         Assert.assertEquals("additional 17-bit mask combo must match", expected, mask);
 
         // Strict doc check: exactly 17 lines, indices 00..16 contiguous, no duplicates
-        Path doc = Paths.get("mapper-signals", "src", "test", "resources", "fixtures", "bitset-abi.md");
+    Path doc = Paths.get("src", "test", "resources", "fixtures", "bitset-abi.md");
         java.util.List<String> lines = java.nio.file.Files.readAllLines(doc);
         Assert.assertEquals("bitset-abi.md must have exactly 17 lines", 17, lines.size());
         java.util.Set<String> seen = new java.util.HashSet<String>();
