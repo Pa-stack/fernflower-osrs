@@ -46,6 +46,7 @@
       "vmArgs": ["-Xms1g", "-Xmx4g"]
     }
   ],
-  "java.test.defaultConfig": "large-heap"
+  "java.test.defaultConfig": "large-heap",
+  "java.compile.nullAnalysis.mode": "automatic"
   // <<< AUTOGEN: BYTECODEMAPPER VSCode Java Test Heap END
 }
