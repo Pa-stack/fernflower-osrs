@@ -12,6 +12,8 @@ dependencies {
     implementation "org.ow2.asm:asm-tree:7.3.1"
     // asm-commons will be added in Component 11 for remapping; not needed yet here.
     implementation "it.unimi.dsi:fastutil:8.5.12"
+    // Test-time access to signals' NormalizedMethod
+    testImplementation project(":mapper-signals")
 }
 
 tasks.withType(Jar).configureEach {

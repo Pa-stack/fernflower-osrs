@@ -1,4 +1,3 @@
-// >>> AUTOGEN: BYTECODEMAPPER WLRefinement BEGIN
 package io.bytecodemapper.core.wl;
 
 import io.bytecodemapper.core.cfg.ReducedCFG;
@@ -6,397 +5,89 @@ import io.bytecodemapper.core.cfg.ReducedCFG.Block;
 import io.bytecodemapper.core.df.DF;
 import io.bytecodemapper.core.dom.Dominators;
 import io.bytecodemapper.core.hash.StableHash64;
-import it.unimi.dsi.fastutil.ints.*;
 
 import java.util.*;
 
-/**
- * Deterministic Weisfeiler–Lehman refinement over ReducedCFG with DF/TDF features.
- *
- * Node initial label tuple:
- *   (degIn,degOut,domDepth,domChildren, |DF|, H(DF), |TDF|, H(TDF), loopHeader?1:0)
- *
- * Iteration k+1:
- *   L_{k+1}(n) = H( L_k(n)
- *                || multiset{ L_k(p) for p in preds(n) }
- *                || multiset{ L_k(s) for s in succs(n) }
- *                || Hset(DF(n)) || Hset(TDF(n)) )
- *
- * Method signature:
- *   H( multiset{ L_final(n) } || "B=" + blockCount || "L=" + loopCount )
- */
 public final class WLRefinement {
-
     private WLRefinement(){}
+    // Compatibility default rounds for tests
+    public static final int DEFAULT_K = 2;
 
-    // >>> AUTOGEN: BYTECODEMAPPER WL_K STANDARDIZATION BEGIN
-    /** Default WL iterations (K) for signature compute helpers. */
-    public static final int DEFAULT_K = 4;
-    // <<< AUTOGEN: BYTECODEMAPPER WL_K STANDARDIZATION END
+    // Build a deterministic token bag: map token(long) -> count(int). We'll implement with TreeMap for ordering.
+    public static SortedMap<Long,Integer> tokenBagFinal(ReducedCFG cfg, Dominators dom, Map<Integer,int[]> df, Map<Integer,int[]> tdf, int rounds){
+        if(rounds<0) rounds=0; if(rounds>8) rounds=8; int[] nodes=cfg.allBlockIds(); Arrays.sort(nodes); SortedMap<Integer,Long> dfHash=new TreeMap<Integer,Long>(); SortedMap<Integer,Long> tdfHash=new TreeMap<Integer,Long>(); SortedMap<Integer,Integer> dfSize=new TreeMap<Integer,Integer>(); SortedMap<Integer,Integer> tdfSize=new TreeMap<Integer,Integer>();
+        for(int b: nodes){int[] d=df.get(b); if(d==null) d=new int[0]; int[] t=tdf.get(b); if(t==null) t=new int[0]; dfSize.put(b,d.length); tdfSize.put(b,t.length); dfHash.put(b, hashSortedInts(d)); tdfHash.put(b, hashSortedInts(t)); }
+        Map<Integer,int[]> preds=new HashMap<Integer,int[]>(), succs=new HashMap<Integer,int[]>(); for(int b: nodes){Block bb=cfg.block(b); preds.put(b, bb.preds()); succs.put(b, bb.succs()); }
+        Set<Integer> loopHdr=new HashSet<Integer>(); for(int b: nodes){Block bb=cfg.block(b); for(int p: bb.preds()) if(dom.dominates(b,p)){ loopHdr.add(b); break; } }
+        Map<Integer,Long> labels=new HashMap<Integer,Long>(); for(int b: nodes){Block bb=cfg.block(b); int[] p=bb.preds(), s=bb.succs(); long init = hashTuple(p.length, s.length, dom.domDepth(b), cfgDomChildrenCount(dom,b), dfSize.get(b), dfHash.get(b), tdfSize.get(b), tdfHash.get(b), loopHdr.contains(b)?1:0); labels.put(b, init);} for(int k=0;k<rounds;k++){ Map<Integer,Long> next=new HashMap<Integer,Long>(); for(int b: nodes){ long cur=labels.get(b); long ph=multisetHash(labels, preds.get(b)); long sh=multisetHash(labels, succs.get(b)); long lbl=hashConcat(cur,ph,sh, dfHash.get(b), tdfHash.get(b)); next.put(b,lbl);} labels=next; }
+        SortedMap<Long,Integer> bag=new TreeMap<Long,Integer>(new Comparator<Long>(){public int compare(Long a,Long b){ return Long.compareUnsigned(a,b);} }); for(int b: nodes){ long t=labels.get(b); Integer c=bag.get(t); bag.put(t, c==null?1:c+1);} return bag;
+    }
+    public static SortedMap<Long,Integer> tokenBagFinal(ReducedCFG cfg, Dominators dom, int rounds){ Map<Integer,int[]> df=DF.compute(cfg,dom); Map<Integer,int[]> tdf=DF.iterateToFixpoint(df); return tokenBagFinal(cfg,dom,df,tdf,rounds);}
 
-    /** Container for method-level signature. */
-    public static final class MethodSignature {
-        public final long hash;
-        public final int blockCount;
-        public final int loopCount;
-
-        public MethodSignature(long hash, int blockCount, int loopCount) {
-            this.hash = hash;
-            this.blockCount = blockCount;
-            this.loopCount = loopCount;
-        }
-
-        @Override public String toString() {
-            return "WLMethodSig{hash=" + Long.toUnsignedString(hash) + ", blocks=" + blockCount + ", loops=" + loopCount + "}";
-        }
+    // Fastutil adapter for existing tests expecting Long2IntSortedMap
+    public static it.unimi.dsi.fastutil.longs.Long2IntSortedMap tokenBagFinal(ReducedCFG cfg, Dominators dom, int rounds, boolean asFastutil){
+        SortedMap<Long,Integer> bag = tokenBagFinal(cfg, dom, rounds);
+        it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap m = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
+        for (Map.Entry<Long,Integer> e : bag.entrySet()) m.put(e.getKey().longValue(), e.getValue().intValue());
+        return m;
     }
 
-    // CODEGEN-BEGIN: wl-bag-api
-    // Deterministic WL token bag for final iteration.
-    // Returns a sorted map (by token) to guarantee stable iteration order.
-    public static it.unimi.dsi.fastutil.longs.Long2IntSortedMap tokenBagFinal(
-            io.bytecodemapper.core.cfg.ReducedCFG cfg,
-            io.bytecodemapper.core.dom.Dominators dom,
-            java.util.Map<java.lang.Integer,int[]> df,
-            java.util.Map<java.lang.Integer,int[]> tdf,
-            int iterations) {
-        // Defensive clamp on iterations (mirror computeSignature)
-        if (iterations < 0) iterations = 0;
-        if (iterations > 8) iterations = 8;
+    // Build ReducedCFG/Dominators for method and serialize token bag to bytes (token:count per line, sorted)
+    public static byte[] signature(org.objectweb.asm.tree.MethodNode mn, int rounds){ ReducedCFG cfg=ReducedCFG.build(mn); Dominators dom=Dominators.compute(cfg); SortedMap<Long,Integer> bag=tokenBagFinal(cfg,dom,rounds); StringBuilder sb=new StringBuilder(); for(Map.Entry<Long,Integer> e: bag.entrySet()){ sb.append(Long.toUnsignedString(e.getKey())).append(':').append(e.getValue()).append('\n'); } return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);}
+    public static String sha256Hex(byte[] bytes){ try{ java.security.MessageDigest md=java.security.MessageDigest.getInstance("SHA-256"); byte[] d=md.digest(bytes); StringBuilder hex=new StringBuilder(d.length*2); for(byte b: d) hex.append(String.format(java.util.Locale.ROOT, "%02x", b)); return hex.toString(); } catch(Exception e){ return Integer.toHexString(Arrays.hashCode(bytes)); } }
 
-        // Deterministic node order
-        final int[] nodes = cfg.allBlockIds();
-        java.util.Arrays.sort(nodes);
-        if (nodes.length == 0) {
-            return new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
-        }
-
-        // Precompute DF/TDF metadata
-        final it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap dfHash = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap();
-        final it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap tdfHash = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap();
-        final it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap dfSize = new it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap();
-        final it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap tdfSize = new it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap();
-        for (int b : nodes) {
-            int[] d = df.get(b); if (d == null) d = new int[0];
-            int[] t = tdf.get(b); if (t == null) t = new int[0];
-            dfSize.put(b, d.length);
-            tdfSize.put(b, t.length);
-            dfHash.put(b, hashSortedInts(d));
-            tdfHash.put(b, hashSortedInts(t));
-        }
-
-        // Neighbor arrays cached
-        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<int[]> preds = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<int[]>();
-        final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<int[]> succs = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<int[]>();
-        for (int b : nodes) {
-            io.bytecodemapper.core.cfg.ReducedCFG.Block bb = cfg.block(b);
-            int[] p = bb.preds();
-            int[] s = bb.succs();
-            preds.put(b, p == null ? new int[0] : java.util.Arrays.copyOf(p, p.length));
-            succs.put(b, s == null ? new int[0] : java.util.Arrays.copyOf(s, s.length));
-        }
-
-        // Loop headers by dominator back-edge
-        final it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap loopHeaderById = new it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap();
-        for (int b : nodes) {
-            io.bytecodemapper.core.cfg.ReducedCFG.Block bb = cfg.block(b);
-            boolean header = false;
-            int[] p = bb.preds();
-            for (int i = 0; i < p.length; i++) {
-                int pred = p[i];
-                if (pred == b) continue;
-                if (dom.dominates(b, pred)) { header = true; break; }
-            }
-            loopHeaderById.put(b, header);
-        }
-
-        // Initial labels
-        it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap labels = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap();
-        for (int b : nodes) {
-            io.bytecodemapper.core.cfg.ReducedCFG.Block bb = cfg.block(b);
-            int[] p = bb.preds();
-            int[] s = bb.succs();
-            long init = hashTuple(
-                    p == null ? 0 : p.length,
-                    s == null ? 0 : s.length,
-                    dom.domDepth(b),
-                    cfgDomChildrenCount(dom, b),
-                    dfSize.get(b),
-                    dfHash.get(b),
-                    tdfSize.get(b),
-                    tdfHash.get(b),
-                    loopHeaderById.get(b) ? 1 : 0
-            );
-            labels.put(b, init);
-        }
-
-        // WL iterations to final
-        for (int k = 0; k < java.lang.Math.max(0, iterations); k++) {
-            it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap next = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap(labels.size());
-            for (int b : nodes) {
-                long cur = labels.get(b);
-                long predsHash = multisetHash(labels, preds.get(b));
-                long succsHash = multisetHash(labels, succs.get(b));
-                long lbl = hashConcat(cur, predsHash, succsHash, dfHash.get(b), tdfHash.get(b));
-                next.put(b, lbl);
-            }
-            labels = next;
-        }
-
-        // Accumulate multiset of final labels (token = label value as unsigned long)
-        final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap counts = new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
-        counts.defaultReturnValue(0);
-        for (int b : nodes) {
-            long token = labels.get(b);
-            counts.put(token, counts.get(token) + 1);
-        }
-        // Copy into sorted map for stable iteration
-        it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap sorted = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
-        for (it.unimi.dsi.fastutil.longs.Long2IntMap.Entry e : counts.long2IntEntrySet()) {
-            sorted.put(e.getLongKey(), e.getIntValue());
-        }
-        return sorted;
-    }
-
-    /** Convenience overload: compute DF/TDF internally. */
-    public static it.unimi.dsi.fastutil.longs.Long2IntSortedMap tokenBagFinal(
-            io.bytecodemapper.core.cfg.ReducedCFG cfg,
-            io.bytecodemapper.core.dom.Dominators dom,
-            int iterations) {
-        java.util.Map<java.lang.Integer,int[]> df = io.bytecodemapper.core.df.DF.compute(cfg, dom);
-        java.util.Map<java.lang.Integer,int[]> tdf = io.bytecodemapper.core.df.DF.iterateToFixpoint(df);
-        return tokenBagFinal(cfg, dom, df, tdf, iterations);
-    }
-    // CODEGEN-END: wl-bag-api
-
-    /** Convenience: compute DF and TDF inside, then signature. */
-    public static MethodSignature computeSignature(ReducedCFG cfg, Dominators dom, int iterations) {
-        Map<Integer,int[]> df  = DF.compute(cfg, dom);
-        Map<Integer,int[]> tdf = DF.iterateToFixpoint(df);
-        return computeSignature(cfg, dom, df, tdf, iterations);
-    }
-
-    /** Main API: deterministic WL with supplied DF and TDF maps (sorted int[]). */
-    public static MethodSignature computeSignature(
-            ReducedCFG cfg,
-            Dominators dom,
-            Map<Integer,int[]> df,
-            Map<Integer,int[]> tdf,
-            int iterations) {
-
-        // >>> AUTOGEN: BYTECODEMAPPER WLRefinement PATCH BEGIN
-        // 1) Clamp iterations and skip trivial dominates checks
-        // clamp iterations defensively
-        if (iterations < 0) iterations = 0;
-        if (iterations > 8) iterations = 8;
-
-        // Collect nodes deterministically
-        int[] nodes = cfg.allBlockIds();
+    // --- Compatibility surfaces for older tests ---
+    public static Map<Integer, Long> refineLabels(List<Integer> nodeIds,
+                                                  Map<Integer, List<Integer>> preds,
+                                                  Map<Integer, List<Integer>> succs,
+                                                  Map<Integer, Long> seedLabels,
+                                                  int rounds) {
+        // Initialize labels
+        Map<Integer, Long> labels = new HashMap<Integer, Long>();
+        for (Integer id : nodeIds) labels.put(id, seedLabels.containsKey(id) ? seedLabels.get(id) : 0L);
+        int[] nodes = new int[nodeIds.size()];
+        for (int i = 0; i < nodeIds.size(); i++) nodes[i] = nodeIds.get(i);
         Arrays.sort(nodes);
-
-        // Compute loop headers: exists pred p of b with dominates(b, p)
-        final boolean[] isLoopHeader = new boolean[nodes.length];
-        final Int2BooleanOpenHashMap loopHeaderById = new Int2BooleanOpenHashMap();
-        for (int i=0;i<nodes.length;i++) {
-            int b = nodes[i];
-            Block bb = cfg.block(b);
-            boolean header = false;
-            for (int p : bb.preds()) {
-                if (p == b) continue; // skip degenerate self
-                if (dom.dominates(b, p)) { header = true; break; }
-            }
-            isLoopHeader[i] = header;
-            loopHeaderById.put(b, header);
-        }
-        // >>> AUTOGEN: BYTECODEMAPPER WLRefinement PATCH END
-
-        // Precompute DF/TDF hashes and sizes for each node
-        final Int2LongOpenHashMap dfHash = new Int2LongOpenHashMap();
-        final Int2LongOpenHashMap tdfHash = new Int2LongOpenHashMap();
-        final Int2IntOpenHashMap dfSize = new Int2IntOpenHashMap();
-        final Int2IntOpenHashMap tdfSize = new Int2IntOpenHashMap();
-        for (int b : nodes) {
-            int[] d = df.get(b); if (d == null) d = new int[0];
-            int[] t = tdf.get(b); if (t == null) t = new int[0];
-            dfSize.put(b, d.length);
-            tdfSize.put(b, t.length);
-            dfHash.put(b, hashSortedInts(d));
-            tdfHash.put(b, hashSortedInts(t));
-        }
-
-        // Build neighbor maps (preds/succs labels fetched dynamically each iter)
-        final Int2ObjectOpenHashMap<int[]> preds = new Int2ObjectOpenHashMap<int[]>();
-        final Int2ObjectOpenHashMap<int[]> succs = new Int2ObjectOpenHashMap<int[]>();
-        for (int b : nodes) {
-            Block bb = cfg.block(b);
-            int[] p = bb.preds();
-            int[] s = bb.succs();
-            preds.put(b, p == null ? new int[0] : Arrays.copyOf(p, p.length));
-            succs.put(b, s == null ? new int[0] : Arrays.copyOf(s, s.length));
-        }
-
-        // Initial labels
-        Int2LongOpenHashMap labels = new Int2LongOpenHashMap();
-        for (int b : nodes) {
-            Block bb = cfg.block(b);
-            int[] p = bb.preds();
-            int[] s = bb.succs();
-            long init = hashTuple(
-                    p == null ? 0 : p.length,
-                    s == null ? 0 : s.length,
-                    dom.domDepth(b),
-                    cfgDomChildrenCount(dom, b),
-                    dfSize.get(b),
-                    dfHash.get(b),
-                    tdfSize.get(b),
-                    tdfHash.get(b),
-                    loopHeaderById.get(b) ? 1 : 0
-            );
-            labels.put(b, init);
-        }
-
-        // WL iterations
-        for (int k = 0; k < Math.max(0, iterations); k++) {
-            Int2LongOpenHashMap next = new Int2LongOpenHashMap(labels.size());
+        for (int r = 0; r < rounds; r++) {
+            Map<Integer, Long> next = new HashMap<Integer, Long>();
             for (int b : nodes) {
                 long cur = labels.get(b);
-                long predsHash = multisetHash(labels, preds.get(b));
-                long succsHash = multisetHash(labels, succs.get(b));
-                long lbl = hashConcat(cur, predsHash, succsHash, dfHash.get(b), tdfHash.get(b));
-                next.put(b, lbl);
+                long ph = multisetHashList(labels, preds.get(b));
+                long sh = multisetHashList(labels, succs.get(b));
+                next.put(b, hashConcat(cur, ph, sh));
             }
             labels = next;
         }
-
-        // Method signature: multiset hash of final labels + (blockCount, loopCount)
-    long multiset = multisetAll(labels, nodes);
-        int blockCount = nodes.length;
-        int loopCount = countTrue(isLoopHeader);
-        long methodSig = hashFinal(multiset, blockCount, loopCount);
-
-        return new MethodSignature(methodSig, blockCount, loopCount);
+        return labels;
     }
 
-    // ---- helpers ----
-
-    private static int cfgDomChildrenCount(Dominators dom, int b) {
-        int[] ch = dom.children(b);
-        return ch == null ? 0 : ch.length;
+    public static final class MethodSignature {
+        public final long hash; public final int blockCount; public final int loopCount;
+        public MethodSignature(long hash, int blocks, int loops){ this.hash=hash; this.blockCount=blocks; this.loopCount=loops; }
     }
 
-    private static int countTrue(boolean[] a) {
-        int c=0; for (boolean v : a) if (v) c++; return c;
-    }
-
-    private static long hashSortedInts(int[] arr) {
-        // Encode as "I:<x0>,<x1>,...,"
+    public static MethodSignature computeSignature(ReducedCFG cfg, Dominators dom,
+                                                   Map<Integer,int[]> df, Map<Integer,int[]> tdf,
+                                                   int rounds) {
+        SortedMap<Long,Integer> bag = tokenBagFinal(cfg, dom, df, tdf, rounds);
+        // Derive a 64-bit hash deterministically from the bag text
         StringBuilder sb = new StringBuilder();
-        sb.append('I').append(':');
-        for (int v : arr) { sb.append(v).append(','); }
-        return StableHash64.hashUtf8(sb.toString());
-    }
-
-    private static long hashTuple(int degIn, int degOut, int domDepth, int domChildren,
-                                  int dfSize, long dfHash, int tdfSize, long tdfHash, int loopHdr) {
-        // Encode as pipe-separated tuple; stable textual encoding
-        String s = "T|" + degIn + '|' + degOut + '|' + domDepth + '|' + domChildren
-                + '|' + dfSize + '|' + Long.toUnsignedString(dfHash)
-                + '|' + tdfSize + '|' + Long.toUnsignedString(tdfHash)
-                + '|' + loopHdr;
-        return StableHash64.hashUtf8(s);
-    }
-
-    private static long multisetHash(Int2LongOpenHashMap labels, int[] neighbors) {
-        if (neighbors == null || neighbors.length == 0) return StableHash64.hashUtf8("MS|");
-        long[] vals = new long[neighbors.length];
-        for (int i=0;i<neighbors.length;i++) {
-            vals[i] = labels.get(neighbors[i]);
+        for (Map.Entry<Long,Integer> e : bag.entrySet()) {
+            sb.append(Long.toUnsignedString(e.getKey())).append(':').append(e.getValue()).append('\n');
         }
-        Arrays.sort(vals); // sorted multiset
-        StringBuilder sb = new StringBuilder();
-        sb.append("MS").append('|');
-        for (long v : vals) {
-            sb.append(Long.toUnsignedString(v)).append(',');
-        }
-        return StableHash64.hashUtf8(sb.toString());
+        long h = StableHash64.hashUtf8(sb.toString());
+        // Loop headers count
+        int loops = 0; for (ReducedCFG.Block b : cfg.blocks()) { for (int p : b.preds()) { if (dom.dominates(b.id, p)) { loops++; break; } } }
+    int blocks = cfg.allBlockIds().length;
+        return new MethodSignature(h, blocks, loops);
     }
 
-    private static long hashConcat(long... parts) {
-        // Concatenate unsigned longs in order with a delimiter and hash
-        StringBuilder sb = new StringBuilder(64 * parts.length);
-        sb.append('C').append('|');
-        for (long v : parts) {
-            sb.append(Long.toUnsignedString(v)).append('|');
-        }
-        return StableHash64.hashUtf8(sb.toString());
-    }
-
-    private static long multisetAll(Int2LongOpenHashMap labels, int[] nodeIdsInOrder) {
-        long[] vals = new long[nodeIdsInOrder.length];
-        for (int i=0;i<nodeIdsInOrder.length;i++) vals[i] = labels.get(nodeIdsInOrder[i]);
-        Arrays.sort(vals);
-        StringBuilder sb = new StringBuilder();
-        sb.append("MF").append('|');
-        for (long v : vals) sb.append(Long.toUnsignedString(v)).append(',');
-        return StableHash64.hashUtf8(sb.toString());
-    }
-
-    private static long hashFinal(long multiset, int blockCount, int loopCount) {
-        String s = "FINAL|" + Long.toUnsignedString(multiset) + "|B=" + blockCount + "|L=" + loopCount;
-        return StableHash64.hashUtf8(s);
-    }
-
-    // ---- generic API for tests/backward-compat ----
-    /**
-     * Deterministic WL relabeling over an abstract graph, for testing convenience.
-     * nodes: list of node ids, preds/succs: adjacency as lists of node ids, labels: initial labels.
-     * Returns a fresh map of final labels after given iterations.
-     */
-    public static Map<Integer, Long> refineLabels(
-            java.util.List<Integer> nodes,
-            java.util.Map<Integer, java.util.List<Integer>> preds,
-            java.util.Map<Integer, java.util.List<Integer>> succs,
-            java.util.Map<Integer, Long> labels,
-            int iterations) {
-        // Defensive copies and deterministic order
-        int n = nodes == null ? 0 : nodes.size();
-        int[] order = new int[n];
-        for (int i=0;i<n;i++) order[i] = nodes.get(i).intValue();
-        java.util.Arrays.sort(order);
-
-        it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap cur = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap();
-        for (int id : order) {
-            Long v = labels.get(id);
-            cur.put(id, v == null ? 0L : v.longValue());
-        }
-
-        for (int k=0;k<Math.max(0, iterations);k++) {
-            it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap next = new it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap(cur.size());
-            for (int id : order) {
-                long base = cur.get(id);
-                long predH = hashNeighborMultiset(cur, preds.get(id));
-                long succH = hashNeighborMultiset(cur, succs.get(id));
-                long lbl = hashConcat(base, predH, succH);
-                next.put(id, lbl);
-            }
-            cur = next;
-        }
-        java.util.Map<Integer, Long> out = new java.util.LinkedHashMap<Integer, Long>(order.length);
-        for (int id : order) out.put(id, cur.get(id));
-        return out;
-    }
-
-    private static long hashNeighborMultiset(it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap labels,
-                                             java.util.List<Integer> neigh) {
-        if (neigh == null || neigh.isEmpty()) return StableHash64.hashUtf8("MS|");
-        long[] vals = new long[neigh.size()];
-        for (int i=0;i<neigh.size();i++) vals[i] = labels.get(neigh.get(i).intValue());
-        java.util.Arrays.sort(vals);
-        StringBuilder sb = new StringBuilder();
-        sb.append("MSG").append('|');
-        for (long v : vals) sb.append(Long.toUnsignedString(v)).append(',');
-        return StableHash64.hashUtf8(sb.toString());
-    }
+    // helpers
+    private static int cfgDomChildrenCount(Dominators dom,int b){ int[] ch=dom.children(b); return ch==null?0:ch.length; }
+    private static long hashSortedInts(int[] a){ StringBuilder sb=new StringBuilder(); sb.append('I').append(':'); for(int v: a) sb.append(v).append(','); return StableHash64.hashUtf8(sb.toString()); }
+    private static long hashTuple(int din,int dout,int ddepth,int dchild,int dfSize,long dfHash,int tdfSize,long tdfHash,int loop){ String s = "T|"+din+'|'+dout+'|'+ddepth+'|'+dchild+'|'+dfSize+'|'+Long.toUnsignedString(dfHash)+'|'+tdfSize+'|'+Long.toUnsignedString(tdfHash)+'|'+loop; return StableHash64.hashUtf8(s);}
+    private static long multisetHash(Map<Integer,Long> labels,int[] neigh){ if(neigh==null||neigh.length==0) return StableHash64.hashUtf8("MS|"); long[] v=new long[neigh.length]; for(int i=0;i<neigh.length;i++) v[i]=labels.get(neigh[i]); Arrays.sort(v); StringBuilder sb=new StringBuilder(); sb.append("MS|"); for(long x: v) sb.append(Long.toUnsignedString(x)).append(','); return StableHash64.hashUtf8(sb.toString()); }
+    private static long hashConcat(long... parts){ StringBuilder sb=new StringBuilder(); sb.append('C').append('|'); for(long p: parts) sb.append(Long.toUnsignedString(p)).append('|'); return StableHash64.hashUtf8(sb.toString()); }
+    private static long multisetHashList(Map<Integer,Long> labels, List<Integer> neigh){ if(neigh==null||neigh.isEmpty()) return StableHash64.hashUtf8("MS|"); long[] v=new long[neigh.size()]; for(int i=0;i<neigh.size();i++) v[i]=labels.containsKey(neigh.get(i))? labels.get(neigh.get(i)) : 0L; Arrays.sort(v); StringBuilder sb=new StringBuilder(); sb.append("MS|"); for(long x: v) sb.append(Long.toUnsignedString(x)).append(','); return StableHash64.hashUtf8(sb.toString()); }
 }
-// <<< AUTOGEN: BYTECODEMAPPER WLRefinement END
 

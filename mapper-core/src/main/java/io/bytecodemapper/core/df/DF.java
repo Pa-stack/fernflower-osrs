@@ -1,115 +1,20 @@
-// >>> AUTOGEN: BYTECODEMAPPER DF BEGIN
 package io.bytecodemapper.core.df;
 
 import io.bytecodemapper.core.cfg.ReducedCFG;
 import io.bytecodemapper.core.cfg.ReducedCFG.Block;
 import io.bytecodemapper.core.dom.Dominators;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
-/** Cytron DF and transitive DF (IDF/TDF) with sorted int[] sets. */
+/** Cytron DF producing deterministic sorted arrays without external deps. */
 public final class DF {
     private DF() {}
 
-    /** Compute DF(b) for each block b, returning sorted arrays. */
-    public static Map<Integer, int[]> compute(ReducedCFG cfg, Dominators dom) {
-        int[] nodes = cfg.allBlockIds();
-        Map<Integer, int[]> out = new LinkedHashMap<Integer, int[]>();
-        if (nodes.length == 0) return out;
+    public static Map<Integer,int[]> compute(ReducedCFG cfg, Dominators dom){int[] nodes=cfg.allBlockIds(); Arrays.sort(nodes); Map<Integer,Set<Integer>> sets=new LinkedHashMap<Integer,Set<Integer>>(); for(int b: nodes) sets.put(b,new HashSet<Integer>());
+        for(int n: nodes){Block bn=cfg.block(n); int[] preds=bn.preds(); int id=dom.idom(n); for(int p: preds){int r=p; while(r!=-1 && r!=id){sets.get(r).add(n); r=dom.idom(r);} }} Map<Integer,int[]> out=new LinkedHashMap<Integer,int[]>(); for(int b: nodes) out.put(b, toSorted(sets.get(b))); return out; }
 
-        // Work map: blockId -> set of blockIds in its DF
-        Int2ObjectOpenHashMap<IntOpenHashSet> df = new Int2ObjectOpenHashMap<IntOpenHashSet>();
-        for (int b : nodes) df.put(b, new IntOpenHashSet());
+    public static Map<Integer,int[]> iterateToFixpoint(Map<Integer,int[]> df){int[] keys=new int[df.size()]; int i=0; for(Integer k: df.keySet()) keys[i++]=k.intValue(); Arrays.sort(keys); Map<Integer,Set<Integer>> work=new LinkedHashMap<Integer,Set<Integer>>(); for(int k: keys){Set<Integer> s=new HashSet<Integer>(); for(int v: df.get(k)) s.add(v); work.put(k, s);} int guard=0; boolean changed; do{changed=false; for(int b: keys){Set<Integer> s=work.get(b); List<Integer> add=new ArrayList<Integer>(); for(int y: s){int[] dy=df.get(y); if(dy!=null) for(int z: dy) add.add(z);} if(!add.isEmpty()){int before=s.size(); s.addAll(add); if(s.size()!=before) changed=true; } } guard++; if(guard>1000) throw new IllegalStateException("TDF: no fixpoint"); }while(changed);
+        Map<Integer,int[]> out=new LinkedHashMap<Integer,int[]>(); for(int b: keys) out.put(b, toSorted(work.get(b))); return out; }
 
-    // Cytron: for each node n, walk each pred up to idom(n)
-        for (int n : nodes) {
-            Block bn = cfg.block(n);
-            int[] preds = bn.preds();
-
-            int idomOfN = dom.idom(n);
-            for (int p : preds) {
-                int runner = p;
-                while (runner != -1 && runner != idomOfN) {
-                    df.get(runner).add(n);
-                    runner = dom.idom(runner);
-                }
-            }
-        }
-
-        // Deterministic output: ascending keys, sorted arrays
-        Arrays.sort(nodes);
-        for (int b : nodes) out.put(b, toSortedArray(df.get(b)));
-        return out;
-    }
-
-    /** Iterate DF to fixpoint to produce TDF (transitive DF). */
-    public static Map<Integer, int[]> iterateToFixpoint(Map<Integer, int[]> df) {
-        // Copy into mutable sets; also track arrays per node to ensure no aliasing and content comparisons
-        Map<Integer, IntOpenHashSet> work = new LinkedHashMap<Integer, IntOpenHashSet>();
-        Map<Integer, int[]> arrays = new LinkedHashMap<Integer, int[]>();
-        int[] keys = new int[df.size()];
-        int ki = 0;
-        for (Map.Entry<Integer, int[]> e : df.entrySet()) {
-            Integer key = e.getKey();
-            keys[ki++] = key.intValue();
-            IntOpenHashSet set = new IntOpenHashSet(e.getValue());
-            work.put(key, set);
-            // Initialize arrays map with a fresh sorted copy (no aliasing)
-            arrays.put(key, toSortedArray(set));
-        }
-        Arrays.sort(keys);
-
-        System.out.println("[DF] iterateToFixpoint start, nodes=" + df.size());
-        int iter = 0; final int GUARD = 1000;
-        while (true) {
-            boolean changed = false;
-            for (int b : keys) {
-                IntOpenHashSet set = work.get(Integer.valueOf(b));
-                // For each y in current DF(b), union DF(y)
-                IntOpenHashSet add = new IntOpenHashSet();
-                for (int y : set) {
-                    int[] dfy = df.get(Integer.valueOf(y));
-                    if (dfy == null) continue;
-                    for (int z : dfy) add.add(z);
-                }
-                // Apply union to set
-                set.addAll(add);
-
-                // Compute new array snapshot and compare content (no aliasing)
-                int[] beforeArr = arrays.get(Integer.valueOf(b));
-                int[] afterArr = toSortedArray(set);
-                if (!Arrays.equals(beforeArr, afterArr)) {
-                    changed = true;
-                    arrays.put(Integer.valueOf(b), afterArr); // new array object
-                }
-            }
-            System.out.println("[DF] iter=" + (iter + 1) + ", changed=" + changed);
-            iter++;
-            if (iter > GUARD) {
-                throw new IllegalStateException("DF.iterateToFixpoint: no convergence after " + iter);
-            }
-            if (!changed) break;
-        }
-
-        // Emit out map from arrays snapshot to ensure deterministic, non-aliased results
-        Map<Integer, int[]> out = new LinkedHashMap<Integer, int[]>();
-        for (int b : keys) {
-            int[] a = arrays.get(Integer.valueOf(b));
-            // Ensure we hand out a fresh array instance
-            out.put(Integer.valueOf(b), a == null ? new int[0] : Arrays.copyOf(a, a.length));
-        }
-        return out;
-    }
-
-    private static int[] toSortedArray(IntSet s) {
-        int[] a = s == null ? new int[0] : s.toIntArray();
-        Arrays.sort(a);
-        return a;
-    }
+    private static int[] toSorted(Set<Integer> s){ if(s==null||s.isEmpty()) return new int[0]; int[] a=new int[s.size()]; int i=0; for(Integer v: s) a[i++]=v.intValue(); Arrays.sort(a); return a; }
 }
-// <<< AUTOGEN: BYTECODEMAPPER DF END

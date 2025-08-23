@@ -21,8 +21,8 @@ public class WLTokenBagDeterminismTest {
         Dominators doma = Dominators.compute(cfga);
         Dominators domb = Dominators.compute(cfgb);
 
-        Long2IntSortedMap bagA = WLRefinement.tokenBagFinal(cfga, doma, WLRefinement.DEFAULT_K);
-        Long2IntSortedMap bagB = WLRefinement.tokenBagFinal(cfgb, domb, WLRefinement.DEFAULT_K);
+    Long2IntSortedMap bagA = WLRefinement.tokenBagFinal(cfga, doma, WLRefinement.DEFAULT_K, true);
+    Long2IntSortedMap bagB = WLRefinement.tokenBagFinal(cfgb, domb, WLRefinement.DEFAULT_K, true);
 
         Assert.assertEquals("Token bags must match for identical CFGs regardless of insertion order", bagA, bagB);
     }
@@ -37,8 +37,8 @@ public class WLTokenBagDeterminismTest {
         Dominators dom0 = Dominators.compute(cfg0);
         Dominators dom1 = Dominators.compute(cfg1);
 
-        Long2IntSortedMap bag0 = WLRefinement.tokenBagFinal(cfg0, dom0, WLRefinement.DEFAULT_K);
-        Long2IntSortedMap bag1 = WLRefinement.tokenBagFinal(cfg1, dom1, WLRefinement.DEFAULT_K);
+    Long2IntSortedMap bag0 = WLRefinement.tokenBagFinal(cfg0, dom0, WLRefinement.DEFAULT_K, true);
+    Long2IntSortedMap bag1 = WLRefinement.tokenBagFinal(cfg1, dom1, WLRefinement.DEFAULT_K, true);
 
         int l1 = l1Distance(bag0, bag1);
         // Typical small refactor difference: allow up to 2
