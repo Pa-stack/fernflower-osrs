@@ -5,6 +5,9 @@ import io.bytecodemapper.core.cfg.ReducedCFG.Block;
 import io.bytecodemapper.core.df.DF;
 import io.bytecodemapper.core.dom.Dominators;
 import io.bytecodemapper.core.hash.StableHash64;
+import it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntSortedMap;
 
 import java.util.*;
 
@@ -22,18 +25,26 @@ public final class WLRefinement {
         Map<Integer,Long> labels=new HashMap<Integer,Long>(); for(int b: nodes){Block bb=cfg.block(b); int[] p=bb.preds(), s=bb.succs(); long init = hashTuple(p.length, s.length, dom.domDepth(b), cfgDomChildrenCount(dom,b), dfSize.get(b), dfHash.get(b), tdfSize.get(b), tdfHash.get(b), loopHdr.contains(b)?1:0); labels.put(b, init);} for(int k=0;k<rounds;k++){ Map<Integer,Long> next=new HashMap<Integer,Long>(); for(int b: nodes){ long cur=labels.get(b); long ph=multisetHash(labels, preds.get(b)); long sh=multisetHash(labels, succs.get(b)); long lbl=hashConcat(cur,ph,sh, dfHash.get(b), tdfHash.get(b)); next.put(b,lbl);} labels=next; }
         SortedMap<Long,Integer> bag=new TreeMap<Long,Integer>(new Comparator<Long>(){public int compare(Long a,Long b){ return Long.compareUnsigned(a,b);} }); for(int b: nodes){ long t=labels.get(b); Integer c=bag.get(t); bag.put(t, c==null?1:c+1);} return bag;
     }
-    public static SortedMap<Long,Integer> tokenBagFinal(ReducedCFG cfg, Dominators dom, int rounds){ Map<Integer,int[]> df=DF.compute(cfg,dom); Map<Integer,int[]> tdf=DF.iterateToFixpoint(df); return tokenBagFinal(cfg,dom,df,tdf,rounds);}
+    public static SortedMap<Long,Integer> tokenBagFinalSorted(ReducedCFG cfg, Dominators dom, int rounds){ Map<Integer,int[]> df=DF.compute(cfg,dom); Map<Integer,int[]> tdf=DF.iterateToFixpoint(df); return tokenBagFinal(cfg,dom,df,tdf,rounds);}
 
     // Fastutil adapter for existing tests expecting Long2IntSortedMap
     public static it.unimi.dsi.fastutil.longs.Long2IntSortedMap tokenBagFinal(ReducedCFG cfg, Dominators dom, int rounds, boolean asFastutil){
-        SortedMap<Long,Integer> bag = tokenBagFinal(cfg, dom, rounds);
+        SortedMap<Long,Integer> bag = tokenBagFinalSorted(cfg, dom, rounds);
         it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap m = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
         for (Map.Entry<Long,Integer> e : bag.entrySet()) m.put(e.getKey().longValue(), e.getValue().intValue());
         return m;
     }
 
+    /** Convenience overload used by CLI: compute DF/TDF internally and return fastutil map. */
+    public static Long2IntSortedMap tokenBagFinal(ReducedCFG cfg, Dominators dom, int rounds){
+        SortedMap<Long,Integer> bag = tokenBagFinalSorted(cfg, dom, rounds);
+        Long2IntAVLTreeMap m = new Long2IntAVLTreeMap();
+        for (Map.Entry<Long,Integer> e : bag.entrySet()) m.put(e.getKey().longValue(), e.getValue().intValue());
+        return m;
+    }
+
     // Build ReducedCFG/Dominators for method and serialize token bag to bytes (token:count per line, sorted)
-    public static byte[] signature(org.objectweb.asm.tree.MethodNode mn, int rounds){ ReducedCFG cfg=ReducedCFG.build(mn); Dominators dom=Dominators.compute(cfg); SortedMap<Long,Integer> bag=tokenBagFinal(cfg,dom,rounds); StringBuilder sb=new StringBuilder(); for(Map.Entry<Long,Integer> e: bag.entrySet()){ sb.append(Long.toUnsignedString(e.getKey())).append(':').append(e.getValue()).append('\n'); } return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);}
+    public static byte[] signature(org.objectweb.asm.tree.MethodNode mn, int rounds){ ReducedCFG cfg=ReducedCFG.build(mn); Dominators dom=Dominators.compute(cfg); SortedMap<Long,Integer> bag=tokenBagFinalSorted(cfg,dom,rounds); StringBuilder sb=new StringBuilder(); for(Map.Entry<Long,Integer> e: bag.entrySet()){ sb.append(Long.toUnsignedString(e.getKey())).append(':').append(e.getValue()).append('\n'); } return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);}
     public static String sha256Hex(byte[] bytes){ try{ java.security.MessageDigest md=java.security.MessageDigest.getInstance("SHA-256"); byte[] d=md.digest(bytes); StringBuilder hex=new StringBuilder(d.length*2); for(byte b: d) hex.append(String.format(java.util.Locale.ROOT, "%02x", b)); return hex.toString(); } catch(Exception e){ return Integer.toHexString(Arrays.hashCode(bytes)); } }
 
     // --- Compatibility surfaces for older tests ---
@@ -64,6 +75,11 @@ public final class WLRefinement {
     public static final class MethodSignature {
         public final long hash; public final int blockCount; public final int loopCount;
         public MethodSignature(long hash, int blocks, int loops){ this.hash=hash; this.blockCount=blocks; this.loopCount=loops; }
+    }
+
+    /** Convenience: compute DF/TDF internally for CLI call sites. */
+    public static MethodSignature computeSignature(ReducedCFG cfg, Dominators dom, int rounds) {
+        Map<Integer,int[]> df=DF.compute(cfg,dom); Map<Integer,int[]> tdf=DF.iterateToFixpoint(df); return computeSignature(cfg, dom, df, tdf, rounds);
     }
 
     public static MethodSignature computeSignature(ReducedCFG cfg, Dominators dom,
