@@ -1,102 +1,66 @@
 package io.bytecodemapper.cli;
 
-import org.junit.Ignore;
+import org.junit.Assume;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
 
 import static org.junit.Assert.*;
 
 public class MapOldNewSmokeTest {
-
-  private static class RunResult { final String out; final int exit; RunResult(String o,int e){out=o;exit=e;} }
-
-  private static RunResult runCli(String... args) throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    PrintStream origOut = System.out;
-    int exit = 0;
+  private static String runCli(String... args) throws Exception {
+    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+    PrintStream prevOut = System.out;
+    PrintStream cap = new PrintStream(bout, true, "UTF-8");
+    System.setOut(cap);
     try {
-      System.setOut(new PrintStream(baos, true, "UTF-8"));
-      io.bytecodemapper.cli.MapOldNew.main(args);
-    } catch (Throwable t) {
-      exit = 1;
+      MapOldNew.main(args);
     } finally {
-      System.setOut(origOut);
+      System.setOut(prevOut);
     }
-    return new RunResult(new String(baos.toByteArray(), StandardCharsets.UTF_8), exit);
+    return new String(bout.toByteArray(), StandardCharsets.UTF_8);
   }
 
-  private static boolean fixturesAvailable(Path oldJar, Path newJar){
-    return Files.isRegularFile(oldJar) && Files.isRegularFile(newJar);
-  }
-
-  @Test
-  public void anchors_noRefine_deterministic() throws Exception {
-    Path oldJar = io.bytecodemapper.cli.util.CliPaths.resolveInput("data/weeks/2025-34/old.jar");
-    Path newJar = io.bytecodemapper.cli.util.CliPaths.resolveInput("data/weeks/2025-34/new.jar");
-    if (!fixturesAvailable(oldJar, newJar)) {
-      System.out.println("[SMOKE] fixtures not present; skipping");
-      throw new org.junit.internal.AssumptionViolatedException("fixtures not present");
-    }
-    Path outTiny = io.bytecodemapper.cli.util.CliPaths.resolveOutput("mapper-cli/build/test-out-noref.tiny");
-    Files.createDirectories(outTiny.getParent());
-
-    String[] base = new String[]{
-        "--old", oldJar.toString(),
-        "--new", newJar.toString(),
-        "--out", outTiny.toString(),
-        "--no-refine",
-        "--maxMethods", "5"
-    };
-    RunResult r1 = runCli(base);
-    RunResult r2 = runCli(base);
-    assertEquals(0, r1.exit);
-    assertEquals(0, r2.exit);
-    assertTrue(r1.out.contains("pipeline.wl.k=25"));
-    assertTrue(r1.out.contains("tau=0.60 margin=0.05"));
-    assertTrue(r1.out.contains("assign.bytes.sha256="));
-    assertFalse(r1.out.contains("REFINE_ITER"));
-    assertEquals(hash(r1.out), hash(r2.out));
-  }
-
-  @Test
-  public void anchors_refine_deterministic() throws Exception {
-    Path oldJar = io.bytecodemapper.cli.util.CliPaths.resolveInput("data/weeks/2025-34/old.jar");
-    Path newJar = io.bytecodemapper.cli.util.CliPaths.resolveInput("data/weeks/2025-34/new.jar");
-    if (!fixturesAvailable(oldJar, newJar)) {
-      System.out.println("[SMOKE] fixtures not present; skipping");
-      throw new org.junit.internal.AssumptionViolatedException("fixtures not present");
-    }
-    Path outTiny = io.bytecodemapper.cli.util.CliPaths.resolveOutput("mapper-cli/build/test-out-refine.tiny");
-    Files.createDirectories(outTiny.getParent());
-
-    String[] base = new String[]{
-        "--old", oldJar.toString(),
-        "--new", newJar.toString(),
-        "--out", outTiny.toString(),
-        "--refine",
-        "--maxMethods", "5"
-    };
-    RunResult r1 = runCli(base);
-    RunResult r2 = runCli(base);
-    assertEquals(0, r1.exit);
-    assertEquals(0, r2.exit);
-    assertTrue(r1.out.contains("pipeline.wl.k=25"));
-    assertTrue(r1.out.contains("REFINE_ITER="));
-    assertTrue(r1.out.contains("pipeline.assign.sha256="));
-    assertEquals(hash(r1.out), hash(r2.out));
-  }
-
-  private static String hash(String s) throws Exception {
-    java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+  private static String sha256(String s) throws Exception {
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
     byte[] d = md.digest(s.getBytes(StandardCharsets.UTF_8));
-    StringBuilder sb = new StringBuilder(d.length * 2);
-    for (byte b : d) sb.append(String.format(java.util.Locale.ROOT, "%02x", b));
+    StringBuilder sb = new StringBuilder(d.length*2);
+    for (byte b: d) sb.append(String.format(java.util.Locale.ROOT, "%02x", b));
     return sb.toString();
   }
+
+  private static boolean fixturesPresent() {
+    return Files.isRegularFile(Paths.get("data/weeks/osrs-1.jar")) &&
+           Files.isRegularFile(Paths.get("data/weeks/osrs-10.jar"));
+  }
+
+  @Test
+  public void smoke_no_refine_deterministic() throws Exception {
+    if (!fixturesPresent()) { System.out.println("fixtures not present"); }
+    Assume.assumeTrue(fixturesPresent());
+    String out1 = runCli("--old", "data/weeks/osrs-1.jar", "--new", "data/weeks/osrs-10.jar", "--out", "mapper-cli/build/test/no-refine-1.tiny", "--no-refine");
+    String out2 = runCli("--old", "data/weeks/osrs-1.jar", "--new", "data/weeks/osrs-10.jar", "--out", "mapper-cli/build/test/no-refine-2.tiny", "--no-refine");
+    assertTrue(out1.contains("pipeline.wl.k=25"));
+    assertTrue(out1.contains("tau=0.60 margin=0.05"));
+    assertTrue(out1.contains("assign.bytes.sha256="));
+    assertFalse(out1.contains("REFINE_ITER"));
+    assertEquals(sha256(out1), sha256(out2));
+  }
+
+  @Test
+  public void smoke_refine_deterministic() throws Exception {
+    if (!fixturesPresent()) { System.out.println("fixtures not present"); }
+    Assume.assumeTrue(fixturesPresent());
+    String out1 = runCli("--old", "data/weeks/osrs-1.jar", "--new", "data/weeks/osrs-10.jar", "--out", "mapper-cli/build/test/refine-1.tiny", "--refine");
+    String out2 = runCli("--old", "data/weeks/osrs-1.jar", "--new", "data/weeks/osrs-10.jar", "--out", "mapper-cli/build/test/refine-2.tiny", "--refine");
+    assertTrue(out1.contains("pipeline.wl.k=25"));
+    assertTrue(out1.contains("REFINE_ITER=1 delta="));
+    assertTrue(out1.contains("pipeline.assign.sha256="));
+    assertEquals(sha256(out1), sha256(out2));
+  }
 }
-// End of test

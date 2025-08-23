@@ -5,7 +5,6 @@ import io.bytecodemapper.core.cfg.ReducedCFG.Block;
 import io.bytecodemapper.core.df.DF;
 import io.bytecodemapper.core.dom.Dominators;
 import io.bytecodemapper.core.hash.StableHash64;
-import it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.longs.Long2IntSortedMap;
 
 import java.util.*;
@@ -15,6 +14,10 @@ public final class WLRefinement {
     // Compatibility default rounds for tests
     public static final int DEFAULT_K = 2;
     static final boolean DEBUG = Boolean.getBoolean("mapper.debug");
+    // (int prop helper unused after unification)
+    // --- WL block cap property (unified path) ---
+    private static final String PROP_MAX_BLOCKS = "mapper.wl.max.blocks";
+    private static int maxBlocks() { try { return Integer.parseInt(System.getProperty(PROP_MAX_BLOCKS, "800")); } catch(Exception e){ return 800; } }
 
     // Lightweight thread dump for watchdog diagnostics (no external deps)
     public static void dumpAllStacks(String reason){
@@ -42,31 +45,67 @@ public final class WLRefinement {
         SortedMap<Long,Integer> bag=new TreeMap<Long,Integer>(new Comparator<Long>(){public int compare(Long a,Long b){ return Long.compareUnsigned(a,b);} }); for(int b: nodes){ long t=labels.get(b); Integer c=bag.get(t); bag.put(t, c==null?1:c+1);} return bag;
     }
     public static SortedMap<Long,Integer> tokenBagFinalSorted(ReducedCFG cfg, Dominators dom, int rounds){
-        // Diagnostic banner for WL phase
-        if (DEBUG) {
-            try {
-                int[] nodes = cfg.allBlockIds();
-                System.out.println("[WL] tokenBag.rounds=" + rounds + " nodes=" + (nodes==null?0:nodes.length));
-                System.out.flush();
-            } catch (Throwable ignore) { /* best-effort */ }
+        // Delegate to unified fastutil path, then convert to signed-ordered TreeMap with unsigned comparator
+        it.unimi.dsi.fastutil.longs.Long2IntSortedMap fu = computeBagFastutil(cfg, dom, rounds);
+        SortedMap<Long,Integer> bag = new TreeMap<Long,Integer>(new Comparator<Long>(){ public int compare(Long a, Long b){ return Long.compareUnsigned(a,b); } });
+        for (it.unimi.dsi.fastutil.longs.Long2IntMap.Entry e : fu.long2IntEntrySet()) {
+            bag.put(Long.valueOf(e.getLongKey()), Integer.valueOf(e.getIntValue()));
         }
-        Map<Integer,int[]> df=DF.compute(cfg,dom); Map<Integer,int[]> tdf=DF.iterateToFixpoint(df); return tokenBagFinal(cfg,dom,df,tdf,rounds);
+        return bag;
     }
 
     // Fastutil adapter for existing tests expecting Long2IntSortedMap
     public static it.unimi.dsi.fastutil.longs.Long2IntSortedMap tokenBagFinal(ReducedCFG cfg, Dominators dom, int rounds, boolean asFastutil){
-        SortedMap<Long,Integer> bag = tokenBagFinalSorted(cfg, dom, rounds);
-        it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap m = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
-        for (Map.Entry<Long,Integer> e : bag.entrySet()) m.put(e.getKey().longValue(), e.getValue().intValue());
-        return m;
+        return computeBagFastutil(cfg, dom, rounds);
     }
 
     /** Convenience overload used by CLI: compute DF/TDF internally and return fastutil map. */
     public static Long2IntSortedMap tokenBagFinal(ReducedCFG cfg, Dominators dom, int rounds){
-        SortedMap<Long,Integer> bag = tokenBagFinalSorted(cfg, dom, rounds);
-        Long2IntAVLTreeMap m = new Long2IntAVLTreeMap();
-        for (Map.Entry<Long,Integer> e : bag.entrySet()) m.put(e.getKey().longValue(), e.getValue().intValue());
-        return m;
+        return computeBagFastutil(cfg, dom, rounds);
+    }
+
+    // Unified implementation: capped lite path or full DF/TDF path; returns fastutil map.
+    private static it.unimi.dsi.fastutil.longs.Long2IntSortedMap computeBagFastutil(
+            io.bytecodemapper.core.cfg.ReducedCFG cfg,
+            io.bytecodemapper.core.dom.Dominators dom,
+            int rounds) {
+        final int n = cfg.allBlockIds().length;
+        final boolean lite = n > maxBlocks();
+        if (lite) {
+            // tokenBagFinalLiteSorted: initial labels + preds/succs only, fixed 1 round
+            java.util.SortedMap<Long,Integer> sm = tokenBagFinalLiteSorted(cfg, dom, 1);
+            it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap m = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
+            for (java.util.Map.Entry<Long,Integer> e : sm.entrySet()) m.put(e.getKey().longValue(), e.getValue().intValue());
+            return m;
+        } else {
+            // Normal full path with DF/TDF
+            java.util.Map<java.lang.Integer,int[]> df = io.bytecodemapper.core.df.DF.compute(cfg, dom);
+            java.util.Map<java.lang.Integer,int[]> tdf = io.bytecodemapper.core.df.DF.iterateToFixpoint(df);
+            java.util.SortedMap<Long,Integer> sm = tokenBagFinal(cfg, dom, df, tdf, rounds);
+            it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap m = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
+            for (java.util.Map.Entry<Long,Integer> e : sm.entrySet()) m.put(e.getKey().longValue(), e.getValue().intValue());
+            return m;
+        }
+    }
+
+    // Lite path: no DF/TDF. SortedMap variant for core use.
+    public static SortedMap<Long,Integer> tokenBagFinalLiteSorted(ReducedCFG cfg, Dominators dom, int rounds){
+        int[] nodes = cfg.allBlockIds();
+        Arrays.sort(nodes);
+        Map<Integer,int[]> preds=new HashMap<Integer,int[]>(), succs=new HashMap<Integer,int[]>();
+        for(int b: nodes){ Block bb=cfg.block(b); preds.put(b, bb.preds()); succs.put(b, bb.succs()); }
+        Set<Integer> loopHdr=new HashSet<Integer>(); for(int b: nodes){ Block bb=cfg.block(b); for(int p: bb.preds()) if(dom.dominates(b,p)){ loopHdr.add(b); break; } }
+        // Initial labels: degIn, degOut, domDepth, domChildren, loopHeader (no DF/TDF)
+        Map<Integer,Long> labels=new HashMap<Integer,Long>();
+        for(int b: nodes){ Block bb=cfg.block(b); int[] p=bb.preds(), s=bb.succs();
+            long init = StableHash64.hashUtf8("LITE|"+p.length+'|'+s.length+'|'+dom.domDepth(b)+'|'+cfgDomChildrenCount(dom,b)+'|'+(loopHdr.contains(b)?1:0));
+            labels.put(b, init);
+        }
+        for(int k=0;k<Math.max(0, rounds);k++){
+            Map<Integer,Long> next=new HashMap<Integer,Long>();
+            for(int b: nodes){ long cur=labels.get(b); long ph=multisetHash(labels, preds.get(b)); long sh=multisetHash(labels, succs.get(b)); long lbl=hashConcat(cur,ph,sh); next.put(b,lbl);} labels=next;
+        }
+        SortedMap<Long,Integer> bag=new TreeMap<Long,Integer>(new Comparator<Long>(){public int compare(Long a,Long b){ return Long.compareUnsigned(a,b);} }); for(int b: nodes){ long t=labels.get(b); Integer c=bag.get(t); bag.put(t, c==null?1:c+1);} return bag;
     }
 
     // Build ReducedCFG/Dominators for method and serialize token bag to bytes (token:count per line, sorted)

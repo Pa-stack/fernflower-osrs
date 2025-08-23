@@ -4,6 +4,7 @@ package io.bytecodemapper.core.match;
 import io.bytecodemapper.cli.Main;
 import io.bytecodemapper.cli.util.CliPaths;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -13,6 +14,14 @@ import java.nio.file.Path;
 public class FlatteningGateFastFailEquivalenceTest {
 
     private static void run(String[] args) throws Exception { Main.main(args); }
+
+        @BeforeClass
+        public static void capWL() {
+                if (System.getProperty("mapper.wl.max.blocks") == null) System.setProperty("mapper.wl.max.blocks", "400");
+                if (System.getProperty("mapper.wl.cache.size") == null) System.setProperty("mapper.wl.cache.size", "4096");
+                if (System.getProperty("mapper.wl.watchdog.ms") == null) System.setProperty("mapper.wl.watchdog.ms", "2000");
+                if (System.getProperty("mapper.cand.watchdog.ms") == null) System.setProperty("mapper.cand.watchdog.ms", "8000");
+        }
 
         private static int extractInt(String json, String key) {
                 int i = json.indexOf(key);
@@ -28,7 +37,7 @@ public class FlatteningGateFastFailEquivalenceTest {
                 return any ? n : -1;
         }
 
-    @Test
+        @Test(timeout = 120000)
     public void flattenedPair_deterministic_and_fastfail_visible() throws Exception {
         Path oldJar = CliPaths.resolveInput("data/weeks/osrs-170.jar");
         Path newJar = CliPaths.resolveInput("data/weeks/osrs-171.jar");

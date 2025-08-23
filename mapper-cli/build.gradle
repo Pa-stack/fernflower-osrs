@@ -39,6 +39,21 @@ tasks.withType(JavaExec).configureEach {
 }
 // >>> AUTOGEN: BYTECODEMAPPER mapper-cli build.gradle IDF CLI END
 
+// >>> AUTOGEN: BYTECODEMAPPER TEST SYSProps Passthrough BEGIN
+test {
+    // Forward optional system properties; don’t hard-set values
+    [
+        "mapper.debug",
+        "mapper.wl.max.blocks",
+        "mapper.wl.cache.size",
+        "mapper.wl.watchdog.ms",
+        "mapper.cand.watchdog.ms"
+    ].each { k ->
+        if (System.properties[k] != null) systemProperty k, System.properties[k]
+    }
+}
+// <<< AUTOGEN: BYTECODEMAPPER TEST SYSProps Passthrough END
+
 // >>> AUTOGEN: BYTECODEMAPPER SMOKE TASKS BEGIN
 import java.security.MessageDigest
 
