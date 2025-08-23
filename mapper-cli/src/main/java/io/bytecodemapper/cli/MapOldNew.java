@@ -13,6 +13,7 @@ import io.bytecodemapper.core.fingerprint.ClasspathScanner;
 import io.bytecodemapper.cli.orch.Orchestrator;
 import io.bytecodemapper.cli.orch.OrchestratorOptions;
 // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH IMPORTS END
+import io.bytecodemapper.signals.scoring.CompositeScorer;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
@@ -33,7 +34,7 @@ final class MapOldNew {
     static void run(String[] args) throws Exception {
         // Tiny pre-parse for demo-only refinement toggle; default ON
         boolean refineDemo = false; boolean refineDemoEnabled = true;
-        for (int i=0;i<args.length;i++) {
+    for (int i=0;i<args.length;i++) {
             String a = args[i];
             if ("--refine-demo".equals(a)) refineDemo = true;
             else if ("--no-refine".equals(a)) refineDemoEnabled = false;
@@ -96,12 +97,13 @@ final class MapOldNew {
         if (!newJar.isFile()) throw new FileNotFoundException("new jar not found: " + newJar);
         if (out.getParentFile()!=null) out.getParentFile().mkdirs();
 
-        // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH FLAGS BEGIN
+    // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH FLAGS BEGIN
         boolean deterministic = false;
         String cacheDirStr = "mapper-cli/build/cache";
         String idfPathStr  = "mapper-cli/build/idf.properties";
     String dumpNormalizedDir = null; // --dump-normalized-features[=dir]
     String reportPathStr = null; // --report <path>
+    int wlK = io.bytecodemapper.core.wl.MethodCandidateGenerator.DEFAULT_K; // --wl-k
         for (int i=0;i<args.length;i++) {
             if ("--deterministic".equals(args[i])) { deterministic = true; }
             else if ("--cacheDir".equals(args[i]) && i+1<args.length) { cacheDirStr = args[++i]; }
@@ -114,6 +116,10 @@ final class MapOldNew {
                 // if flag provided without value, we'll assign default later
             } else if ("--report".equals(args[i]) && i+1<args.length) {
                 reportPathStr = args[++i];
+            } else if ("--wl-k".equals(args[i]) && i+1<args.length) {
+                try { wlK = Integer.parseInt(args[++i]); } catch (NumberFormatException ignore) {}
+            } else if (args[i].startsWith("--wl-k=")) {
+                try { wlK = Integer.parseInt(args[i].substring("--wl-k=".length())); } catch (NumberFormatException ignore) {}
             }
         }
         java.nio.file.Path cacheDir = io.bytecodemapper.cli.util.CliPaths.resolveOutput(cacheDirStr);
@@ -354,6 +360,111 @@ final class MapOldNew {
     // Write Tiny v2 deterministically using orchestrator output
     io.bytecodemapper.io.tiny.TinyV2Writer.writeTiny2(outPath, r.classMap, r.methods, r.fields);
     System.out.println("Wrote Tiny v2 to: " + outPath);
+
+    // --- Deterministic WL→S0→(optional refine)→greedy 1:1 selection anchors ---
+    try {
+        // Print WL K anchor
+        System.out.println("pipeline.wl.k=" + wlK);
+
+        // Build normalized method lists deterministically and nodes map for WL
+        java.util.List<io.bytecodemapper.signals.norm.NormalizedMethod> oldMs = new java.util.ArrayList<io.bytecodemapper.signals.norm.NormalizedMethod>();
+        java.util.List<io.bytecodemapper.signals.norm.NormalizedMethod> newMs = new java.util.ArrayList<io.bytecodemapper.signals.norm.NormalizedMethod>();
+        java.util.Map<Object, org.objectweb.asm.tree.MethodNode> nodes = new java.util.HashMap<Object, org.objectweb.asm.tree.MethodNode>();
+        for (ClassNode cn : oldClasses) {
+            for (MethodNode mn : sortMethodsFiltered(cn)) {
+                io.bytecodemapper.signals.norm.NormalizedMethod nm = io.bytecodemapper.signals.norm.NormalizedMethod.from(cn.name, mn);
+                oldMs.add(nm); nodes.put(nm, mn);
+            }
+        }
+        for (ClassNode cn : newClasses) {
+            for (MethodNode mn : sortMethodsFiltered(cn)) {
+                io.bytecodemapper.signals.norm.NormalizedMethod nm = io.bytecodemapper.signals.norm.NormalizedMethod.from(cn.name, mn);
+                newMs.add(nm); nodes.put(nm, mn);
+            }
+        }
+
+        // Deterministic S0 using WL top-K candidates per old method
+        java.util.SortedMap<String, java.util.SortedMap<String, Double>> S0 = new java.util.TreeMap<String, java.util.SortedMap<String, Double>>();
+        for (io.bytecodemapper.signals.norm.NormalizedMethod om : oldMs) {
+            java.util.List<io.bytecodemapper.core.wl.MethodCandidateGenerator.Candidate> cs = io.bytecodemapper.core.wl.MethodCandidateGenerator.candidatesFor(om, newMs, wlK, nodes);
+            if (cs == null || cs.isEmpty()) continue;
+            String oid = "old#" + om.fingerprintSha256();
+            java.util.SortedMap<String, Double> row = S0.get(oid);
+            if (row == null) { row = new java.util.TreeMap<String, Double>(); S0.put(oid, row); }
+            for (io.bytecodemapper.core.wl.MethodCandidateGenerator.Candidate c : cs) {
+                row.put(c.newId, Double.valueOf(c.wlScore));
+            }
+        }
+
+        // Refine if requested; otherwise deep sorted copy
+        java.util.SortedMap<String, java.util.SortedMap<String, Double>> S;
+        if (refine) {
+            // Convert to Map<String, Map<String, Double>> for API compatibility
+            java.util.SortedMap<String, java.util.Map<String, Double>> S0m = new java.util.TreeMap<String, java.util.Map<String, Double>>();
+            for (java.util.Map.Entry<String, java.util.SortedMap<String, Double>> e : S0.entrySet()) {
+                S0m.put(e.getKey(), e.getValue());
+            }
+            S = RefineRunner.maybeRefine(true, oldMs, newMs, S0m);
+        } else {
+            java.util.SortedMap<String, java.util.SortedMap<String, Double>> tmp = new java.util.TreeMap<String, java.util.SortedMap<String, Double>>();
+            for (java.util.Map.Entry<String, java.util.SortedMap<String, Double>> e : S0.entrySet()) {
+                java.util.SortedMap<String, Double> inner = new java.util.TreeMap<String, Double>();
+                inner.putAll(e.getValue());
+                tmp.put(e.getKey(), inner);
+            }
+            S = tmp;
+        }
+
+        // Greedy 1:1 selection with TAU/MARGIN gating
+        final double TAU = 0.60, MARGIN = 0.05;
+        CompositeScorer.Result assign = new CompositeScorer.Result();
+        class Elig { String o; String n; double s; Elig(String o,String n,double s){this.o=o;this.n=n;this.s=s;} }
+        java.util.List<Elig> elig = new java.util.ArrayList<Elig>();
+        for (java.util.Map.Entry<String, java.util.SortedMap<String, Double>> e : S.entrySet()) {
+            String oid = e.getKey(); java.util.SortedMap<String, Double> row = e.getValue();
+            if (row == null || row.isEmpty()) continue;
+            String bestN = null, secondN = null; double bestS = -1, secondS = -1;
+            for (java.util.Map.Entry<String, Double> ent : row.entrySet()) {
+                String nid = ent.getKey(); double sVal = ent.getValue().doubleValue();
+                if (sVal > bestS || (sVal == bestS && (bestN == null || nid.compareTo(bestN) < 0))) {
+                    secondS = bestS; secondN = bestN; bestS = sVal; bestN = nid;
+                } else if (sVal > secondS || (sVal == secondS && (secondN == null || nid.compareTo(secondN) < 0))) {
+                    secondS = sVal; secondN = nid;
+                }
+            }
+            if (bestN != null) {
+                double margin = (secondN == null) ? bestS : (bestS - secondS);
+                if (bestS >= TAU && margin >= MARGIN) elig.add(new Elig(oid, bestN, bestS));
+            }
+        }
+        java.util.Collections.sort(elig, new java.util.Comparator<Elig>(){
+            public int compare(Elig a, Elig b){ int c = java.lang.Double.compare(b.s, a.s); if (c!=0) return c; c = a.o.compareTo(b.o); if (c!=0) return c; return a.n.compareTo(b.n);} });
+        java.util.Set<String> takenO = new java.util.HashSet<String>();
+        java.util.Set<String> takenN = new java.util.HashSet<String>();
+        for (Elig e : elig) {
+            if (takenO.contains(e.o) || takenN.contains(e.n)) continue;
+            assign.matches.put(e.o, e.n);
+            assign.scores.put(e.o, java.lang.Double.valueOf(e.s));
+            takenO.add(e.o); takenN.add(e.n);
+        }
+
+        // Serialize and hash anchors
+        byte[] bytes = assign.toBytes();
+        String hex;
+        try{
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] d = md.digest(bytes); StringBuilder sb = new StringBuilder(d.length*2); for (byte b: d) sb.append(String.format(java.util.Locale.ROOT, "%02x", b)); hex = sb.toString();
+        }catch(Exception ex){ hex = io.bytecodemapper.core.wl.WLRefinement.sha256Hex(bytes); }
+
+        if (!refine) {
+            System.out.println("tau=0.60 margin=0.05");
+            System.out.println("assign.bytes.sha256=" + hex);
+        } else {
+            System.out.println("pipeline.assign.sha256=" + hex);
+        }
+    } catch (Throwable t) {
+        // Anchor computation is best-effort; do not fail the command
+    }
     // Optional: write report JSON with candidate stats
     if (reportPathStr != null && reportPathStr.length() > 0) {
         java.nio.file.Path rp = io.bytecodemapper.cli.util.CliPaths.resolveOutput(reportPathStr);
