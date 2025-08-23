@@ -357,14 +357,34 @@ final class MapOldNew {
     }
     // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew DUMP NSF JSONL CALL END
 
-    // Write Tiny v2 deterministically using orchestrator output
-    io.bytecodemapper.io.tiny.TinyV2Writer.writeTiny2(outPath, r.classMap, r.methods, r.fields);
-    System.out.println("Wrote Tiny v2 to: " + outPath);
+        // Write Tiny v2 deterministically using orchestrator output
+        if (debugStats) { System.out.println("[PIPE] tiny.start"); System.out.flush(); }
+        io.bytecodemapper.io.tiny.TinyV2Writer.writeTiny2(outPath, r.classMap, r.methods, r.fields);
+        System.out.println("Wrote Tiny v2 to: " + outPath);
+        // Optional: file SHA-256 for diagnostics
+        if (debugStats) {
+            try {
+                java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+                java.nio.file.Path p = outPath;
+                java.io.InputStream in = java.nio.file.Files.newInputStream(p);
+                byte[] buf = new byte[8192];
+                int n;
+                while ((n = in.read(buf)) > 0) { md.update(buf, 0, n); }
+                in.close();
+                byte[] d = md.digest();
+                StringBuilder sb = new StringBuilder(d.length * 2);
+                for (byte b : d) sb.append(String.format(java.util.Locale.ROOT, "%02x", b));
+                System.out.println("tiny.sha256=" + sb.toString());
+            } catch (Throwable t) {
+                // best-effort; ignore
+            }
+        }
 
     // --- Deterministic WL→S0→(optional refine)→greedy 1:1 selection anchors ---
     try {
         // Print WL K anchor
-        System.out.println("pipeline.wl.k=" + wlK);
+    System.out.println("pipeline.wl.k=" + wlK);
+    System.out.flush();
 
         // Build normalized method lists deterministically and nodes map for WL
         java.util.List<io.bytecodemapper.signals.norm.NormalizedMethod> oldMs = new java.util.ArrayList<io.bytecodemapper.signals.norm.NormalizedMethod>();
@@ -383,7 +403,18 @@ final class MapOldNew {
             }
         }
 
+        // Enforce and log cap deterministically
+        if (maxMethods > 0) {
+            int oc = oldMs.size(); int nc = newMs.size();
+            oldMs = new java.util.ArrayList<io.bytecodemapper.signals.norm.NormalizedMethod>(oldMs).subList(0, Math.min(maxMethods, oc));
+            newMs = new java.util.ArrayList<io.bytecodemapper.signals.norm.NormalizedMethod>(newMs).subList(0, Math.min(maxMethods, nc));
+            if (debugStats) { System.out.println("[PIPE] capped oldMs=" + oldMs.size() + " newMs=" + newMs.size() + " (maxMethods=" + maxMethods + ")"); System.out.flush(); }
+        }
+
+        if (debugStats) { System.out.println("[PIPE] start candidates oldMethods=" + oldMs.size() + " newMethods=" + newMs.size() + " cap=" + maxMethods); System.out.flush(); }
+
         // Deterministic S0 using WL top-K candidates per old method
+        final long candT0 = System.nanoTime();
         java.util.SortedMap<String, java.util.SortedMap<String, Double>> S0 = new java.util.TreeMap<String, java.util.SortedMap<String, Double>>();
         for (io.bytecodemapper.signals.norm.NormalizedMethod om : oldMs) {
             java.util.List<io.bytecodemapper.core.wl.MethodCandidateGenerator.Candidate> cs = io.bytecodemapper.core.wl.MethodCandidateGenerator.candidatesFor(om, newMs, wlK, nodes);
@@ -394,6 +425,15 @@ final class MapOldNew {
             for (io.bytecodemapper.core.wl.MethodCandidateGenerator.Candidate c : cs) {
                 row.put(c.newId, Double.valueOf(c.wlScore));
             }
+        }
+        double candMs = (System.nanoTime() - candT0) / 1e6;
+        if (debugStats) {
+            System.out.println(String.format(java.util.Locale.ROOT, "[PIPE] candidates.done in %.1f ms", candMs));
+            long candWatchMs = Long.getLong("mapper.cand.watchdog.ms", 10_000L).longValue();
+            if ((long)candMs > candWatchMs) {
+                dumpAllStacks("[PIPE] watchdog: slow candidates phase ms=" + (long)candMs);
+            }
+            System.out.flush();
         }
 
         // Refine if requested; otherwise deep sorted copy
@@ -415,7 +455,8 @@ final class MapOldNew {
             S = tmp;
         }
 
-        // Greedy 1:1 selection with TAU/MARGIN gating
+    // Greedy 1:1 selection with TAU/MARGIN gating
+    if (debugStats) { System.out.println("[PIPE] scoring.start"); System.out.flush(); }
         final double TAU = 0.60, MARGIN = 0.05;
         CompositeScorer.Result assign = new CompositeScorer.Result();
         class Elig { String o; String n; double s; Elig(String o,String n,double s){this.o=o;this.n=n;this.s=s;} }
@@ -447,6 +488,7 @@ final class MapOldNew {
             assign.scores.put(e.o, java.lang.Double.valueOf(e.s));
             takenO.add(e.o); takenN.add(e.n);
         }
+    if (debugStats) { System.out.println("[PIPE] scoring.done"); System.out.flush(); }
 
         // Serialize and hash anchors
         byte[] bytes = assign.toBytes();
@@ -471,6 +513,7 @@ final class MapOldNew {
         io.bytecodemapper.cli.orch.Orchestrator.writeReportJson(rp, r);
         System.out.println("Wrote report JSON to: " + rp);
     }
+    if (debugStats) { System.out.println("[PIPE] done"); System.out.flush(); }
     return;
     // <<< AUTOGEN: BYTECODEMAPPER CLI MapOldNew ORCH INVOKE END
 
@@ -519,6 +562,21 @@ final class MapOldNew {
         return new Result(accepted, abstained);
     }
     // >>> AUTOGEN: BYTECODEMAPPER CLI MapOldNew PROGRAMMATIC END
+
+    // --- Watchdog helper for diagnostic thread dumps ---
+    static void dumpAllStacks(String reason){
+        try {
+            System.out.println(reason);
+            java.util.Map<Thread, StackTraceElement[]> all = Thread.getAllStackTraces();
+            for (java.util.Map.Entry<Thread, StackTraceElement[]> e : all.entrySet()){
+                Thread t = e.getKey();
+                System.out.println("THREAD " + t.getName() + " id=" + t.getId() + " state=" + t.getState());
+                StackTraceElement[] st = e.getValue();
+                if (st != null) for (StackTraceElement ste : st) System.out.println("  at " + ste.toString());
+            }
+            System.out.flush();
+        } catch (Throwable ignore) { /* best-effort */ }
+    }
 
     // Deterministic filtered method list (skip abstract/native)
     private static List<MethodNode> sortMethodsFiltered(ClassNode cn) {

@@ -10,10 +10,41 @@ public final class MethodCandidateGenerator {
     private MethodCandidateGenerator(){}
     public static final int DEFAULT_K = 25;
     public static final class Candidate { public final String newId; public final double wlScore; public Candidate(String id,double s){this.newId=id;this.wlScore=s;} }
+    static final boolean DEBUG = Boolean.getBoolean("mapper.debug");
 
-    public static List<Candidate> candidatesFor(Object oldKey, List<?> newKeys, int k, Map<?, org.objectweb.asm.tree.MethodNode> nodes){ if(k<=0) k=DEFAULT_K; SortedMap<Long,Integer> oldBag = wlBag(nodes.get(oldKey)); final String oldId = "old#"+ fingerprintOf(oldKey);
-        List<Candidate> out=new ArrayList<Candidate>(); for(Object nk: newKeys){ SortedMap<Long,Integer> nb = wlBag(nodes.get(nk)); double score = cosine(oldBag, nb); String newId = "new#"+ fingerprintOf(nk); out.add(new Candidate(newId,score)); }
-        final String baseOldId = oldId; Collections.sort(out, new Comparator<Candidate>(){ public int compare(Candidate a, Candidate b){ int c = Double.compare(b.wlScore, a.wlScore); if(c!=0) return c; long ha=StableHash64.hashUtf8(baseOldId+"->"+a.newId); long hb=StableHash64.hashUtf8(baseOldId+"->"+b.newId); return Long.compareUnsigned(ha,hb);} }); if(out.size()>k) return new ArrayList<Candidate>(out.subList(0,k)); return out; }
+    public static List<Candidate> candidatesFor(Object oldKey, List<?> newKeys, int k, Map<?, org.objectweb.asm.tree.MethodNode> nodes){
+        if(k<=0) k=DEFAULT_K;
+        final long phaseStart = System.nanoTime();
+        final SortedMap<Long,Integer> oldBag = wlBag(nodes.get(oldKey));
+        final String oldId = "old#"+ fingerprintOf(oldKey);
+        if (DEBUG) { System.out.println("[WL] begin oldId=" + oldId + " news=" + newKeys.size() + " k=" + k); System.out.flush(); }
+        List<Candidate> out=new ArrayList<Candidate>();
+        int progress = 0;
+        for(Object nk: newKeys){
+            long t0 = System.nanoTime();
+            String newId = "new#"+ fingerprintOf(nk);
+            if (DEBUG) { System.out.println("[WL] bag.start newId=" + newId); System.out.flush(); }
+            SortedMap<Long,Integer> nb = wlBag(nodes.get(nk));
+            long dtMs = (System.nanoTime() - t0) / 1_000_000L;
+            long wlWatchMs = Long.getLong("mapper.wl.watchdog.ms", 3000L).longValue();
+            if (dtMs > wlWatchMs) {
+                WLRefinement.dumpAllStacks("[WL] watchdog: slow bag newId=" + newId + " ms=" + dtMs);
+            }
+            if (DEBUG) {
+                System.out.println("[WL] bag.end newId=" + newId + " ms=" + dtMs);
+                if ((++progress % 10) == 0) System.out.flush();
+            } else {
+                progress++;
+            }
+            double score = cosine(oldBag, nb);
+            out.add(new Candidate(newId,score));
+        }
+        final String baseOldId = oldId;
+        Collections.sort(out, new Comparator<Candidate>(){ public int compare(Candidate a, Candidate b){ int c = Double.compare(b.wlScore, a.wlScore); if(c!=0) return c; long ha=StableHash64.hashUtf8(baseOldId+"->"+a.newId); long hb=StableHash64.hashUtf8(baseOldId+"->"+b.newId); return Long.compareUnsigned(ha,hb);} });
+        if(out.size()>k) out = new ArrayList<Candidate>(out.subList(0,k));
+        if (DEBUG) { System.out.println(String.format(java.util.Locale.ROOT, "[WL] end oldId=%s ms=%.1f", oldId, (System.nanoTime()-phaseStart)/1e6)); System.out.flush(); }
+        return out;
+    }
 
     private static String fingerprintOf(Object k){ try{ try{ java.lang.reflect.Method m=k.getClass().getMethod("fingerprintSha256"); Object r=m.invoke(k); return String.valueOf(r);} catch(NoSuchMethodException ex){ java.lang.reflect.Method m2=k.getClass().getMethod("fingerprint"); Object r2=m2.invoke(k); return String.valueOf(r2);} } catch(Exception e){ long h=StableHash64.hashUtf8(String.valueOf(k)); return Long.toHexString(h);} }
     private static SortedMap<Long,Integer> wlBag(org.objectweb.asm.tree.MethodNode mn){ ReducedCFG cfg=ReducedCFG.build(mn); Dominators dom=Dominators.compute(cfg); return WLRefinement.tokenBagFinalSorted(cfg,dom,2);}

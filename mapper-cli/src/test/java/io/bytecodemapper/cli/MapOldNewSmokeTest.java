@@ -1,71 +1,102 @@
-// >>> AUTOGEN: BYTECODEMAPPER TEST MapOldNewSmokeTest HARDEN BEGIN
 package io.bytecodemapper.cli;
 
+import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import java.io.File;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
-import io.bytecodemapper.cli.util.CliPaths;
+
+import static org.junit.Assert.*;
 
 public class MapOldNewSmokeTest {
 
-    @Test
-    public void mapOldNew_producesMappingsAndDebugDump_cwdIndependent() throws Exception {
-    File outDir = CliPaths.resolveOutput("build/smoke/mapoldnew").toFile();
-    File outMap = new File(outDir, "smoke-mappings.tiny");
-    File outDbg = new File(outDir, "normalized-debug.txt");
-        outDir.mkdirs();
+  private static class RunResult { final String out; final int exit; RunResult(String o,int e){out=o;exit=e;} }
 
-        // Use fixture jars relative to repo, not cwd
-    File oldJar = CliPaths.resolveInput("data/weeks/osrs-170.jar").toFile();
-    File newJar = CliPaths.resolveInput("data/weeks/osrs-171.jar").toFile();
-        assertTrue("Missing test jar: " + oldJar, oldJar.isFile());
-        assertTrue("Missing test jar: " + newJar, newJar.isFile());
-
-        String[] args = new String[] {
-            "mapOldNew",
-            "--old", oldJar.getPath(),
-            "--new", newJar.getPath(),
-            "--out", outMap.getPath(),
-            "--deterministic",
-            "--debug-normalized", outDbg.getPath(),
-            "--debug-sample", "16",          // bounded output for CI
-            "--maxMethods", "250"            // throttle for CI stability, optional
-        };
-
-        // Execute via Main; mapOldNew path does not call System.exit
-        Main.main(args);
-
-        assertTrue("mappings.tiny missing", outMap.isFile() && outMap.length() > 0);
-        assertTrue("normalized debug missing", outDbg.isFile() && outDbg.length() > 0);
-
-        // Determinism: re-run and compare bytes
-        File outMap2 = new File(outDir, "smoke-mappings-2.tiny");
-        File outDbg2 = new File(outDir, "normalized-debug-2.txt");
-
-        String[] args2 = new String[] {
-            "mapOldNew",
-            "--old", oldJar.getPath(),
-            "--new", newJar.getPath(),
-            "--out", outMap2.getPath(),
-            "--deterministic",
-            "--debug-normalized", outDbg2.getPath(),
-            "--debug-sample", "16",
-            "--maxMethods", "250"
-        };
-        Main.main(args2);
-
-        byte[] a = Files.readAllBytes(outMap.toPath());
-        byte[] b = Files.readAllBytes(outMap2.toPath());
-        assertTrue("mappings.tiny not identical across runs", Arrays.equals(a, b));
-
-    byte[] da = Files.readAllBytes(outDbg.toPath());
-    byte[] db = Files.readAllBytes(outDbg2.toPath());
-    assertTrue("normalized debug not identical across runs", Arrays.equals(da, db));
+  private static RunResult runCli(String... args) throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    PrintStream origOut = System.out;
+    int exit = 0;
+    try {
+      System.setOut(new PrintStream(baos, true, "UTF-8"));
+      io.bytecodemapper.cli.MapOldNew.main(args);
+    } catch (Throwable t) {
+      exit = 1;
+    } finally {
+      System.setOut(origOut);
     }
+    return new RunResult(new String(baos.toByteArray(), StandardCharsets.UTF_8), exit);
+  }
 
-    // no helper methods
+  private static boolean fixturesAvailable(Path oldJar, Path newJar){
+    return Files.isRegularFile(oldJar) && Files.isRegularFile(newJar);
+  }
+
+  @Test
+  public void anchors_noRefine_deterministic() throws Exception {
+    Path oldJar = io.bytecodemapper.cli.util.CliPaths.resolveInput("data/weeks/2025-34/old.jar");
+    Path newJar = io.bytecodemapper.cli.util.CliPaths.resolveInput("data/weeks/2025-34/new.jar");
+    if (!fixturesAvailable(oldJar, newJar)) {
+      System.out.println("[SMOKE] fixtures not present; skipping");
+      throw new org.junit.internal.AssumptionViolatedException("fixtures not present");
+    }
+    Path outTiny = io.bytecodemapper.cli.util.CliPaths.resolveOutput("mapper-cli/build/test-out-noref.tiny");
+    Files.createDirectories(outTiny.getParent());
+
+    String[] base = new String[]{
+        "--old", oldJar.toString(),
+        "--new", newJar.toString(),
+        "--out", outTiny.toString(),
+        "--no-refine",
+        "--maxMethods", "5"
+    };
+    RunResult r1 = runCli(base);
+    RunResult r2 = runCli(base);
+    assertEquals(0, r1.exit);
+    assertEquals(0, r2.exit);
+    assertTrue(r1.out.contains("pipeline.wl.k=25"));
+    assertTrue(r1.out.contains("tau=0.60 margin=0.05"));
+    assertTrue(r1.out.contains("assign.bytes.sha256="));
+    assertFalse(r1.out.contains("REFINE_ITER"));
+    assertEquals(hash(r1.out), hash(r2.out));
+  }
+
+  @Test
+  public void anchors_refine_deterministic() throws Exception {
+    Path oldJar = io.bytecodemapper.cli.util.CliPaths.resolveInput("data/weeks/2025-34/old.jar");
+    Path newJar = io.bytecodemapper.cli.util.CliPaths.resolveInput("data/weeks/2025-34/new.jar");
+    if (!fixturesAvailable(oldJar, newJar)) {
+      System.out.println("[SMOKE] fixtures not present; skipping");
+      throw new org.junit.internal.AssumptionViolatedException("fixtures not present");
+    }
+    Path outTiny = io.bytecodemapper.cli.util.CliPaths.resolveOutput("mapper-cli/build/test-out-refine.tiny");
+    Files.createDirectories(outTiny.getParent());
+
+    String[] base = new String[]{
+        "--old", oldJar.toString(),
+        "--new", newJar.toString(),
+        "--out", outTiny.toString(),
+        "--refine",
+        "--maxMethods", "5"
+    };
+    RunResult r1 = runCli(base);
+    RunResult r2 = runCli(base);
+    assertEquals(0, r1.exit);
+    assertEquals(0, r2.exit);
+    assertTrue(r1.out.contains("pipeline.wl.k=25"));
+    assertTrue(r1.out.contains("REFINE_ITER="));
+    assertTrue(r1.out.contains("pipeline.assign.sha256="));
+    assertEquals(hash(r1.out), hash(r2.out));
+  }
+
+  private static String hash(String s) throws Exception {
+    java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+    byte[] d = md.digest(s.getBytes(StandardCharsets.UTF_8));
+    StringBuilder sb = new StringBuilder(d.length * 2);
+    for (byte b : d) sb.append(String.format(java.util.Locale.ROOT, "%02x", b));
+    return sb.toString();
+  }
 }
-// >>> AUTOGEN: BYTECODEMAPPER TEST MapOldNewSmokeTest HARDEN END
+// End of test

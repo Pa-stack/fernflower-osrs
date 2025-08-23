@@ -6,7 +6,6 @@ import io.bytecodemapper.core.df.DF;
 import io.bytecodemapper.core.dom.Dominators;
 import io.bytecodemapper.core.hash.StableHash64;
 import it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntSortedMap;
 
 import java.util.*;
@@ -15,6 +14,23 @@ public final class WLRefinement {
     private WLRefinement(){}
     // Compatibility default rounds for tests
     public static final int DEFAULT_K = 2;
+    static final boolean DEBUG = Boolean.getBoolean("mapper.debug");
+
+    // Lightweight thread dump for watchdog diagnostics (no external deps)
+    public static void dumpAllStacks(String reason){
+        try {
+            System.out.println(reason);
+            for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+                Thread t = e.getKey();
+                System.out.println("THREAD " + t.getName() + " id=" + t.getId() + " state=" + t.getState());
+                StackTraceElement[] st = e.getValue();
+                if (st != null) {
+                    for (StackTraceElement ste : st) System.out.println("  at " + ste.toString());
+                }
+            }
+            System.out.flush();
+        } catch (Throwable ignore) { /* best-effort */ }
+    }
 
     // Build a deterministic token bag: map token(long) -> count(int). We'll implement with TreeMap for ordering.
     public static SortedMap<Long,Integer> tokenBagFinal(ReducedCFG cfg, Dominators dom, Map<Integer,int[]> df, Map<Integer,int[]> tdf, int rounds){
@@ -25,7 +41,17 @@ public final class WLRefinement {
         Map<Integer,Long> labels=new HashMap<Integer,Long>(); for(int b: nodes){Block bb=cfg.block(b); int[] p=bb.preds(), s=bb.succs(); long init = hashTuple(p.length, s.length, dom.domDepth(b), cfgDomChildrenCount(dom,b), dfSize.get(b), dfHash.get(b), tdfSize.get(b), tdfHash.get(b), loopHdr.contains(b)?1:0); labels.put(b, init);} for(int k=0;k<rounds;k++){ Map<Integer,Long> next=new HashMap<Integer,Long>(); for(int b: nodes){ long cur=labels.get(b); long ph=multisetHash(labels, preds.get(b)); long sh=multisetHash(labels, succs.get(b)); long lbl=hashConcat(cur,ph,sh, dfHash.get(b), tdfHash.get(b)); next.put(b,lbl);} labels=next; }
         SortedMap<Long,Integer> bag=new TreeMap<Long,Integer>(new Comparator<Long>(){public int compare(Long a,Long b){ return Long.compareUnsigned(a,b);} }); for(int b: nodes){ long t=labels.get(b); Integer c=bag.get(t); bag.put(t, c==null?1:c+1);} return bag;
     }
-    public static SortedMap<Long,Integer> tokenBagFinalSorted(ReducedCFG cfg, Dominators dom, int rounds){ Map<Integer,int[]> df=DF.compute(cfg,dom); Map<Integer,int[]> tdf=DF.iterateToFixpoint(df); return tokenBagFinal(cfg,dom,df,tdf,rounds);}
+    public static SortedMap<Long,Integer> tokenBagFinalSorted(ReducedCFG cfg, Dominators dom, int rounds){
+        // Diagnostic banner for WL phase
+        if (DEBUG) {
+            try {
+                int[] nodes = cfg.allBlockIds();
+                System.out.println("[WL] tokenBag.rounds=" + rounds + " nodes=" + (nodes==null?0:nodes.length));
+                System.out.flush();
+            } catch (Throwable ignore) { /* best-effort */ }
+        }
+        Map<Integer,int[]> df=DF.compute(cfg,dom); Map<Integer,int[]> tdf=DF.iterateToFixpoint(df); return tokenBagFinal(cfg,dom,df,tdf,rounds);
+    }
 
     // Fastutil adapter for existing tests expecting Long2IntSortedMap
     public static it.unimi.dsi.fastutil.longs.Long2IntSortedMap tokenBagFinal(ReducedCFG cfg, Dominators dom, int rounds, boolean asFastutil){
