@@ -28,8 +28,8 @@ public class WLRelaxedDefaultsReportTest {
 
     @Test
     public void defaultsVsOverrides_thresholdsEcho_andDeterministic() throws Exception {
-        Path oldJar = CliPaths.resolveInput("data/weeks/osrs-170.jar");
-        Path newJar = CliPaths.resolveInput("data/weeks/osrs-171.jar");
+        Path oldJar = CliPaths.resolveInput("data/weeks/2025-34/old.jar");
+        Path newJar = CliPaths.resolveInput("data/weeks/2025-34/new.jar");
 
         // Run A: no flags (defaults)
         Path outA = CliPaths.resolveOutput("mapper-cli/build/wl-defaults/a/out.tiny");

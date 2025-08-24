@@ -15,7 +15,8 @@ public class NsfTieringOrderTest {
         String tier = "exact,near,wl,wlrelaxed";
         io.bytecodemapper.cli.Main.main(new String[]{
             "mapOldNew",
-            "--old","data/weeks/osrs-170.jar","--new","data/weeks/osrs-171.jar",
+            // [UNIFORM-JARS-BEGIN]
+            "--old","data/weeks/2025-34/old.jar","--new","data/weeks/2025-34/new.jar",
             "--out",outA.toString(),
             "--nsf-tier-order", tier,
             "--deterministic","--debug-sample","24","--maxMethods","300"
@@ -24,7 +25,8 @@ public class NsfTieringOrderTest {
 
         io.bytecodemapper.cli.Main.main(new String[]{
             "mapOldNew",
-            "--old","data/weeks/osrs-170.jar","--new","data/weeks/osrs-171.jar",
+            "--old","data/weeks/2025-34/old.jar","--new","data/weeks/2025-34/new.jar",
+            // [UNIFORM-JARS-END]
             "--out",outB.toString(),
             "--nsf-tier-order", tier,
             "--deterministic","--debug-sample","24","--maxMethods","300"

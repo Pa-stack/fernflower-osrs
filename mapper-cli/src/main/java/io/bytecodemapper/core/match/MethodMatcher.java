@@ -580,6 +580,78 @@ public final class MethodMatcher {
     }
     // CODEGEN-END: flattening-near-widen helpers
 
+    // --- AUTOGEN: BYTECODEMAPPER PERFORMANCE CACHES BEGIN ---
+    /**
+     * Deterministic, capped LRU caches to avoid recomputing expensive features repeatedly.
+     * Keys use owner\0name\0desc for NormalizedFeatures, and owner\0name\0desc for WL token bags.
+     * Access-order eviction is deterministic given our stable iteration order.
+     */
+    private static final int NF_CACHE_MAX = Integer.getInteger("mapper.nf.cache.size", 4096).intValue();
+    private static final int WLBAG_CACHE_MAX = Integer.getInteger("mapper.wlbag.cache.size", 4096).intValue();
+
+    private static final java.util.Map<String, NormalizedFeatures> NF_CACHE =
+            new java.util.LinkedHashMap<String, NormalizedFeatures>(256, 0.75f, true) {
+                protected boolean removeEldestEntry(java.util.Map.Entry<String, NormalizedFeatures> e) {
+                    return size() > NF_CACHE_MAX;
+                }
+            };
+
+    private static final java.util.Map<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap> WLBAG_CACHE =
+            new java.util.LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap>(256, 0.75f, true) {
+                protected boolean removeEldestEntry(java.util.Map.Entry<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap> e) {
+                    return size() > WLBAG_CACHE_MAX;
+                }
+            };
+
+    private static String nfKey(String owner, String name, String desc) {
+        return owner + "\u0000" + name + "\u0000" + desc;
+    }
+
+    private static String wlKey(String owner, String name, String desc) {
+        return owner + "\u0000" + name + "\u0000" + desc;
+    }
+
+    private static NormalizedFeatures getOrComputeNF(
+            java.util.Map<String, org.objectweb.asm.tree.ClassNode> classes,
+            String owner, String name, String desc) {
+        final String k = nfKey(owner, name, desc);
+        synchronized (NF_CACHE) {
+            NormalizedFeatures nf = NF_CACHE.get(k);
+            if (nf != null) return nf;
+        }
+        NormalizedFeatures nf;
+        org.objectweb.asm.tree.ClassNode cn = classes.get(owner);
+        org.objectweb.asm.tree.MethodNode mn = findMethod(cn, name, desc);
+        if (mn == null) return null;
+        try {
+            NormalizedMethod nm = new NormalizedMethod(owner, mn, java.util.Collections.<Integer>emptySet());
+            nf = nm.extract();
+        } catch (Throwable ignore) {
+            nf = null;
+        }
+        synchronized (NF_CACHE) { if (nf != null) NF_CACHE.put(k, nf); }
+        return nf;
+    }
+
+    private static it.unimi.dsi.fastutil.longs.Long2IntSortedMap getOrComputeWlBag(
+            java.util.Map<String, org.objectweb.asm.tree.ClassNode> classes,
+            String owner, String name, String desc) {
+        final String k = wlKey(owner, name, desc);
+        synchronized (WLBAG_CACHE) {
+            it.unimi.dsi.fastutil.longs.Long2IntSortedMap v = WLBAG_CACHE.get(k);
+            if (v != null) return v;
+        }
+        org.objectweb.asm.tree.ClassNode cn = classes.get(owner);
+        org.objectweb.asm.tree.MethodNode mn = findMethod(cn, name, desc);
+        if (mn == null) return null;
+        io.bytecodemapper.core.cfg.ReducedCFG cfg = io.bytecodemapper.core.cfg.ReducedCFG.build(mn);
+        io.bytecodemapper.core.dom.Dominators dom = io.bytecodemapper.core.dom.Dominators.compute(cfg);
+        it.unimi.dsi.fastutil.longs.Long2IntSortedMap bag = io.bytecodemapper.core.wl.WLRefinement.tokenBagFinal(cfg, dom, WL_K);
+        synchronized (WLBAG_CACHE) { if (bag != null) WLBAG_CACHE.put(k, bag); }
+        return bag;
+    }
+    // --- AUTOGEN: BYTECODEMAPPER PERFORMANCE CACHES END ---
+
     private static java.util.List<Long> queryFps(long canonical, long surrogate, io.bytecodemapper.cli.flags.UseNsf64Mode mode) {
         java.util.ArrayList<Long> list = new java.util.ArrayList<Long>();
         if (mode == io.bytecodemapper.cli.flags.UseNsf64Mode.CANONICAL) {
@@ -640,25 +712,9 @@ public final class MethodMatcher {
                                                      String desc) {
         if (!flattened || near == null || near.isEmpty()) return near;
         java.util.ArrayList<NewRef> out = new java.util.ArrayList<NewRef>(near.size());
-        // Precompute old stack vector in fixed 5-key order to avoid repeated lookups
-        final String[] KEYS = new String[]{"-2","-1","0","+1","+2"};
-        final int[] oldVec = new int[5];
-        java.util.Map<String,Integer> ha = (oldNF==null?null:oldNF.getStackHist());
-        for (int i=0;i<5;i++) oldVec[i] = (ha != null && ha.get(KEYS[i]) != null) ? ha.get(KEYS[i]).intValue() : 0;
-
-        // Cache per-candidate NormalizedFeatures deterministically by name
-        org.objectweb.asm.tree.ClassNode ncn = newClasses.get(newOwner);
+        // Use deterministic NF cache per candidate
         for (NewRef c : near) {
-            NormalizedFeatures nf = null;
-            if (ncn != null) {
-                org.objectweb.asm.tree.MethodNode nmn = findMethod(ncn, c.name, desc);
-                if (nmn != null) {
-                    try {
-                        NormalizedMethod nm = new NormalizedMethod(newOwner, nmn, java.util.Collections.<Integer>emptySet());
-                        nf = nm.extract();
-                    } catch (Throwable ignore) { nf = null; }
-                }
-            }
+            NormalizedFeatures nf = getOrComputeNF(newClasses, newOwner, c.name, desc);
             // Fast-fail: check degree band first (integer math)
             boolean bandOK = degreeBandOK(oldNF, nf);
             c.meta.put("gate_flattening_degreeBand", java.lang.Boolean.toString(bandOK));
@@ -666,14 +722,7 @@ public final class MethodMatcher {
             boolean cosOK = false;
             if (bandOK) {
                 // Compute cosine only when degree band passes
-                java.util.Map<String,Integer> hb = (nf==null?null:nf.getStackHist());
-                long dot = 0L, na = 0L, nb = 0L;
-                for (int i=0;i<5;i++) {
-                    int x = oldVec[i];
-                    int y = (hb != null && hb.get(KEYS[i]) != null) ? hb.get(KEYS[i]).intValue() : 0;
-                    dot += (long)x * (long)y; na += (long)x * (long)x; nb += (long)y * (long)y;
-                }
-                cosOK = (na != 0L && nb != 0L) && (dot / (Math.sqrt(na) * Math.sqrt(nb)) >= cosThresh);
+                cosOK = stackCosine(oldNF, nf) >= cosThresh;
             }
             c.meta.put("gate_flattening_stackCosOK", java.lang.Boolean.toString(cosOK));
             if (bandOK && cosOK) out.add(c);
@@ -745,23 +794,16 @@ public final class MethodMatcher {
         java.util.Map<String, MethodFeatureCacheEntry> nm = newFeat.get(newOwner);
         if (nm == null) return java.util.Collections.emptyList();
 
-        // Build old WL token bag once (deterministic)
-        it.unimi.dsi.fastutil.longs.Long2IntSortedMap oldBag;
-        {
-            org.objectweb.asm.tree.ClassNode ocn = oldClasses.get(oldOwner);
-            org.objectweb.asm.tree.MethodNode omn = findMethod(ocn, oldName, desc);
-            if (omn == null) return java.util.Collections.emptyList();
-            io.bytecodemapper.core.cfg.ReducedCFG ocfg = io.bytecodemapper.core.cfg.ReducedCFG.build(omn);
-            io.bytecodemapper.core.dom.Dominators odom = io.bytecodemapper.core.dom.Dominators.compute(ocfg);
-            oldBag = io.bytecodemapper.core.wl.WLRefinement.tokenBagFinal(ocfg, odom, WL_K);
-        }
+    // Build old WL token bag once (deterministic with cache)
+    it.unimi.dsi.fastutil.longs.Long2IntSortedMap oldBag = getOrComputeWlBag(oldClasses, oldOwner, oldName, desc);
+    if (oldBag == null) return java.util.Collections.emptyList();
 
         java.util.ArrayList<NewRef> pool = new java.util.ArrayList<NewRef>();
         java.util.ArrayList<String> sigs = new java.util.ArrayList<String>(nm.keySet());
         java.util.Collections.sort(sigs); // deterministic
 
-        // Cache new-side WL bags by method name for this owner/desc scope
-        java.util.LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap> newBags = new java.util.LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap>();
+    // Cache new-side WL bags by method name for this owner/desc scope
+    java.util.LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap> newBags = new java.util.LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap>();
 
         for (String sig : sigs) {
             String name = sig.substring(0, sig.indexOf('('));
@@ -769,17 +811,10 @@ public final class MethodMatcher {
             if (!desc.equals(d)) continue;
             MethodFeatureCacheEntry mfe = nm.get(sig);
             if (mfe == null) continue;
-            // Compute new WL bag (cache per (owner,name,desc))
+            // Compute new WL bag (global+local cache per (owner,name,desc))
             it.unimi.dsi.fastutil.longs.Long2IntSortedMap nb = newBags.get(name);
-            if (nb == null) {
-                org.objectweb.asm.tree.ClassNode ncn = newClasses.get(newOwner);
-                org.objectweb.asm.tree.MethodNode nmn = findMethod(ncn, name, desc);
-                if (nmn == null) continue;
-                io.bytecodemapper.core.cfg.ReducedCFG ncfg = io.bytecodemapper.core.cfg.ReducedCFG.build(nmn);
-                io.bytecodemapper.core.dom.Dominators ndom = io.bytecodemapper.core.dom.Dominators.compute(ncfg);
-                nb = io.bytecodemapper.core.wl.WLRefinement.tokenBagFinal(ncfg, ndom, WL_K);
-                newBags.put(name, nb);
-            }
+            if (nb == null) { nb = getOrComputeWlBag(newClasses, newOwner, name, desc); if (nb != null) newBags.put(name, nb); }
+            if (nb == null) continue;
             int dist = io.bytecodemapper.core.wl.WLBags.l1(oldBag, nb);
             boolean band = io.bytecodemapper.core.wl.WLBags.withinBand(oldBag, nb, sizeBand);
             if (dist <= l1Tau && band) {
@@ -793,6 +828,8 @@ public final class MethodMatcher {
                 // Compare by computed L1; fallback stable by owner/name
                 it.unimi.dsi.fastutil.longs.Long2IntSortedMap nba = newBags.get(a.name);
                 it.unimi.dsi.fastutil.longs.Long2IntSortedMap nbb = newBags.get(b.name);
+                if (nba == null) { nba = getOrComputeWlBag(newClasses, a.owner, a.name, desc); if (nba != null) newBags.put(a.name, nba); }
+                if (nbb == null) { nbb = getOrComputeWlBag(newClasses, b.owner, b.name, desc); if (nbb != null) newBags.put(b.name, nbb); }
                 int da = 0, db = 0;
                 if (nba != null && nbb != null) {
                     da = io.bytecodemapper.core.wl.WLBags.l1(oldBag, nba);

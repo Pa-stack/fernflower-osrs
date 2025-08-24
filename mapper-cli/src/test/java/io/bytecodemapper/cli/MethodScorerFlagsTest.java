@@ -14,7 +14,7 @@ public class MethodScorerFlagsTest {
         // Run A: defaults (documented: TAU=0.60, MARGIN=0.05, alpha=0.60)
         io.bytecodemapper.cli.Main.main(new String[]{
             "mapOldNew",
-            "--old","data/weeks/osrs-170.jar","--new","data/weeks/osrs-171.jar",
+            "--old","data/weeks/2025-34/old.jar","--new","data/weeks/2025-34/new.jar",
             "--out",out1.getPath(),
             "--deterministic","--debug-sample","24","--maxMethods","300"
         });
@@ -23,7 +23,7 @@ public class MethodScorerFlagsTest {
         // Run B: tweak weights/alpha; output must be deterministic across identical runs for same flags
         io.bytecodemapper.cli.Main.main(new String[]{
             "mapOldNew",
-            "--old","data/weeks/osrs-170.jar","--new","data/weeks/osrs-171.jar",
+            "--old","data/weeks/2025-34/old.jar","--new","data/weeks/2025-34/new.jar",
             "--out",out2.getPath(),
             "--deterministic",
             "--wCalls","0.45","--wMicro","0.25","--wNorm","0.10","--wStrings","0.10","--wFields","0.05",
@@ -36,7 +36,7 @@ public class MethodScorerFlagsTest {
         long sizeB = out2.length();
         io.bytecodemapper.cli.Main.main(new String[]{
             "mapOldNew",
-            "--old","data/weeks/osrs-170.jar","--new","data/weeks/osrs-171.jar",
+            "--old","data/weeks/2025-34/old.jar","--new","data/weeks/2025-34/new.jar",
             "--out",out2.getPath(),
             "--deterministic",
             "--wCalls","0.45","--wMicro","0.25","--wNorm","0.10","--wStrings","0.10","--wFields","0.05",

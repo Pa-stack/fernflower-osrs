@@ -71,6 +71,14 @@ public final class WLRefinement {
             int rounds) {
         final int n = cfg.allBlockIds().length;
         final boolean lite = n > maxBlocks();
+        // >>> AUTOGEN: WL DEBUG BANNER (tokenBag) BEGIN
+        if (DEBUG) {
+            try {
+                System.out.println("[WL] tokenBag.rounds=" + rounds + " nodes=" + n + " mode=" + (lite ? "lite" : "full"));
+                System.out.flush();
+            } catch (Throwable ignore) { /* best-effort */ }
+        }
+        // <<< AUTOGEN: WL DEBUG BANNER (tokenBag) END
         if (lite) {
             // tokenBagFinalLiteSorted: initial labels + preds/succs only, fixed 1 round
             java.util.SortedMap<Long,Integer> sm = tokenBagFinalLiteSorted(cfg, dom, 1);

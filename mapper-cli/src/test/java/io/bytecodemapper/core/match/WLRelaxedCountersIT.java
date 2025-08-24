@@ -14,8 +14,8 @@ public class WLRelaxedCountersIT {
 
     @Test
     public void reportIncludesGateCounters_andIsDeterministic() throws Exception {
-        Path oldJar = CliPaths.resolveInput("data/weeks/osrs-170.jar");
-        Path newJar = CliPaths.resolveInput("data/weeks/osrs-171.jar");
+    Path oldJar = CliPaths.resolveInput("data/weeks/2025-34/old.jar");
+    Path newJar = CliPaths.resolveInput("data/weeks/2025-34/new.jar");
         Path outTiny = CliPaths.resolveOutput("mapper-cli/build/wl-counter/out.tiny");
         Path report1 = CliPaths.resolveOutput("mapper-cli/build/wl-counter/report1.json");
         Path report2 = CliPaths.resolveOutput("mapper-cli/build/wl-counter/report2.json");

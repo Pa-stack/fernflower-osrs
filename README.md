@@ -98,6 +98,18 @@ Build:
 ./gradlew build
 ```
 
+<!-- >>> AUTOGEN: BYTECODEMAPPER README deobfuscator-opt-in BEGIN -->
+Note on modules:
+
+- The default build includes only Java 8-compatible modules: `:mapper-core`, `:mapper-signals`, `:mapper-io`, `:mapper-cli`.
+- The `:deobfuscator` module uses newer Java language features (e.g., `var`) and is excluded by default to preserve Java 8 compatibility.
+- To include it explicitly, pass `-PwithDeobfuscator` when invoking Gradle:
+
+```bash
+./gradlew -PwithDeobfuscator :deobfuscator:build
+```
+<!-- <<< AUTOGEN: BYTECODEMAPPER README deobfuscator-opt-in END -->
+
 Map two jars (placeholder mapping):
 
 ```bash

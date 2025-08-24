@@ -2,11 +2,18 @@
 rootProject.name = rootProject.name ?: "osrs-fernflower"
 
 // Ensure multi-project includes (safe to re-run)
-def includes = [":mapper-core", ":mapper-signals", ":mapper-io", ":mapper-cli", ":deobfuscator"]
+// Default: only include Java 8-compatible mapper modules. The 'deobfuscator' uses newer language features (var),
+// so it is gated behind an opt-in flag to preserve Java 8 builds.
+def includes = [":mapper-core", ":mapper-signals", ":mapper-io", ":mapper-cli"]
 includes.each { p ->
     if (!gradle.startParameter.projectProperties.containsKey('skipInclude')) {
         include p
     }
+}
+
+// Optional: include ':deobfuscator' only when explicitly requested (e.g., -PwithDeobfuscator)
+if (gradle.startParameter.projectProperties.containsKey('withDeobfuscator')) {
+    include ":deobfuscator"
 }
 // <<< AUTOGEN: BYTECODEMAPPER SETTINGS END
 // include(":deobfuscator")

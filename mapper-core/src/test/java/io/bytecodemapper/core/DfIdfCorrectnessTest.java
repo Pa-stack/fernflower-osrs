@@ -12,7 +12,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class DfIdfCorrectnessTest {
-    @Test
+    @Test(timeout = 20000)
     public void dominanceFrontierMergesAtJoin() {
         // if-else diamond with join
         ReducedCFG g = ReducedCFG.build(AsmSynth.diamondNoFold());
@@ -32,7 +32,7 @@ public class DfIdfCorrectnessTest {
         }
     }
 
-    @Test
+    @Test(timeout = 20000)
     public void iteratedFrontierPropagates() {
         ReducedCFG g = ReducedCFG.build(AsmSynth.loopNestedNoFold());
         Dominators dom = Dominators.compute(g);

@@ -19,8 +19,8 @@ public class MapOldNewAcceptanceMarginTest {
         Files.deleteIfExists(outMappings);
     String[] args = new String[] {
                 "mapOldNew",
-                "--old", "testData/jars/old.jar",
-                "--new", "testData/jars/new.jar",
+                "--old", "data/weeks/2025-34/old.jar",
+                "--new", "data/weeks/2025-34/new.jar",
                 "--out", outMappings.toString(),
                 "--tauAcceptMethods", String.valueOf(tau),
                 "--marginMethods", String.valueOf(margin),

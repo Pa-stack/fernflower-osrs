@@ -59,8 +59,8 @@ import java.security.MessageDigest
 
 def smokeDir = file("$buildDir/smoke")
 def weeksDir = file("$rootDir/data/weeks")
-def oldJar = file("$weeksDir/osrs-170.jar")
-def newJar = file("$weeksDir/osrs-171.jar")
+def oldJar = file("$weeksDir/2025-34/old.jar")
+def newJar = file("$weeksDir/2025-34/new.jar")
 def manifest = file("$projectDir/src/test/resources/bench/pairs.json")
 
 // tiny helpers

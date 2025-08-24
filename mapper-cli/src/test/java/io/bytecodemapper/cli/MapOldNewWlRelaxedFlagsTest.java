@@ -14,8 +14,10 @@ public class MapOldNewWlRelaxedFlagsTest {
     private static void runCli(String outTiny, String reportPath, String... extra) throws Exception {
         String[] base = new String[]{
                 "mapOldNew",
-                "--old","data/weeks/osrs-170.jar",
-                "--new","data/weeks/osrs-171.jar",
+                // [UNIFORM-JARS-BEGIN]
+                "--old","data/weeks/2025-34/old.jar",
+                "--new","data/weeks/2025-34/new.jar",
+                // [UNIFORM-JARS-END]
                 "--out", outTiny,
                 "--deterministic",
                 "--report", reportPath,

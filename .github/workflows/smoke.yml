@@ -30,7 +30,7 @@ jobs:
         run: |
           set -e
           miss=0
-          for f in data/weeks/osrs-170.jar data/weeks/osrs-171.jar; do
+          for f in data/weeks/2025-34/old.jar data/weeks/2025-34/new.jar; do
             if [ ! -f "$f" ]; then
               echo "Missing: $f"
               miss=1
@@ -197,7 +197,7 @@ jobs:
         shell: pwsh
         run: |
           $missing = 0
-          $paths = @("data/weeks/osrs-170.jar","data/weeks/osrs-171.jar")
+          $paths = @("data/weeks/2025-34/old.jar","data/weeks/2025-34/new.jar")
           foreach ($p in $paths) {
             if (-not (Test-Path $p)) {
               Write-Host "Missing: $p"

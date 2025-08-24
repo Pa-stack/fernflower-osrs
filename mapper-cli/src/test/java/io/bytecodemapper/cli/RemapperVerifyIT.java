@@ -10,7 +10,8 @@ public class RemapperVerifyIT {
     @Test public void tiny_and_asm_remap_deterministic_and_nonempty() throws Exception {
         File map = new File("build/it/rv/map.tiny"); map.getParentFile().mkdirs();
         int mk = io.bytecodemapper.cli.Router.dispatch(new String[]{
-            "mapOldNew","--old","data/weeks/osrs-169.jar","--new","data/weeks/osrs-170.jar",
+            // [UNIFORM-JARS-BEGIN]
+            "mapOldNew","--old","data/weeks/2025-34/old.jar","--new","data/weeks/2025-34/new.jar",
             "--out", map.getPath(), "--deterministic", "--maxMethods","200"
         });
         assertEquals(0, mk);
@@ -19,10 +20,10 @@ public class RemapperVerifyIT {
         File outA = new File("build/it/rv/remap-tiny-a.jar");
         File outB = new File("build/it/rv/remap-tiny-b.jar");
         int rc1 = io.bytecodemapper.cli.Router.dispatch(new String[]{
-            "applyMappings","--inJar","data/weeks/osrs-170.jar","--mappings",map.getPath(),"--out",outA.getPath(),"--verifyRemap","--deterministic"
+            "applyMappings","--inJar","data/weeks/2025-34/new.jar","--mappings",map.getPath(),"--out",outA.getPath(),"--verifyRemap","--deterministic"
         });
         int rc2 = io.bytecodemapper.cli.Router.dispatch(new String[]{
-            "applyMappings","--inJar","data/weeks/osrs-170.jar","--mappings",map.getPath(),"--out",outB.getPath(),"--verifyRemap","--deterministic"
+            "applyMappings","--inJar","data/weeks/2025-34/new.jar","--mappings",map.getPath(),"--out",outB.getPath(),"--verifyRemap","--deterministic"
         });
         assertEquals(0, rc1); assertEquals(0, rc2);
         assertTrue(outA.isFile() && outA.length()>0);
@@ -34,10 +35,11 @@ public class RemapperVerifyIT {
         File outAsmA = new File("build/it/rv/remap-asm-a.jar");
         File outAsmB = new File("build/it/rv/remap-asm-b.jar");
         int rc3 = io.bytecodemapper.cli.Router.dispatch(new String[]{
-            "applyMappings","--inJar","data/weeks/osrs-170.jar","--mappings",map.getPath(),"--out",outAsmA.getPath(),"--remapper=asm","--verifyRemap","--deterministic"
+            "applyMappings","--inJar","data/weeks/2025-34/new.jar","--mappings",map.getPath(),"--out",outAsmA.getPath(),"--remapper=asm","--verifyRemap","--deterministic"
         });
         int rc4 = io.bytecodemapper.cli.Router.dispatch(new String[]{
-            "applyMappings","--inJar","data/weeks/osrs-170.jar","--mappings",map.getPath(),"--out",outAsmB.getPath(),"--remapper=asm","--verifyRemap","--deterministic"
+            "applyMappings","--inJar","data/weeks/2025-34/new.jar","--mappings",map.getPath(),"--out",outAsmB.getPath(),"--remapper=asm","--verifyRemap","--deterministic"
+            // [UNIFORM-JARS-END]
         });
         assertEquals(0, rc3); assertEquals(0, rc4);
         assertTrue(outAsmA.isFile() && outAsmA.length()>0);

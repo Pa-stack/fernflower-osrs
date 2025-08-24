@@ -11,8 +11,10 @@ public class Phase4FlagsParseTest {
         tmp.deleteOnExit();
         String[] args = new String[]{
                 "mapOldNew",
-                "--old","data/weeks/osrs-170.jar",
-                "--new","data/weeks/osrs-171.jar",
+                // [UNIFORM-JARS-BEGIN]
+                "--old","data/weeks/2025-34/old.jar",
+                "--new","data/weeks/2025-34/new.jar",
+                // [UNIFORM-JARS-END]
                 "--out", tmp.getAbsolutePath(),
                 "--deterministic",
                 "--maxMethods","10",

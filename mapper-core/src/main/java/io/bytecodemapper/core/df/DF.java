@@ -1,22 +1,145 @@
 package io.bytecodemapper.core.df;
 
 import io.bytecodemapper.core.cfg.ReducedCFG;
-import io.bytecodemapper.core.cfg.ReducedCFG.Block;
 import io.bytecodemapper.core.dom.Dominators;
 
 import java.util.*;
 import java.util.function.IntUnaryOperator;
 
-/** Cytron DF producing deterministic sorted arrays without external deps. */
+/** Dominance Frontier + Iterated DF (deterministic, Cytron-style). */
 public final class DF {
-    private DF() {}
-    static final boolean DEBUG = Boolean.getBoolean("mapper.debug");
+    private DF(){}
 
-    public static Map<Integer,int[]> compute(ReducedCFG cfg, Dominators dom){int[] nodes=cfg.allBlockIds(); Arrays.sort(nodes); Map<Integer,Set<Integer>> sets=new LinkedHashMap<Integer,Set<Integer>>(); for(int b: nodes) sets.put(b,new HashSet<Integer>());
-        for(int n: nodes){Block bn=cfg.block(n); int[] preds=bn.preds(); int id=dom.idom(n); for(int p: preds){int r=p; int steps=0; final int MAX_STEPS=nodes.length+4; while(r!=-1 && r!=id){sets.get(r).add(n); int next=dom.idom(r); if(next==r || next==-1){ if(DEBUG){ System.out.println("[DF] break runner="+r+" idom(n)="+id+" next="+next+" n="+n+" p="+p); } break; } r=next; if(++steps>MAX_STEPS){ if(DEBUG){ System.out.println("[DF] guard trip n="+n+" p="+p+" runner="+r+" idom(n)="+id+" max="+MAX_STEPS); } break; }} }} Map<Integer,int[]> out=new LinkedHashMap<Integer,int[]>(); for(int b: nodes) out.put(b, toSorted(sets.get(b))); return out; }
+    // >>> CODEGEN: DF DEBUG + LIMITS BEGIN
+    private static final boolean DEBUG = Boolean.getBoolean("mapper.debug");
+    private static int maxSteps(int n){
+        try { return Math.max(8, Integer.getInteger("mapper.df.max.steps", n * 8)); }
+        catch (SecurityException e){ return Math.max(8, n * 8); }
+    }
+    private static void dbg(String s){ if (DEBUG) System.out.println(s); }
+    // <<< CODEGEN: DF DEBUG + LIMITS END
 
-    public static Map<Integer,int[]> iterateToFixpoint(Map<Integer,int[]> df){int[] keys=new int[df.size()]; int i=0; for(Integer k: df.keySet()) keys[i++]=k.intValue(); Arrays.sort(keys); Map<Integer,Set<Integer>> work=new LinkedHashMap<Integer,Set<Integer>>(); for(int k: keys){Set<Integer> s=new HashSet<Integer>(); for(int v: df.get(k)) s.add(v); work.put(k, s);} int guard=0; boolean changed; do{changed=false; for(int b: keys){Set<Integer> s=work.get(b); List<Integer> add=new ArrayList<Integer>(); for(int y: s){int[] dy=df.get(y); if(dy!=null) for(int z: dy) add.add(z);} if(!add.isEmpty()){int before=s.size(); s.addAll(add); if(s.size()!=before) changed=true; } } guard++; if (DEBUG) { System.out.println("[DF] iter=" + guard); } if(guard>1000) throw new IllegalStateException("TDF: no fixpoint"); }while(changed);
-        Map<Integer,int[]> out=new LinkedHashMap<Integer,int[]>(); for(int b: keys) out.put(b, toSorted(work.get(b))); return out; }
+    /** Compute the (local) dominance frontier DF(b) for each block b. */
+    public static Map<Integer,int[]> compute(ReducedCFG cfg, Dominators dom){
+        // >>> CODEGEN: DF Cytron runner walk (deterministic) BEGIN
+        final int[] nodes = cfg.allBlockIds();
+        Arrays.sort(nodes); // deterministic order
+        final int n = nodes.length;
+        final Map<Integer,Integer> idxOf = new HashMap<Integer,Integer>();
+        for (int i = 0; i < n; i++) idxOf.put(nodes[i], Integer.valueOf(i));
+
+        // succ in index space; also map blockId->index helpers
+        final int[][] succ = new int[n][];
+        for (int i = 0; i < n; i++) {
+            final io.bytecodemapper.core.cfg.ReducedCFG.Block b = cfg.block(nodes[i]);
+            final int[] sIds = b.succs();
+            final int[] sIdx = new int[sIds.length];
+            for (int k = 0; k < sIds.length; k++) {
+                Integer at = idxOf.get(sIds[k]);
+                sIdx[k] = (at == null ? -1 : at.intValue());
+            }
+            succ[i] = sIdx;
+        }
+
+        // idom[] in index space using Dominators API (id of idom -> index)
+        final int[] idomIdx = new int[n];
+        Arrays.fill(idomIdx, -1);
+        for (int i = 0; i < n; i++) {
+            final int bId = nodes[i];
+            final int iDomId = dom.idom(bId); // entry -> itself; others -> idom id
+            final Integer j = idxOf.get(iDomId);
+            idomIdx[i] = (j == null ? -1 : j.intValue());
+        }
+
+        // DF buckets
+        @SuppressWarnings("unchecked")
+        final ArrayList<Integer>[] dfTmp = new ArrayList[n];
+        for (int i = 0; i < n; i++) dfTmp[i] = new ArrayList<Integer>(2);
+
+        final int CAP = maxSteps(n);
+        for (int b = 0; b < n; b++) {
+            final int[] outs = succ[b];
+            for (int s : outs) {
+                if (s < 0) continue; // unmapped/disconnected
+                final int stop = idomIdx[s];
+                int r = b, steps = 0;
+                // Classic Cytron runner: add s to DF[r] until r meets idom[s]
+                while (r != stop && steps++ < CAP) {
+                    // record in DF(r) before advancing
+                    dfTmp[r].add(Integer.valueOf(s));
+                    // advance; guard against broken chains
+                    final int next = idomIdx[r];
+                    if (next == -1 || next == r) break;
+                    r = next;
+                }
+                if (steps >= CAP) dbg("[DF] runner capped: b=" + nodes[b] + " s=" + nodes[s] + " cap=" + CAP);
+            }
+        }
+
+        // Dedup & sort sets (as block ids), then return Map<blockId,int[]>
+        final Map<Integer,int[]> out = new LinkedHashMap<Integer,int[]>();
+        for (int i = 0; i < n; i++) {
+            final ArrayList<Integer> bag = dfTmp[i];
+            if (!bag.isEmpty()) {
+                // stable dedup on indices
+                Collections.sort(bag);
+                int last = -2;
+                final ArrayList<Integer> uniq = new ArrayList<Integer>(bag.size());
+                for (int v : bag) {
+                    if (v != last) { uniq.add(Integer.valueOf(v)); last = v; }
+                }
+                // map to block ids
+                final int[] arr = new int[uniq.size()];
+                for (int k = 0; k < arr.length; k++) arr[k] = nodes[uniq.get(k).intValue()];
+                out.put(Integer.valueOf(nodes[i]), arr);
+            } else {
+                out.put(Integer.valueOf(nodes[i]), new int[0]);
+            }
+        }
+        return out;
+        // <<< CODEGEN: DF Cytron runner walk END
+    }
+
+    /** Iterated DF to fixpoint (IDF) with deterministic order. */
+    public static Map<Integer,int[]> iterateToFixpoint(Map<Integer,int[]> df){
+        // >>> CODEGEN: IDF fixpoint (monotone union, deterministic) BEGIN
+        final ArrayList<Integer> keys = new ArrayList<Integer>(df.keySet());
+        Collections.sort(keys);
+        final Map<Integer,SortedSet<Integer>> cur = new LinkedHashMap<Integer,SortedSet<Integer>>();
+        for (int k : keys) {
+            final SortedSet<Integer> s = new TreeSet<Integer>();
+            final int[] vs = df.get(k);
+            if (vs != null) for (int v : vs) s.add(Integer.valueOf(v));
+            cur.put(Integer.valueOf(k), s);
+        }
+        boolean changed;
+        int guard = 0, CAP = Math.max(4, keys.size() * 4);
+        do {
+            changed = false;
+            for (int k : keys) {
+                final SortedSet<Integer> acc = cur.get(k);
+                final int before = acc.size();
+                // union DF of each member currently in IDF(k)
+                final Integer[] snap = acc.toArray(new Integer[0]);
+                for (int v : snap) {
+                    final int[] add = df.getOrDefault(v, new int[0]);
+                    for (int u : add) acc.add(Integer.valueOf(u));
+                }
+                if (acc.size() != before) changed = true;
+            }
+            guard++;
+        } while (changed && guard < CAP);
+        if (guard >= CAP) dbg("[DF] IDF fixpoint capped at " + CAP);
+        final Map<Integer,int[]> out = new LinkedHashMap<Integer,int[]>();
+        for (int k : keys) {
+            final SortedSet<Integer> s = cur.get(k);
+            final int[] arr = new int[s.size()];
+            int i = 0; for (int v : s) arr[i++] = v;
+            out.put(Integer.valueOf(k), arr);
+        }
+        return out;
+        // <<< CODEGEN: IDF fixpoint END
+    }
 
     // >>> CODEGEN: DF TEST HOOK BEGIN
     // Package-private test hook to drive DF with a synthetic idom function.

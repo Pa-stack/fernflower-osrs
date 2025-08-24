@@ -3,7 +3,7 @@
 
 Common causes of failures and quick fixes:
 
-- **Missing fixtures**: Ensure `data/weeks/osrs-170.jar` and `osrs-171.jar` exist. If your copies live elsewhere, run the CLI with absolute paths or set `DATA_ROOT`.
+- [UNIFORM-JARS] Missing fixtures: Ensure `data/weeks/2025-34/old.jar` and `data/weeks/2025-34/new.jar` exist. If your copies live elsewhere, run the CLI with absolute paths or set `DATA_ROOT`.
 - **CWD-dependent paths**: The smoke test writes to `build/smoke/mapoldnew/…`. Do not rely on the current working directory. Use absolute fixture paths.
 - **Determinism flags**: Always pass `--deterministic`, set explicit thresholds (`--tauAcceptMethods`, `--marginMethods`) if tuning, and throttle with `--maxMethods` for fast CI.
 - **Feature cache invalidation**: If WL iteration count (`WL_K`) changes, clear cache directories or bump the cache fingerprint (e.g., `wlK4-YYYYMMDD`).
@@ -16,10 +16,25 @@ If you still see non-deterministic outputs, repack jars with fixed timestamps an
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOCS CI SMOKE TRIAGE BEGIN -->
 ## CI smoke failures — quick triage
 
-1. **Fixture jars missing:** Ensure `data/weeks/osrs-170.jar` and `osrs-171.jar` exist in repo/CI context.
+1. [UNIFORM-JARS] Fixture jars missing: Ensure `data/weeks/2025-34/old.jar` and `data/weeks/2025-34/new.jar` exist in repo/CI context.
 2. **Non-determinism:** Verify `--deterministic` is passed; confirm repack sets sorted entries and timestamp `0L`.
 3. **Threshold tuning:** If acceptance flips across runs, check `--tauAcceptMethods` and `--marginMethods`; use default `0.60/0.05`.
 4. **Cache invalidation:** When WL_K changes, clear caches or bump cache fingerprint.
 5. **JDK drift:** Must be **Java 8**; the workflow pins Temurin 8.
 Artifacts `smoke-artifacts` include mappings, debug dumps, remapped jars, and metrics for offline comparison.
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOCS CI SMOKE TRIAGE END -->
+
+<!-- >>> AUTOGEN: BYTECODEMAPPER DOCS TROUBLESHOOTING DEOBF BEGIN -->
+## Module compile errors: `deobfuscator`
+
+If you see Java compile errors such as `cannot find symbol: class var` under `:deobfuscator`, note that this module uses newer Java language features and is excluded from the default Java 8 build.
+
+- Default behavior: only `:mapper-*` modules are included. No action needed for the mapper pipeline.
+- To work on `:deobfuscator`, opt-in via:
+
+```bash
+./gradlew -PwithDeobfuscator :deobfuscator:build
+```
+
+Ensure your JDK matches the module requirements when opting in.
+<!-- <<< AUTOGEN: BYTECODEMAPPER DOCS TROUBLESHOOTING DEOBF END -->

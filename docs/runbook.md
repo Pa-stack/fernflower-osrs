@@ -76,8 +76,8 @@ Note on refinement iterations: help may show `--refineIters <0|1>`, but the CLI 
 - Deterministic map + apply:
 
 ```text
-mapOldNew --old data/weeks/osrs-170.jar --new data/weeks/osrs-171.jar --out build/m.tiny --deterministic
-applyMappings --inJar data/weeks/osrs-171.jar --mappings build/m.tiny --out build/remap-tiny.jar --verifyRemap --deterministic
+mapOldNew --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out build/m.tiny --deterministic
+applyMappings --inJar data/weeks/2025-34/new.jar --mappings build/m.tiny --out build/remap-tiny.jar --verifyRemap --deterministic
 ```
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOCS RUNBOOK END -->
 <!-- >>> AUTOGEN: BYTECODEMAPPER DOC runbook orchestrator-caches BEGIN -->
@@ -106,9 +106,9 @@ Run `mapOldNew` twice with the same flags and compare `mappings.tiny` bytes; cac
 Windows / PowerShell quick check:
 
 ``powershell
-./gradlew :mapper-cli:run --args="mapOldNew --old testData/jars/old.jar --new testData/jars/new.jar --out mapper-cli/build/m4.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties"
+./gradlew :mapper-cli:run --args="mapOldNew --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out mapper-cli/build/m4.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties"
 cp mapper-cli\build\m4.tiny mapper-cli\build\m4a.tiny
-./gradlew :mapper-cli:run --args="mapOldNew --old testData/jars/old.jar --new testData/jars/new.jar --out mapper-cli/build/m4b.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties"
+./gradlew :mapper-cli:run --args="mapOldNew --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out mapper-cli/build/m4b.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties"
 fc.exe mapper-cli\build\m4a.tiny mapper-cli\build\m4b.tiny
 ``
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook orchestrator-caches END -->
@@ -138,7 +138,7 @@ Entries are written in a **deterministic order** (sorted) to keep outputs stable
 
 **Apply mappings (ASM remapper):**
 ``bash
-./gradlew :mapper-cli:run --args="applyMappings --inJar new.jar --mappings build/mappings.tiny --out build/new-mapped.jar"
+./gradlew :mapper-cli:run --args="applyMappings --inJar data/weeks/2025-34/new.jar --mappings build/mappings.tiny --out build/new-mapped.jar"
 ``
 
 Supported flags:
@@ -221,11 +221,11 @@ This keeps artifact locations predictable while allowing flexible invocation.
 
 ```bash
 # From repo root:
-./gradlew :mapper-cli:run --args="classMatch --old testData/jars/old.jar --new testData/jars/new.jar --out build/classmap.txt"
+./gradlew :mapper-cli:run --args="classMatch --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out build/classmap.txt"
 # Output: mapper-cli/build/classmap.txt
 
 # From module dir:
-(cd mapper-cli && ../gradlew run --args="methodMatch --old ../testData/jars/old.jar --new ../testData/jars/new.jar --classMap build/classmap.txt --out build/methodmap.txt")
+(cd mapper-cli && ../gradlew run --args="methodMatch --old ../data/weeks/2025-34/old.jar --new ../data/weeks/2025-34/new.jar --classMap build/classmap.txt --out build/methodmap.txt")
 # Output: mapper-cli/build/methodmap.txt
 ```
 
@@ -244,7 +244,7 @@ This makes the command resilient whether it is run from the repo root or inside 
 Example:
 
 ```bash
-./gradlew :mapper-cli:run --args="classMatch --old testdata/old.jar --new testdata/new.jar --out build/classmap.txt"
+./gradlew :mapper-cli:run --args="classMatch --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out build/classmap.txt"
 # writes mapper-cli/build/classmap.txt
 
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC classMatch path semantics END -->
@@ -273,7 +273,7 @@ Example:
 **CLI:**
 
 ```bash
-./gradlew :mapper-cli:run --args="classMatch --old <old.jar> --new <new.jar> --out build/classmap.txt"
+./gradlew :mapper-cli:run --args="classMatch --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out build/classmap.txt"
 ```
 
 Output lines:
@@ -359,7 +359,7 @@ S_total = 0.45*S_calls
 **CLI:**
 
 ```bash
-./gradlew :mapper-cli:run --args="methodMatch --old old.jar --new new.jar --classMap build/classmap.txt --out build/methodmap.txt"
+./gradlew :mapper-cli:run --args="methodMatch --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --classMap build/classmap.txt --out build/methodmap.txt"
 ```
 
 Output includes accepted pairs and # abstain … audit lines.
@@ -384,7 +384,7 @@ Method:
 Usage:
 
 ```bash
-./gradlew :mapper-cli:run --args="fieldMatch --old old.jar --new new.jar --methodMap build/methodmap.txt --out build/fieldmap.txt"
+./gradlew :mapper-cli:run --args="fieldMatch --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --methodMap build/methodmap.txt --out build/fieldmap.txt"
 ```
 <!-- <<< AUTOGEN: BYTECODEMAPPER DOC runbook field-match END -->
 
@@ -419,29 +419,29 @@ When `mappings.tiny` is header-only (no `c/f/m` lines), the remapper has nothing
 1. **Stats**
 ``bash
 ./gradlew :mapper-cli:run --args="tinyStats --in build/mappings.tiny"
-./gradlew :mapper-cli:run --args="mapOldNew --old old.jar --new new.jar --out build/mappings.tiny --debug-stats"
+./gradlew :mapper-cli:run --args="mapOldNew --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out build/mappings.tiny --debug-stats"
 ``
 
 Tune acceptance thresholds (methods)
 ``bash
-./gradlew :mapper-cli:run --args="mapOldNew --old old.jar --new new.jar --out build/mappings.tiny --tauAcceptMethods 0.50 --marginMethods 0.02 --debug-stats"
+./gradlew :mapper-cli:run --args="mapOldNew --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out build/mappings.tiny --tauAcceptMethods 0.50 --marginMethods 0.02 --debug-stats"
 ``
 
 Smoke options
 
 Include identity class lines:
 ``bash
-./gradlew :mapper-cli:run --args="mapOldNew --old old.jar --new new.jar --out build/mappings.tiny --includeIdentity"
+./gradlew :mapper-cli:run --args="mapOldNew --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out build/mappings.tiny --includeIdentity"
 ``
 
 Force a small demo rename (visual remap):
 ``bash
-./gradlew :mapper-cli:run --args="mapOldNew --old old.jar --new new.jar --out build/mappings.tiny --demoRemapCount 3 --demoRemapPrefix zz/demo"
+./gradlew :mapper-cli:run --args="mapOldNew --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out build/mappings.tiny --demoRemapCount 3 --demoRemapPrefix zz/demo"
 ``
 
 Apply & verify remap
 ``bash
-./gradlew :mapper-cli:run --args="applyMappings --inJar new.jar --mappings build/mappings.tiny --out build/new-mapped.jar --verifyRemap"
+./gradlew :mapper-cli:run --args="applyMappings --inJar data/weeks/2025-34/new.jar --mappings build/mappings.tiny --out build/new-mapped.jar --verifyRemap"
 # Inspect entries
 jar tf mapper-cli/build/new-mapped.jar | head -n 20
 ``
@@ -565,13 +565,13 @@ Get-Content build/bench.json -TotalCount 1
 
 ```bash
 ./gradlew :mapper-cli:installDist
-mapper-cli/build/install/mapper-cli/bin/mapper-cli mapOldNew --old data/weeks/osrs-231.jar --new data/weeks/osrs-232.jar --out mapper-cli/build/mappings.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties --refine --lambda 0.7 --refineIters 5 --debug-stats
+mapper-cli/build/install/mapper-cli/bin/mapper-cli mapOldNew --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out mapper-cli/build/mappings.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties --refine --lambda 0.7 --refineIters 5 --debug-stats
 ```
 
 1. Optionally remap:
 
 ```bash
-mapper-cli/build/install/mapper-cli/bin/mapper-cli applyMappings --inJar data/weeks/osrs-232.jar --mappings mapper-cli/build/mappings.tiny --out mapper-cli/build/new-mapped.jar --verifyRemap
+mapper-cli/build/install/mapper-cli/bin/mapper-cli applyMappings --inJar data/weeks/2025-34/new.jar --mappings mapper-cli/build/mappings.tiny --out mapper-cli/build/new-mapped.jar --verifyRemap
 ```
 
 ### Cache hygiene

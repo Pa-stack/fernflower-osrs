@@ -12,8 +12,8 @@
   "vmArgs": "-Xms1g -Xmx4g",
       "args": [
         "mapOldNew",
-        "--old", "data/weeks/osrs-231.jar",
-        "--new", "data/weeks/osrs-232.jar",
+  "--old", "data/weeks/2025-34/old.jar",
+  "--new", "data/weeks/2025-34/new.jar",
         "--out", "mapper-cli/build/mappings.tiny",
         "--deterministic",
         "--cacheDir", "mapper-cli/build/cache",
@@ -32,7 +32,7 @@
       },
       "runtimeArgs": [
         "-lc",
-        "${workspaceFolder}/mapper-cli/build/install/mapper-cli/bin/mapper-cli mapOldNew --old data/weeks/osrs-231.jar --new data/weeks/osrs-232.jar --out mapper-cli/build/mappings.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties --debug-stats"
+  "${workspaceFolder}/mapper-cli/build/install/mapper-cli/bin/mapper-cli mapOldNew --old data/weeks/2025-34/old.jar --new data/weeks/2025-34/new.jar --out mapper-cli/build/mappings.tiny --deterministic --cacheDir mapper-cli/build/cache --idf mapper-cli/build/idf.properties --debug-stats"
       ],
       "cwd": "${workspaceFolder}"
     }

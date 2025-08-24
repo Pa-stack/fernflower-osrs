@@ -13,7 +13,7 @@ public class MethodMatcherProvenanceTest {
 
         String[] common = new String[]{
             "mapOldNew",
-            "--old","data/weeks/osrs-170.jar","--new","data/weeks/osrs-171.jar",
+            "--old","data/weeks/2025-34/old.jar","--new","data/weeks/2025-34/new.jar",
             "--deterministic","--debug-stats","--debug-sample","16","--maxMethods","200"
         };
 

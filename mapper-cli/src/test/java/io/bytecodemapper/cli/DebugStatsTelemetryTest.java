@@ -16,7 +16,7 @@ public class DebugStatsTelemetryTest {
         try {
             io.bytecodemapper.cli.Main.main(new String[]{
                 "mapOldNew",
-                "--old","data/weeks/osrs-170.jar","--new","data/weeks/osrs-171.jar",
+                "--old","data/weeks/2025-34/old.jar","--new","data/weeks/2025-34/new.jar",
                 "--out", out.getPath(),
                 "--deterministic","--debug-stats","--debug-sample","16","--maxMethods","200"
             });

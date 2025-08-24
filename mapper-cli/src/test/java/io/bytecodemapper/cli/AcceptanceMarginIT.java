@@ -12,8 +12,8 @@ public class AcceptanceMarginIT {
         File out1 = new File("build/it/acc/m1.tiny"); out1.getParentFile().mkdirs();
         String args1 = String.join(" ",
             "mapOldNew",
-            "--old", "data/weeks/osrs-170.jar",
-            "--new", "data/weeks/osrs-171.jar",
+            "--old", "data/weeks/2025-34/old.jar",
+            "--new", "data/weeks/2025-34/new.jar",
             "--out", out1.getPath(),
             "--deterministic",
             "--tauAcceptMethods", "0.60",
@@ -28,8 +28,8 @@ public class AcceptanceMarginIT {
         File out2 = new File("build/it/acc/m2.tiny");
         String args2 = String.join(" ",
             "mapOldNew",
-            "--old", "data/weeks/osrs-170.jar",
-            "--new", "data/weeks/osrs-171.jar",
+            "--old", "data/weeks/2025-34/old.jar",
+            "--new", "data/weeks/2025-34/new.jar",
             "--out", out2.getPath(),
             "--deterministic",
             "--tauAcceptMethods", "0.60",

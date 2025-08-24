@@ -13,8 +13,10 @@ public class ReportCandidateStatsSmokeTest {
 
     @Test
     public void mapOldNew_emitsCandidateStatsReport_andIsDeterministic() throws Exception {
-        Path oldJar = CliPaths.resolveInput("data/weeks/osrs-170.jar");
-        Path newJar = CliPaths.resolveInput("data/weeks/osrs-171.jar");
+    // [UNIFORM-JARS-BEGIN] force tests to use the latest decompiled week fixtures
+    Path oldJar = CliPaths.resolveInput("data/weeks/2025-34/old.jar");
+    Path newJar = CliPaths.resolveInput("data/weeks/2025-34/new.jar");
+    // [UNIFORM-JARS-END]
         Path outTiny = CliPaths.resolveOutput("mapper-cli/build/test-report.tiny");
         Path report1 = CliPaths.resolveOutput("mapper-cli/build/report1.json");
         Path report2 = CliPaths.resolveOutput("mapper-cli/build/report2.json");

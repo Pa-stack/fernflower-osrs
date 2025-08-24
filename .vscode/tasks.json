@@ -98,20 +98,20 @@
     {
       "id": "oldJar",
       "type": "promptString",
-      "description": "Path to OLD jar (e.g., data/weeks/osrs-231.jar)",
-      "default": "data/weeks/osrs-231.jar"
+  "description": "Path to OLD jar (e.g., data/weeks/2025-34/old.jar)",
+  "default": "data/weeks/2025-34/old.jar"
     },
     {
       "id": "newJar",
       "type": "promptString",
-      "description": "Path to NEW jar (e.g., data/weeks/osrs-232.jar)",
-      "default": "data/weeks/osrs-232.jar"
+  "description": "Path to NEW jar (e.g., data/weeks/2025-34/new.jar)",
+  "default": "data/weeks/2025-34/new.jar"
     },
     {
       "id": "applyInJar",
       "type": "promptString",
       "description": "Jar to remap (usually the NEW jar you just mapped)",
-      "default": "data/weeks/osrs-232.jar"
+  "default": "data/weeks/2025-34/new.jar"
     },
     {
       "id": "benchDir",

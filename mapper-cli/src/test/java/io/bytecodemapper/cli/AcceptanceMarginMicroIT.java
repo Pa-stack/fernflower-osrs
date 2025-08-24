@@ -15,7 +15,7 @@ public class AcceptanceMarginMicroIT {
         try {
             io.bytecodemapper.cli.Main.main(new String[]{
                 "mapOldNew",
-                "--old","data/weeks/osrs-170.jar","--new","data/weeks/osrs-171.jar",
+                "--old","data/weeks/2025-34/old.jar","--new","data/weeks/2025-34/new.jar",
                 "--out","build/test-acc-micro/out.tiny",
                 "--deterministic",
                 "--tauAcceptMethods","0.60",

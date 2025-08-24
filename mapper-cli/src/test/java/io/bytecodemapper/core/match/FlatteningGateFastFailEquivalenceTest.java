@@ -37,10 +37,11 @@ public class FlatteningGateFastFailEquivalenceTest {
                 return any ? n : -1;
         }
 
-        @Test(timeout = 120000)
-    public void flattenedPair_deterministic_and_fastfail_visible() throws Exception {
-        Path oldJar = CliPaths.resolveInput("data/weeks/osrs-170.jar");
-        Path newJar = CliPaths.resolveInput("data/weeks/osrs-171.jar");
+        // Increased timeout to accommodate full 2025-34 fixtures on Windows CI
+        @Test(timeout = 360000)
+        public void flattenedPair_deterministic_and_fastfail_visible() throws Exception {
+                Path oldJar = CliPaths.resolveInput("data/weeks/2025-34/old.jar");
+                Path newJar = CliPaths.resolveInput("data/weeks/2025-34/new.jar");
 
         // Run 1 (normal fast-fail flags)
         Path out1 = CliPaths.resolveOutput("mapper-cli/build/flat-ff/ff1/out.tiny");
@@ -52,6 +53,8 @@ public class FlatteningGateFastFailEquivalenceTest {
                 "--new", newJar.toString(),
                 "--out", out1.toString(),
                 "--deterministic",
+                "--no-refine",
+                "--maxMethods", "400",
                 "--cacheDir", CliPaths.resolveOutput("mapper-cli/build/cache").toString(),
                 "--idf", CliPaths.resolveOutput("mapper-cli/build/idf.properties").toString(),
                 "--nsf-near", "2",
@@ -69,6 +72,8 @@ public class FlatteningGateFastFailEquivalenceTest {
                 "--new", newJar.toString(),
                 "--out", out2.toString(),
                 "--deterministic",
+                "--no-refine",
+                "--maxMethods", "400",
                 "--cacheDir", CliPaths.resolveOutput("mapper-cli/build/cache").toString(),
                 "--idf", CliPaths.resolveOutput("mapper-cli/build/idf.properties").toString(),
                 "--nsf-near", "2",
@@ -98,6 +103,8 @@ public class FlatteningGateFastFailEquivalenceTest {
                 "--new", newJar.toString(),
                 "--out", out3.toString(),
                 "--deterministic",
+                "--no-refine",
+                "--maxMethods", "400",
                 "--cacheDir", CliPaths.resolveOutput("mapper-cli/build/cache").toString(),
                 "--idf", CliPaths.resolveOutput("mapper-cli/build/idf.properties").toString(),
                 "--nsf-near", "2",

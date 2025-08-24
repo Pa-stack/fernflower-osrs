@@ -35,16 +35,16 @@ public class MapOldNewSmokeTest {
   }
 
   private static boolean fixturesPresent() {
-    return Files.isRegularFile(Paths.get("data/weeks/osrs-1.jar")) &&
-           Files.isRegularFile(Paths.get("data/weeks/osrs-10.jar"));
+    return Files.isRegularFile(Paths.get("data/weeks/2025-34/old.jar")) &&
+           Files.isRegularFile(Paths.get("data/weeks/2025-34/new.jar"));
   }
 
   @Test
   public void smoke_no_refine_deterministic() throws Exception {
     if (!fixturesPresent()) { System.out.println("fixtures not present"); }
     Assume.assumeTrue(fixturesPresent());
-    String out1 = runCli("--old", "data/weeks/osrs-1.jar", "--new", "data/weeks/osrs-10.jar", "--out", "mapper-cli/build/test/no-refine-1.tiny", "--no-refine");
-    String out2 = runCli("--old", "data/weeks/osrs-1.jar", "--new", "data/weeks/osrs-10.jar", "--out", "mapper-cli/build/test/no-refine-2.tiny", "--no-refine");
+  String out1 = runCli("--old", "data/weeks/2025-34/old.jar", "--new", "data/weeks/2025-34/new.jar", "--out", "mapper-cli/build/test/no-refine-1.tiny", "--no-refine");
+  String out2 = runCli("--old", "data/weeks/2025-34/old.jar", "--new", "data/weeks/2025-34/new.jar", "--out", "mapper-cli/build/test/no-refine-2.tiny", "--no-refine");
     assertTrue(out1.contains("pipeline.wl.k=25"));
     assertTrue(out1.contains("tau=0.60 margin=0.05"));
     assertTrue(out1.contains("assign.bytes.sha256="));
@@ -56,8 +56,8 @@ public class MapOldNewSmokeTest {
   public void smoke_refine_deterministic() throws Exception {
     if (!fixturesPresent()) { System.out.println("fixtures not present"); }
     Assume.assumeTrue(fixturesPresent());
-    String out1 = runCli("--old", "data/weeks/osrs-1.jar", "--new", "data/weeks/osrs-10.jar", "--out", "mapper-cli/build/test/refine-1.tiny", "--refine");
-    String out2 = runCli("--old", "data/weeks/osrs-1.jar", "--new", "data/weeks/osrs-10.jar", "--out", "mapper-cli/build/test/refine-2.tiny", "--refine");
+  String out1 = runCli("--old", "data/weeks/2025-34/old.jar", "--new", "data/weeks/2025-34/new.jar", "--out", "mapper-cli/build/test/refine-1.tiny", "--refine");
+  String out2 = runCli("--old", "data/weeks/2025-34/old.jar", "--new", "data/weeks/2025-34/new.jar", "--out", "mapper-cli/build/test/refine-2.tiny", "--refine");
     assertTrue(out1.contains("pipeline.wl.k=25"));
     assertTrue(out1.contains("REFINE_ITER=1 delta="));
     assertTrue(out1.contains("pipeline.assign.sha256="));

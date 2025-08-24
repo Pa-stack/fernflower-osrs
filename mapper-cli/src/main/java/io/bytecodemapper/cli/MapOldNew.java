@@ -413,9 +413,11 @@ final class MapOldNew {
 
         if (debugStats) { System.out.println("[PIPE] start candidates oldMethods=" + oldMs.size() + " newMethods=" + newMs.size() + " cap=" + maxMethods); System.out.flush(); }
 
-        // Deterministic S0 using WL top-K candidates per old method
+    // Deterministic S0 using WL top-K candidates per old method
         final long candT0 = System.nanoTime();
         java.util.SortedMap<String, java.util.SortedMap<String, Double>> S0 = new java.util.TreeMap<String, java.util.SortedMap<String, Double>>();
+    // Begin per-run session cache to avoid LRU thrash on large inputs
+    io.bytecodemapper.core.wl.MethodCandidateGenerator.beginSessionCache(newMs.size());
         for (io.bytecodemapper.signals.norm.NormalizedMethod om : oldMs) {
             java.util.List<io.bytecodemapper.core.wl.MethodCandidateGenerator.Candidate> cs = io.bytecodemapper.core.wl.MethodCandidateGenerator.candidatesFor(om, newMs, wlK, nodes);
             if (cs == null || cs.isEmpty()) continue;
@@ -426,6 +428,7 @@ final class MapOldNew {
                 row.put(c.newId, Double.valueOf(c.wlScore));
             }
         }
+    io.bytecodemapper.core.wl.MethodCandidateGenerator.endSessionCache();
         double candMs = (System.nanoTime() - candT0) / 1e6;
         if (debugStats) {
             System.out.println(String.format(java.util.Locale.ROOT, "[PIPE] candidates.done in %.1f ms", candMs));

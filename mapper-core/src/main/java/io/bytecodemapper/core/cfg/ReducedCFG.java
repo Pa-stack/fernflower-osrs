@@ -22,7 +22,9 @@ public final class ReducedCFG implements Opcodes {
     private final MethodNode method; private final Map<Integer,Block> blocks = new HashMap<Integer,Block>();
     private ReducedCFG(MethodNode m){this.method=m;}
     public MethodNode method(){return method;}
-    public Collection<Block> blocks(){List<Block> list=new ArrayList<Block>(blocks.values()); list.sort(new Comparator<Block>(){public int compare(Block a,Block b){return a.id-b.id;}}); return list;}
+    public Collection<Block> blocks(){List<Block> list=new ArrayList<Block>(blocks.values()); list.sort(new Comparator<Block>(){public int compare(Block a,Block b){return Integer.compare(a.id,b.id);}}); return list;}
+    // Internal helper: unsorted view for internal passes where order is irrelevant
+    private Collection<Block> blocksUnsorted(){ return blocks.values(); }
     public Block block(int id){return blocks.get(id);} public int[] allBlockIds(){int n=blocks.size(),i=0; int[] a=new int[n]; for(Block b:blocks()) a[i++]=b.id; return a;}
 
     public static ReducedCFG build(MethodNode mn){ReducedCFG cfg=new ReducedCFG(mn); cfg.buildLoose(); cfg.dropUnreachable(); cfg.mergeLinear(); cfg.sortEdges(); return cfg;}
@@ -47,8 +49,8 @@ public final class ReducedCFG implements Opcodes {
 
     private void mergeLinear(){boolean changed; do{changed=false; List<Block> order=new ArrayList<Block>(blocks()); for(Block b:order){if(!blocks.containsKey(b.id)) continue; int[] s=b.succs; if(s.length!=1) continue; Block c=blocks.get(s[0]); if(c==null) continue; if(c.preds.length!=1) continue; AbstractInsnNode last=method.instructions.get(b.endIdx); int op=last==null?-1:last.getOpcode(); if(last instanceof JumpInsnNode|| last instanceof TableSwitchInsnNode|| last instanceof LookupSwitchInsnNode|| isTerminal(op)) continue; if(b.handlerStart||c.handlerStart) continue; b.endIdx=c.endIdx; b.succs=c.succs; blocks.remove(c.id); rebuildPreds(); changed=true; break; }}while(changed); }
 
-    private void sortEdges(){for(Block b:blocks()){b.succs=sortedDistinct(b.succs); b.preds=sortedDistinct(b.preds);} }
-    private void rebuildPreds(){for(Block b:blocks()) b.preds=new int[0]; for(Block b:blocks()){for(int s: b.succs){Block t=blocks.get(s); if(t==null) continue; t.preds=append(t.preds,b.id);} } sortEdges(); }
+    private void sortEdges(){for(Block b:blocksUnsorted()){b.succs=sortedDistinct(b.succs); b.preds=sortedDistinct(b.preds);} }
+    private void rebuildPreds(){for(Block b:blocksUnsorted()) b.preds=new int[0]; for(Block b:blocksUnsorted()){for(int s: b.succs){Block t=blocks.get(s); if(t==null) continue; t.preds=append(t.preds,b.id);} } sortEdges(); }
 
     // helpers
     private static boolean isTerminal(int op){switch(op){case RETURN:case ARETURN:case IRETURN:case LRETURN:case FRETURN:case DRETURN:case ATHROW:return true;default:return false;}}
