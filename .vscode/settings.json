@@ -32,7 +32,7 @@
   // Make integrated terminals/tasks default to JDK 8 when opened in this workspace
   "terminal.integrated.env.windows": {
     "JAVA_HOME": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452",
-    "PATH": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452\\bin;${env:PATH}"
+    "PATH": "C:\\Users\\pashq\\.jdks\\temurin-1.8.0_452\\bin;${env:PATH};C:\\Users\\pashq\\.cargo\\bin"
   },
   // Let Gradle extension scan nested projects
   "gradle.nestedProjects": true,
