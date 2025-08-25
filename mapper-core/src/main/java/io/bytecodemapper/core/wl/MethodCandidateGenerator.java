@@ -11,6 +11,9 @@ public final class MethodCandidateGenerator {
     public static final int DEFAULT_K = 25; // required literal
     public static final class Candidate { public final String newId; public final double wlScore; public Candidate(String id,double s){this.newId=id;this.wlScore=s;} }
     static final boolean DEBUG = Boolean.getBoolean("mapper.debug");
+    // Future knob (measurement-only): currently unused; zero-intersection gate is always ON
+    @SuppressWarnings("unused")
+    private static final boolean TOKEN_GATE_FLAG = Boolean.parseBoolean(System.getProperty("mapper.cand.tokenGate", "false"));
     private static final int WL_CACHE_CAP = Integer.getInteger("mapper.wl.cache.size", 2048).intValue();
     // Use primitive fastutil map to cut boxing during cosine; deterministic order via AVL tree
     private static final LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap> WL_CACHE =
@@ -26,6 +29,9 @@ public final class MethodCandidateGenerator {
     // When enabled, we consult this first and populate it alongside WL_CACHE.
     private static Map<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap> SESSION_WL_CACHE = null;
     private static Map<String, Long> SESSION_WL_NORM = null;
+    // Disk cache (P1): feature flag and state
+    private static final boolean DISK_CACHE = Boolean.parseBoolean(System.getProperty("mapper.cache.disk", "false"));
+    private static volatile boolean DISK_CACHE_SOFT_DISABLED = false;
     // Tier-1 index: sig64 -> array of new method numeric ids (deterministic unsigned-sorted)
     // Built lazily per session. Volatile for safe publication after synchronized build.
     private static volatile Map<Long, int[]> TIER1_INDEX = null;
@@ -43,6 +49,7 @@ public final class MethodCandidateGenerator {
         int progress = 0;
         final long wlWatchMs = Long.getLong("mapper.wl.watchdog.ms", 3000L).longValue();
         final long candWatchMs = Long.getLong("mapper.cand.watchdog.ms", 10000L).longValue();
+        int tokenGateSkips = 0; // per-call counter
     // Build index lazily on first use (only if enabled)
     if (ENABLE_TIER1 && TIER1_INDEX == null) buildTier1Index(newKeys, nodes);
 
@@ -65,7 +72,9 @@ public final class MethodCandidateGenerator {
                 if (wlWatchMs > 0 && dtMs > wlWatchMs) if (DEBUG) WLRefinement.dumpAllStacks("[WL] watchdog: slow bag newId=" + newId + " ms=" + dtMs);
                 if (DEBUG) { System.out.println("[WL] bag.end newId=" + newId + " ms=" + dtMs); if ((++progressLocal % 10) == 0) System.out.flush(); } else { progressLocal++; }
                 final long n2New = wlNorm(newId, nb);
-                double score = cosineDotOnly(oldBag, nb, n2Old, n2New);
+                double score;
+                if (!hasKeyIntersection(oldBag, nb)) { tokenGateSkips++; score = 0.0; }
+                else { score = cosineDotOnly(oldBag, nb, n2Old, n2New); }
                 // exact equality check to guard collisions
                 if (bagsEqual(oldBag, nb)) out.add(new Candidate(newId, score)); else out.add(new Candidate(newId, score));
             }
@@ -82,7 +91,9 @@ public final class MethodCandidateGenerator {
             if (wlWatchMs > 0 && dtMs > wlWatchMs) if (DEBUG) WLRefinement.dumpAllStacks("[WL] watchdog: slow bag newId=" + newId + " ms=" + dtMs);
             if (DEBUG) { System.out.println("[WL] bag.end newId=" + newId + " ms=" + dtMs); if ((++progressLocal % 10) == 0) System.out.flush(); } else { progressLocal++; }
             final long n2New = wlNorm(newId, nb);
-            double score = cosineDotOnly(oldBag, nb, n2Old, n2New);
+            double score;
+            if (!hasKeyIntersection(oldBag, nb)) { tokenGateSkips++; score = 0.0; }
+            else { score = cosineDotOnly(oldBag, nb, n2Old, n2New); }
             out.add(new Candidate(newId, score));
         }
     } else {
@@ -102,7 +113,9 @@ public final class MethodCandidateGenerator {
                 progress++;
             }
             final long n2New = wlNorm(newId, nb);
-            double score = cosineDotOnly(oldBag, nb, n2Old, n2New);
+            double score;
+            if (!hasKeyIntersection(oldBag, nb)) { tokenGateSkips++; score = 0.0; }
+            else { score = cosineDotOnly(oldBag, nb, n2Old, n2New); }
             out.add(new Candidate(newId,score));
             // Candidate-level watchdog (optional)
             long candMs = (System.nanoTime() - phaseStart) / 1_000_000L;
@@ -111,6 +124,8 @@ public final class MethodCandidateGenerator {
             }
         }
     }
+        // Emit token gate stats for this oldId
+        if (DEBUG) { System.out.println("[CAND] tokenGate.skip=" + tokenGateSkips); }
         final String baseOldId = oldId;
         // If tier1 enabled, partition candidates into Tier-1 (same sig64 and exact bag equality) and Tier-2
         if (ENABLE_TIER1 && TIER1_INDEX != null) {
@@ -153,6 +168,33 @@ public final class MethodCandidateGenerator {
             it.unimi.dsi.fastutil.longs.Long2IntSortedMap sh = SESSION_WL_CACHE.get(cacheKey);
             if (sh != null) { ensureNorm(cacheKey, sh); return sh; }
         }
+        // Disk cache pre-check: if file exists and memory has it, just log HIT; otherwise read-through
+        if (DISK_CACHE && !DISK_CACHE_SOFT_DISABLED) {
+            try {
+                java.nio.file.Path dir = diskCacheDir();
+                java.nio.file.Path file = dir.resolve(diskKeyFor(cacheKey) + ".bin").toAbsolutePath().normalize();
+                if (java.nio.file.Files.isRegularFile(file)) {
+                    it.unimi.dsi.fastutil.longs.Long2IntSortedMap mem = WL_CACHE.get(cacheKey);
+                    if (mem != null) {
+                        if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", file.getFileName().toString().replace(".bin","")));
+                        ensureNorm(cacheKey, mem); return mem;
+                    } else {
+                        java.io.DataInputStream din = io.bytecodemapper.core.util.FileCacheIO.newDataInputStream(file);
+                        byte[] all = new byte[Math.max(0, (int)java.nio.file.Files.size(file))];
+                        int off = 0; while (off < all.length) { int r = din.read(all, off, all.length - off); if (r < 0) break; off += r; }
+                        din.close();
+                        it.unimi.dsi.fastutil.longs.Long2IntSortedMap m = WLRefinement.decodeBagFastutil(all);
+                        storeNorm(cacheKey, computeNorm2(m));
+                        if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", file.getFileName().toString().replace(".bin","")));
+                        WL_CACHE.put(cacheKey, m);
+                        if (SESSION_WL_CACHE != null) SESSION_WL_CACHE.put(cacheKey, m);
+                        return m;
+                    }
+                }
+            } catch (Throwable ioe) {
+                DISK_CACHE_SOFT_DISABLED = true; if (DEBUG) System.out.println("[CACHE] disabled wl due to IO: " + ioe.getClass().getSimpleName());
+            }
+        }
         // Global LRU hit: return a defensive copy to avoid aliasing
         it.unimi.dsi.fastutil.longs.Long2IntSortedMap hit = WL_CACHE.get(cacheKey);
         if (hit != null) { ensureNorm(cacheKey, hit); return hit; }
@@ -164,6 +206,27 @@ public final class MethodCandidateGenerator {
         WL_CACHE.put(cacheKey, fu);
         if (SESSION_WL_CACHE != null) SESSION_WL_CACHE.put(cacheKey, fu);
         storeNorm(cacheKey, computeNorm2(fu));
+        // Write-back to disk if enabled
+        if (DISK_CACHE && !DISK_CACHE_SOFT_DISABLED) {
+            try {
+                java.nio.file.Path dir = diskCacheDir(); io.bytecodemapper.core.util.FileCacheIO.ensureDir(dir);
+                String key = diskKeyFor(cacheKey);
+                java.nio.file.Path target = dir.resolve(key + ".bin").toAbsolutePath().normalize();
+                if (!java.nio.file.Files.isRegularFile(target)) {
+                    byte[] bytes = WLRefinement.encodeBagFastutil(fu);
+                    java.nio.file.Path tmp = io.bytecodemapper.core.util.FileCacheIO.tempSibling(target);
+                    java.io.DataOutputStream dout = io.bytecodemapper.core.util.FileCacheIO.newDataOutputStream(tmp);
+                    dout.write(bytes); dout.flush(); dout.close();
+                    io.bytecodemapper.core.util.FileCacheIO.atomicReplace(tmp, target);
+                    if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_MISS:wl key=%s", key));
+                } else {
+                    // already exists; consider it a HIT if we computed concurrently (but avoid reread)
+                    if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", key));
+                }
+            } catch (Throwable ioe) {
+                DISK_CACHE_SOFT_DISABLED = true; if (DEBUG) System.out.println("[CACHE] disabled wl write due to IO: " + ioe.getClass().getSimpleName());
+            }
+        }
         return fu;
     }
 
@@ -273,5 +336,47 @@ public final class MethodCandidateGenerator {
             else { eb= ib.hasNext()? ib.next(): null; }
         }
         if(n2==0||m2==0) return 0.0; return dot / (Math.sqrt((double)n2) * Math.sqrt((double)m2));
+    }
+
+    // Zero-intersection gate: iterate both entry sets in unsigned key order and bail early on first match
+    private static boolean hasKeyIntersection(it.unimi.dsi.fastutil.longs.Long2IntSortedMap a, it.unimi.dsi.fastutil.longs.Long2IntSortedMap b){
+        java.util.Iterator<it.unimi.dsi.fastutil.longs.Long2IntMap.Entry> ia = a.long2IntEntrySet().iterator();
+        java.util.Iterator<it.unimi.dsi.fastutil.longs.Long2IntMap.Entry> ib = b.long2IntEntrySet().iterator();
+        if(!ia.hasNext() || !ib.hasNext()) return false;
+        it.unimi.dsi.fastutil.longs.Long2IntMap.Entry ea = ia.next();
+        it.unimi.dsi.fastutil.longs.Long2IntMap.Entry eb = ib.next();
+        while(true){
+            long ka = ea.getLongKey(); long kb = eb.getLongKey();
+            int cmp = Long.compareUnsigned(ka, kb);
+            if(cmp==0) return true;
+            if(cmp<0){ if(ia.hasNext()) ea = ia.next(); else return false; }
+            else { if(ib.hasNext()) eb = ib.next(); else return false; }
+        }
+    }
+
+    // --- Disk cache helpers ---
+    private static java.nio.file.Path diskCacheDir() {
+        String base = System.getProperty("mapper.cache.dir");
+        if (base == null || base.trim().isEmpty()) {
+            String home = System.getProperty("user.home", ".");
+            base = home + java.io.File.separator + ".bytecodemapper" + java.io.File.separator + "cache" + java.io.File.separator + "wl";
+        }
+        return java.nio.file.Paths.get(base).toAbsolutePath().normalize();
+    }
+
+    private static String diskKeyFor(String cacheKey){
+        String mode = "full"; // our compute path chooses lite based on max blocks, but key must be deterministic per invocation
+        String maxBlocks = System.getProperty("mapper.wl.max.blocks","800");
+        String s = "ALGO=WLv1|JAVA=" + System.getProperty("java.version","?")
+                + "|MODE=" + mode + "|ROUNDS=2|MAXBLOCKS=" + maxBlocks
+                + "|METHOD=" + cacheKey
+                + "|BAGSEED=base";
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] d = md.digest(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hex=new StringBuilder(d.length*2); for(byte b: d) hex.append(String.format(java.util.Locale.ROOT, "%02x", b)); return hex.toString();
+        } catch (Exception e){
+            return Integer.toHexString(s.hashCode());
+        }
     }
 }

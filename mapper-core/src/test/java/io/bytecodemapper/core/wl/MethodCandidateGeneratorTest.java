@@ -17,8 +17,8 @@ public class MethodCandidateGeneratorTest implements Opcodes {
     System.setProperty("mapper.debug","true");
     System.setProperty("mapper.cand.tier1","true");
     int K = MethodCandidateGenerator.DEFAULT_K;
-    final String metaAlgo = "ALGO_VERSION=Tier1-v1";
-        final String metaCfg = "CANONICAL_CONFIG_SHA256=unknown-for-P2";
+    final String metaAlgo = "ALGO_VERSION=TokenGate-v1";
+        final String metaCfg = "CANONICAL_CONFIG_SHA256=unknown-for-P3";
         final String metaRun = "RUNTIME_VERSION=java8+gradle6.9.4";
         final String metaCommit = "COMMIT_OR_ARTIFACT_HASH=local";
 
@@ -70,34 +70,40 @@ public class MethodCandidateGeneratorTest implements Opcodes {
         System.err.println(captured);
         System.err.println("---CAPTURED STDOUT END---");
 
-    // write KPI JSON (fixed field order)
+        // write P3 KPI JSON (fixed field order): {"tokenGateSkips":<int>,"warmRunSeconds":<float>}
         try{
-            java.nio.file.Path kp = java.nio.file.Paths.get("mapper-core","build","tmp","p2_kpi.json"); java.nio.file.Files.createDirectories(kp.getParent());
-            int tier1 = 0, tier2 = 0; for(MethodCandidateGenerator.Candidate c: cs){ if (c.newId.contains("newLoop")) tier1++; else tier2++; }
+            java.nio.file.Path kp = java.nio.file.Paths.get("mapper-core","build","tmp","p3_kpi.json"); java.nio.file.Files.createDirectories(kp.getParent());
+            // Extract the last tokenGate.skip count from captured stdout (warm run printed last)
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\[CAND] tokenGate\\.skip=(\\d+)").matcher(captured);
+            int last = -1; while(m.find()){ last = Integer.parseInt(m.group(1)); }
+            if (last < 0) last = 0; // fallback
             double warmSecs = warmMs/1000.0;
-            String json = String.format(java.util.Locale.ROOT, "{\"tier1\":%d,\"tier2\":%d,\"warmRunSeconds\":%.3f}", tier1, tier2, warmSecs);
+            String json = String.format(java.util.Locale.ROOT, "{\"tokenGateSkips\":%d,\"warmRunSeconds\":%.3f}", last, warmSecs);
             java.nio.file.Files.write(kp, json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        } catch(Exception ex){ Assert.fail("failed to write KPI: " + ex.getMessage()); }
+        } catch(Exception ex){ Assert.fail("failed to write KPI (P3): " + ex.getMessage()); }
 
         // assertions on captured stdout
         java.util.regex.Pattern pTopk = java.util.regex.Pattern.compile("^wl\\.topk\\.k=25$", java.util.regex.Pattern.MULTILINE);
         java.util.regex.Pattern pSHA = java.util.regex.Pattern.compile("^wl\\.candidates\\.sha256=21df34dcd20899415f0316d82f87277de559889e444aa6076b1ae06e9e03ab1f$", java.util.regex.Pattern.MULTILINE);
     java.util.regex.Pattern pTier = java.util.regex.Pattern.compile("\\[CAND\\] tier1\\.size=\\d+ tier2\\.size=\\d+");
+    java.util.regex.Pattern pGate = java.util.regex.Pattern.compile("\\[CAND\\] tokenGate\\.skip=\\d+");
     boolean hasTopk = pTopk.matcher(captured).find();
     boolean hasSha = pSHA.matcher(captured).find();
     boolean hasTier = pTier.matcher(captured).find();
-    System.err.println("DBG: hasTopk=" + hasTopk + " hasSha=" + hasSha + " hasTier=" + hasTier);
+    boolean hasGate = pGate.matcher(captured).find();
+    System.err.println("DBG: hasTopk=" + hasTopk + " hasSha=" + hasSha + " hasTier=" + hasTier + " hasGate=" + hasGate);
     System.err.println("DBG: captured='" + captured.replace("\n", "\\n") + "'");
     Assert.assertTrue("missing topk", hasTopk);
     Assert.assertTrue("sha mismatch", hasSha);
     Assert.assertTrue("tier log missing", hasTier);
+    Assert.assertTrue("token gate log missing", hasGate);
 
-        // KPI assertions
+        // KPI assertions (P3)
         try{
-            java.nio.file.Path kp = java.nio.file.Paths.get("mapper-core","build","tmp","p2_kpi.json");
+            java.nio.file.Path kp = java.nio.file.Paths.get("mapper-core","build","tmp","p3_kpi.json");
             String kpc = new String(java.nio.file.Files.readAllBytes(kp), java.nio.charset.StandardCharsets.UTF_8);
         // Acceptance regexes
-        java.util.regex.Pattern pK = java.util.regex.Pattern.compile("\\\"tier1\\\":\\d+,\\s*\\\"tier2\\\":\\d+,\\s*\\\"warmRunSeconds\\\":(0|[1-9]\\d?)(\\.\\d+)?");
+        java.util.regex.Pattern pK = java.util.regex.Pattern.compile("\\\"tokenGateSkips\\\":\\d+,\\s*\\\"warmRunSeconds\\\":(0|[1-9]\\d?)(\\.\\d+)?");
         Assert.assertTrue("KPI shape", pK.matcher(kpc).find());
         java.util.regex.Pattern pWarmBound = java.util.regex.Pattern.compile("\\\"warmRunSeconds\\\"\\s*:\\s*(\\d|[12]\\d|30)(\\.\\d+)?");
         Assert.assertTrue("KPI warm bound regex", pWarmBound.matcher(kpc).find());

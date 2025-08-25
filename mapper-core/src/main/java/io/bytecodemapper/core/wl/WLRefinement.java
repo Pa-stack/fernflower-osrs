@@ -120,6 +120,35 @@ public final class WLRefinement {
     public static byte[] signature(org.objectweb.asm.tree.MethodNode mn, int rounds){ ReducedCFG cfg=ReducedCFG.build(mn); Dominators dom=Dominators.compute(cfg); SortedMap<Long,Integer> bag=tokenBagFinalSorted(cfg,dom,rounds); StringBuilder sb=new StringBuilder(); for(Map.Entry<Long,Integer> e: bag.entrySet()){ sb.append(Long.toUnsignedString(e.getKey())).append(':').append(e.getValue()).append('\n'); } return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);}
     public static String sha256Hex(byte[] bytes){ try{ java.security.MessageDigest md=java.security.MessageDigest.getInstance("SHA-256"); byte[] d=md.digest(bytes); StringBuilder hex=new StringBuilder(d.length*2); for(byte b: d) hex.append(String.format(java.util.Locale.ROOT, "%02x", b)); return hex.toString(); } catch(Exception e){ return Integer.toHexString(Arrays.hashCode(bytes)); } }
 
+    // --- P1: stable bag encode/decode (package-private) ---
+    static byte[] encodeBagFastutil(it.unimi.dsi.fastutil.longs.Long2IntSortedMap m) throws java.io.IOException {
+        java.io.ByteArrayOutputStream bout = new java.io.ByteArrayOutputStream();
+        java.io.DataOutputStream out = new java.io.DataOutputStream(new java.io.BufferedOutputStream(bout));
+        try {
+            for (it.unimi.dsi.fastutil.longs.Long2IntMap.Entry e : m.long2IntEntrySet()) {
+                out.writeLong(e.getLongKey());
+                out.writeInt(e.getIntValue());
+            }
+        } finally {
+            out.flush(); out.close();
+        }
+        return bout.toByteArray();
+    }
+
+    static it.unimi.dsi.fastutil.longs.Long2IntSortedMap decodeBagFastutil(byte[] bytes) throws java.io.IOException {
+        it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap m = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
+        java.io.DataInputStream in = new java.io.DataInputStream(new java.io.BufferedInputStream(new java.io.ByteArrayInputStream(bytes)));
+        try {
+            while (true) {
+                long k;
+                try { k = in.readLong(); } catch (java.io.EOFException eof) { break; }
+                int v = in.readInt();
+                m.put(k, v);
+            }
+        } finally { try { in.close(); } catch (Throwable ignore) {} }
+        return m;
+    }
+
     // --- Compatibility surfaces for older tests ---
     public static Map<Integer, Long> refineLabels(List<Integer> nodeIds,
                                                   Map<Integer, List<Integer>> preds,
