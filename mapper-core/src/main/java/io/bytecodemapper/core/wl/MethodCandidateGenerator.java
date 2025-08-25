@@ -38,6 +38,10 @@ public final class MethodCandidateGenerator {
     // Feature flag to allow rollback
     private static final boolean ENABLE_TIER1 = Boolean.parseBoolean(System.getProperty("mapper.cand.tier1", "true"));
 
+    // --- small helpers (P2-lite) for logging and soft-disable ---
+    private static void logCache(String fmt, Object... args){ if (DEBUG) System.out.println("[CACHE] " + String.format(java.util.Locale.ROOT, fmt, args)); }
+    private static void softDisableOnce(Throwable t){ boolean wasEnabled = !DISK_CACHE_SOFT_DISABLED; DISK_CACHE_SOFT_DISABLED = true; if (wasEnabled && DEBUG) System.out.println("[CACHE] disabled wl due to IO: " + t.getClass().getSimpleName()); }
+
     public static List<Candidate> candidatesFor(Object oldKey, List<?> newKeys, int k, Map<?, org.objectweb.asm.tree.MethodNode> nodes){
         if(k<=0) k=DEFAULT_K;
         final long phaseStart = System.nanoTime();
@@ -153,11 +157,13 @@ public final class MethodCandidateGenerator {
         // Guard against misuse across runs; overwrite safely
     SESSION_WL_CACHE = new LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap>(Math.max(16, expectedNewMethods));
     SESSION_WL_NORM  = new LinkedHashMap<String, Long>(Math.max(16, expectedNewMethods));
-    // Reset soft-disable at session start so tests/runs can proceed independently
-    DISK_CACHE_SOFT_DISABLED = false;
-    // Clear global LRU caches to make this session's cold/warm semantics deterministic for tests
-    WL_CACHE.clear();
-    WL_NORM_CACHE.clear();
+        // Reset soft-disable at session start so tests/runs can proceed independently
+        DISK_CACHE_SOFT_DISABLED = false;
+        // Test-only behavior: optionally clear global LRU caches for deterministic cold/warm in tests
+        if (Boolean.getBoolean("mapper.test.sessionReset")) {
+            WL_CACHE.clear();
+            WL_NORM_CACHE.clear();
+        }
     }
 
     /** End the current session cache and free references for GC. */
@@ -181,10 +187,13 @@ public final class MethodCandidateGenerator {
         }
         // Global LRU hit (before any disk I/O)
         it.unimi.dsi.fastutil.longs.Long2IntSortedMap hit = WL_CACHE.get(cacheKey);
-        if (hit != null) { ensureNorm(cacheKey, hit); if (DISK_CACHE && diskKey != null && DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", diskKey)); return hit; }
+        if (hit != null) { ensureNorm(cacheKey, hit); if (DISK_CACHE && diskKey != null) logCache("CACHE_HIT:wl key=%s", diskKey); return hit; }
         // Disk cache read-through (only if enabled and not soft-disabled)
         if (DISK_CACHE && !DISK_CACHE_SOFT_DISABLED) {
             try {
+                // Path safety: soft-disable on suspicious cache dir
+                String baseProp = System.getProperty("mapper.cache.dir");
+                if (baseProp != null && baseProp.indexOf("..") >= 0) { softDisableOnce(new java.io.IOException("bad cache.dir")); }
                 java.nio.file.Path dir = diskCacheDir();
                 java.nio.file.Path file = dir.resolve(diskKey + ".bin").toAbsolutePath().normalize();
                 if (java.nio.file.Files.isRegularFile(file)) {
@@ -195,13 +204,13 @@ public final class MethodCandidateGenerator {
                     }
                     it.unimi.dsi.fastutil.longs.Long2IntSortedMap m = WLRefinement.decodeBagFastutil(all);
                     storeNorm(cacheKey, computeNorm2(m));
-                    if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", diskKey));
+                    logCache("CACHE_HIT:wl key=%s", diskKey);
                     WL_CACHE.put(cacheKey, m);
                     if (SESSION_WL_CACHE != null) SESSION_WL_CACHE.put(cacheKey, m);
                     return m;
                 }
             } catch (Throwable ioe) {
-                DISK_CACHE_SOFT_DISABLED = true; if (DEBUG) System.out.println("[CACHE] disabled wl due to IO: " + ioe.getClass().getSimpleName());
+                softDisableOnce(ioe);
             }
         }
         // Use unified capped WL path (fastutil), convert to SortedMap with unsigned ordering
@@ -220,9 +229,9 @@ public final class MethodCandidateGenerator {
                 java.nio.file.Path tmp = io.bytecodemapper.core.util.FileCacheIO.tempSibling(target);
                 try (java.io.DataOutputStream dout = io.bytecodemapper.core.util.FileCacheIO.newDataOutputStream(tmp)) { dout.write(bytes); }
                 io.bytecodemapper.core.util.FileCacheIO.atomicReplace(tmp, target);
-                if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, existed ? "CACHE_HIT:wl key=%s" : "CACHE_MISS:wl key=%s", diskKey));
+                logCache(existed ? "CACHE_HIT:wl key=%s" : "CACHE_MISS:wl key=%s", diskKey);
             } catch (Throwable ioe) {
-                DISK_CACHE_SOFT_DISABLED = true; if (DEBUG) System.out.println("[CACHE] disabled wl write due to IO: " + ioe.getClass().getSimpleName());
+                softDisableOnce(ioe);
             }
         }
         return fu;
@@ -364,21 +373,21 @@ public final class MethodCandidateGenerator {
 
     private static String diskKeyFor(String cacheKey, String mode){
         // Normalize method id for disk key stability: strip leading old#/new# if present
-        String methodId = cacheKey;
+        String methodId = cacheKey == null ? "" : cacheKey.trim();
         int hash = cacheKey.indexOf('#');
         if (hash >= 0 && (cacheKey.startsWith("old#") || cacheKey.startsWith("new#"))) {
-            methodId = cacheKey.substring(hash + 1);
+            methodId = cacheKey.substring(hash + 1).trim();
         }
         String maxBlocks = System.getProperty("mapper.wl.max.blocks","800");
         String enrich = Boolean.getBoolean("mapper.wl.label.enrich") ? "|ENRICH=on" : ""; // TODO: bump ALGO to WLv2 when enrichment lands
         String s = "ALGO=WLv1|JAVA=" + System.getProperty("java.version","?")
-                + "|MODE=" + mode + "|ROUNDS=2|MAXBLOCKS=" + maxBlocks
+                + "|MODE=" + (mode == null ? "full" : mode) + "|ROUNDS=2|MAXBLOCKS=" + maxBlocks
                 + "|METHOD=" + methodId
                 + "|BAGSEED=base" + enrich;
         try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
             byte[] d = md.digest(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder hex=new StringBuilder(d.length*2); for(byte b: d) hex.append(String.format(java.util.Locale.ROOT, "%02x", b)); return hex.toString();
+            StringBuilder hex=new StringBuilder(d.length*2); for(byte b: d) hex.append(String.format(java.util.Locale.ROOT, "%02x", b)); return hex.toString().toLowerCase(java.util.Locale.ROOT);
         } catch (Exception e){
             return Integer.toHexString(s.hashCode());
         }

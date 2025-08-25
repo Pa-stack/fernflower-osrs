@@ -2,10 +2,12 @@ package io.bytecodemapper.core.wl;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Before;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 public class WLDiskCacheTest implements Opcodes {
+    @Before public void setSessionReset(){ System.setProperty("mapper.test.sessionReset","true"); }
     private static MethodNode straight(){ MethodNode m=new MethodNode(ACC_PUBLIC|ACC_STATIC, "s","()V",null,null); InsnList il=m.instructions; il.add(new InsnNode(ICONST_1)); il.add(new InsnNode(RETURN)); return m; }
     private static MethodNode loop(){ MethodNode m=new MethodNode(ACC_PUBLIC|ACC_STATIC, "l","()V",null,null); InsnList il=m.instructions; LabelNode L=new LabelNode(); il.add(new InsnNode(ICONST_2)); il.add(L); il.add(new InsnNode(ICONST_1)); il.add(new InsnNode(ISUB)); il.add(new JumpInsnNode(IFGT, L)); il.add(new InsnNode(RETURN)); return m; }
     private static final class Key { private final String id; Key(String id){this.id=id;} public String fingerprintSha256(){ return id; } public String toString(){ return id; } }

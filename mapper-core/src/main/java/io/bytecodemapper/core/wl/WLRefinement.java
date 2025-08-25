@@ -14,6 +14,9 @@ public final class WLRefinement {
     // Compatibility default rounds for tests
     public static final int DEFAULT_K = 2;
     static final boolean DEBUG = Boolean.getBoolean("mapper.debug");
+    // P0: v1 header constants
+    static final byte[] MAGIC = new byte[]{'W','L','B','G'};
+    static final byte VERSION = 1;
     // (int prop helper unused after unification)
     // --- WL block cap property (unified path) ---
     private static final String PROP_MAX_BLOCKS = "mapper.wl.max.blocks";
@@ -124,9 +127,9 @@ public final class WLRefinement {
     static byte[] encodeBagFastutil(it.unimi.dsi.fastutil.longs.Long2IntSortedMap m) throws java.io.IOException {
         java.io.ByteArrayOutputStream bout = new java.io.ByteArrayOutputStream();
         try (java.io.DataOutputStream out = new java.io.DataOutputStream(new java.io.BufferedOutputStream(bout))) {
-            // Header v1: magic "WLBG" + version(1) + endian/reserved(0)
-            out.write(new byte[]{'W','L','B','G'});
-            out.writeByte(1);
+            // Header v1: MAGIC + VERSION + reserved(0)
+            out.write(MAGIC);
+            out.writeByte(VERSION);
             out.writeByte(0);
             for (it.unimi.dsi.fastutil.longs.Long2IntMap.Entry e : m.long2IntEntrySet()) {
                 out.writeLong(e.getLongKey());
@@ -140,7 +143,7 @@ public final class WLRefinement {
         it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap m = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
         if (bytes == null || bytes.length == 0) return m;
         // Peek header
-        boolean v1 = bytes.length >= 6 && bytes[0]=='W' && bytes[1]=='L' && bytes[2]=='B' && bytes[3]=='G';
+    boolean v1 = bytes.length >= 6 && bytes[0]==MAGIC[0] && bytes[1]==MAGIC[1] && bytes[2]==MAGIC[2] && bytes[3]==MAGIC[3];
         int offset = 0;
     if (v1) { offset = 6; /* version=bytes[4], reserved=bytes[5] */ }
     int payloadLen = bytes.length - offset;
