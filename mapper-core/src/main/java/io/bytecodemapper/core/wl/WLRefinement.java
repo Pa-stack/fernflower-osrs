@@ -123,29 +123,37 @@ public final class WLRefinement {
     // --- P1: stable bag encode/decode (package-private) ---
     static byte[] encodeBagFastutil(it.unimi.dsi.fastutil.longs.Long2IntSortedMap m) throws java.io.IOException {
         java.io.ByteArrayOutputStream bout = new java.io.ByteArrayOutputStream();
-        java.io.DataOutputStream out = new java.io.DataOutputStream(new java.io.BufferedOutputStream(bout));
-        try {
+        try (java.io.DataOutputStream out = new java.io.DataOutputStream(new java.io.BufferedOutputStream(bout))) {
+            // Header v1: magic "WLBG" + version(1) + endian/reserved(0)
+            out.write(new byte[]{'W','L','B','G'});
+            out.writeByte(1);
+            out.writeByte(0);
             for (it.unimi.dsi.fastutil.longs.Long2IntMap.Entry e : m.long2IntEntrySet()) {
                 out.writeLong(e.getLongKey());
                 out.writeInt(e.getIntValue());
             }
-        } finally {
-            out.flush(); out.close();
         }
         return bout.toByteArray();
     }
 
     static it.unimi.dsi.fastutil.longs.Long2IntSortedMap decodeBagFastutil(byte[] bytes) throws java.io.IOException {
         it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap m = new it.unimi.dsi.fastutil.longs.Long2IntAVLTreeMap();
-        java.io.DataInputStream in = new java.io.DataInputStream(new java.io.BufferedInputStream(new java.io.ByteArrayInputStream(bytes)));
-        try {
+        if (bytes == null || bytes.length == 0) return m;
+        // Peek header
+        boolean v1 = bytes.length >= 6 && bytes[0]=='W' && bytes[1]=='L' && bytes[2]=='B' && bytes[3]=='G';
+        int offset = 0;
+    if (v1) { offset = 6; /* version=bytes[4], reserved=bytes[5] */ }
+    int payloadLen = bytes.length - offset;
+    // Validate structure: payload must be sequence of (long,int) pairs → 12-byte stride
+    if (payloadLen % 12 != 0) throw new java.io.EOFException("truncated or corrupt WL bag payload");
+        try (java.io.DataInputStream in = new java.io.DataInputStream(new java.io.BufferedInputStream(new java.io.ByteArrayInputStream(bytes, offset, bytes.length - offset)))) {
             while (true) {
                 long k;
                 try { k = in.readLong(); } catch (java.io.EOFException eof) { break; }
                 int v = in.readInt();
                 m.put(k, v);
             }
-        } finally { try { in.close(); } catch (Throwable ignore) {} }
+        }
         return m;
     }
 

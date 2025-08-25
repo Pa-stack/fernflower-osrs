@@ -153,6 +153,11 @@ public final class MethodCandidateGenerator {
         // Guard against misuse across runs; overwrite safely
     SESSION_WL_CACHE = new LinkedHashMap<String, it.unimi.dsi.fastutil.longs.Long2IntSortedMap>(Math.max(16, expectedNewMethods));
     SESSION_WL_NORM  = new LinkedHashMap<String, Long>(Math.max(16, expectedNewMethods));
+    // Reset soft-disable at session start so tests/runs can proceed independently
+    DISK_CACHE_SOFT_DISABLED = false;
+    // Clear global LRU caches to make this session's cold/warm semantics deterministic for tests
+    WL_CACHE.clear();
+    WL_NORM_CACHE.clear();
     }
 
     /** End the current session cache and free references for GC. */
@@ -163,43 +168,42 @@ public final class MethodCandidateGenerator {
 
     private static String fingerprintOf(Object k){ try{ try{ java.lang.reflect.Method m=k.getClass().getMethod("fingerprintSha256"); Object r=m.invoke(k); return String.valueOf(r);} catch(NoSuchMethodException ex){ java.lang.reflect.Method m2=k.getClass().getMethod("fingerprint"); Object r2=m2.invoke(k); return String.valueOf(r2);} } catch(Exception e){ long h=StableHash64.hashUtf8(String.valueOf(k)); return Long.toHexString(h);} }
     private static it.unimi.dsi.fastutil.longs.Long2IntSortedMap wlBag(org.objectweb.asm.tree.MethodNode mn, String cacheKey){
+        // Determine WL mode eagerly (for disk key) and prepare cfg/dom for potential compute path
+        final io.bytecodemapper.core.cfg.ReducedCFG cfg = io.bytecodemapper.core.cfg.ReducedCFG.build(mn);
+        final io.bytecodemapper.core.dom.Dominators dom = io.bytecodemapper.core.dom.Dominators.compute(cfg);
+        final String modeStr = cfg.allBlockIds().length > parseMaxBlocksProp() ? "lite" : "full";
+        final String diskKey = DISK_CACHE ? diskKeyFor(cacheKey, modeStr) : null;
+
         // Session hit: single-run non-evicting cache
         if (SESSION_WL_CACHE != null) {
             it.unimi.dsi.fastutil.longs.Long2IntSortedMap sh = SESSION_WL_CACHE.get(cacheKey);
             if (sh != null) { ensureNorm(cacheKey, sh); return sh; }
         }
-        // Disk cache pre-check: if file exists and memory has it, just log HIT; otherwise read-through
+        // Global LRU hit (before any disk I/O)
+        it.unimi.dsi.fastutil.longs.Long2IntSortedMap hit = WL_CACHE.get(cacheKey);
+        if (hit != null) { ensureNorm(cacheKey, hit); if (DISK_CACHE && diskKey != null && DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", diskKey)); return hit; }
+        // Disk cache read-through (only if enabled and not soft-disabled)
         if (DISK_CACHE && !DISK_CACHE_SOFT_DISABLED) {
             try {
                 java.nio.file.Path dir = diskCacheDir();
-                java.nio.file.Path file = dir.resolve(diskKeyFor(cacheKey) + ".bin").toAbsolutePath().normalize();
+                java.nio.file.Path file = dir.resolve(diskKey + ".bin").toAbsolutePath().normalize();
                 if (java.nio.file.Files.isRegularFile(file)) {
-                    it.unimi.dsi.fastutil.longs.Long2IntSortedMap mem = WL_CACHE.get(cacheKey);
-                    if (mem != null) {
-                        if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", file.getFileName().toString().replace(".bin","")));
-                        ensureNorm(cacheKey, mem); return mem;
-                    } else {
-                        java.io.DataInputStream din = io.bytecodemapper.core.util.FileCacheIO.newDataInputStream(file);
-                        byte[] all = new byte[Math.max(0, (int)java.nio.file.Files.size(file))];
+                    byte[] all;
+                    try (java.io.DataInputStream din = io.bytecodemapper.core.util.FileCacheIO.newDataInputStream(file)) {
+                        all = new byte[Math.max(0, (int)java.nio.file.Files.size(file))];
                         int off = 0; while (off < all.length) { int r = din.read(all, off, all.length - off); if (r < 0) break; off += r; }
-                        din.close();
-                        it.unimi.dsi.fastutil.longs.Long2IntSortedMap m = WLRefinement.decodeBagFastutil(all);
-                        storeNorm(cacheKey, computeNorm2(m));
-                        if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", file.getFileName().toString().replace(".bin","")));
-                        WL_CACHE.put(cacheKey, m);
-                        if (SESSION_WL_CACHE != null) SESSION_WL_CACHE.put(cacheKey, m);
-                        return m;
                     }
+                    it.unimi.dsi.fastutil.longs.Long2IntSortedMap m = WLRefinement.decodeBagFastutil(all);
+                    storeNorm(cacheKey, computeNorm2(m));
+                    if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", diskKey));
+                    WL_CACHE.put(cacheKey, m);
+                    if (SESSION_WL_CACHE != null) SESSION_WL_CACHE.put(cacheKey, m);
+                    return m;
                 }
             } catch (Throwable ioe) {
                 DISK_CACHE_SOFT_DISABLED = true; if (DEBUG) System.out.println("[CACHE] disabled wl due to IO: " + ioe.getClass().getSimpleName());
             }
         }
-        // Global LRU hit: return a defensive copy to avoid aliasing
-        it.unimi.dsi.fastutil.longs.Long2IntSortedMap hit = WL_CACHE.get(cacheKey);
-        if (hit != null) { ensureNorm(cacheKey, hit); return hit; }
-        ReducedCFG cfg=ReducedCFG.build(mn);
-        Dominators dom=Dominators.compute(cfg);
         // Use unified capped WL path (fastutil), convert to SortedMap with unsigned ordering
         it.unimi.dsi.fastutil.longs.Long2IntSortedMap fu = WLRefinement.tokenBagFinal(cfg, dom, 2);
         // Store into caches deterministically
@@ -210,19 +214,13 @@ public final class MethodCandidateGenerator {
         if (DISK_CACHE && !DISK_CACHE_SOFT_DISABLED) {
             try {
                 java.nio.file.Path dir = diskCacheDir(); io.bytecodemapper.core.util.FileCacheIO.ensureDir(dir);
-                String key = diskKeyFor(cacheKey);
-                java.nio.file.Path target = dir.resolve(key + ".bin").toAbsolutePath().normalize();
-                if (!java.nio.file.Files.isRegularFile(target)) {
-                    byte[] bytes = WLRefinement.encodeBagFastutil(fu);
-                    java.nio.file.Path tmp = io.bytecodemapper.core.util.FileCacheIO.tempSibling(target);
-                    java.io.DataOutputStream dout = io.bytecodemapper.core.util.FileCacheIO.newDataOutputStream(tmp);
-                    dout.write(bytes); dout.flush(); dout.close();
-                    io.bytecodemapper.core.util.FileCacheIO.atomicReplace(tmp, target);
-                    if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_MISS:wl key=%s", key));
-                } else {
-                    // already exists; consider it a HIT if we computed concurrently (but avoid reread)
-                    if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, "CACHE_HIT:wl key=%s", key));
-                }
+                java.nio.file.Path target = dir.resolve(diskKey + ".bin").toAbsolutePath().normalize();
+                boolean existed = java.nio.file.Files.isRegularFile(target);
+                byte[] bytes = WLRefinement.encodeBagFastutil(fu); // v1 header + entries
+                java.nio.file.Path tmp = io.bytecodemapper.core.util.FileCacheIO.tempSibling(target);
+                try (java.io.DataOutputStream dout = io.bytecodemapper.core.util.FileCacheIO.newDataOutputStream(tmp)) { dout.write(bytes); }
+                io.bytecodemapper.core.util.FileCacheIO.atomicReplace(tmp, target);
+                if (DEBUG) System.out.println(String.format(java.util.Locale.ROOT, existed ? "CACHE_HIT:wl key=%s" : "CACHE_MISS:wl key=%s", diskKey));
             } catch (Throwable ioe) {
                 DISK_CACHE_SOFT_DISABLED = true; if (DEBUG) System.out.println("[CACHE] disabled wl write due to IO: " + ioe.getClass().getSimpleName());
             }
@@ -364,13 +362,19 @@ public final class MethodCandidateGenerator {
         return java.nio.file.Paths.get(base).toAbsolutePath().normalize();
     }
 
-    private static String diskKeyFor(String cacheKey){
-        String mode = "full"; // our compute path chooses lite based on max blocks, but key must be deterministic per invocation
+    private static String diskKeyFor(String cacheKey, String mode){
+        // Normalize method id for disk key stability: strip leading old#/new# if present
+        String methodId = cacheKey;
+        int hash = cacheKey.indexOf('#');
+        if (hash >= 0 && (cacheKey.startsWith("old#") || cacheKey.startsWith("new#"))) {
+            methodId = cacheKey.substring(hash + 1);
+        }
         String maxBlocks = System.getProperty("mapper.wl.max.blocks","800");
+        String enrich = Boolean.getBoolean("mapper.wl.label.enrich") ? "|ENRICH=on" : ""; // TODO: bump ALGO to WLv2 when enrichment lands
         String s = "ALGO=WLv1|JAVA=" + System.getProperty("java.version","?")
                 + "|MODE=" + mode + "|ROUNDS=2|MAXBLOCKS=" + maxBlocks
-                + "|METHOD=" + cacheKey
-                + "|BAGSEED=base";
+                + "|METHOD=" + methodId
+                + "|BAGSEED=base" + enrich;
         try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
             byte[] d = md.digest(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
@@ -379,4 +383,6 @@ public final class MethodCandidateGenerator {
             return Integer.toHexString(s.hashCode());
         }
     }
+
+    private static int parseMaxBlocksProp(){ try { return Integer.parseInt(System.getProperty("mapper.wl.max.blocks","800")); } catch(Exception e){ return 800; } }
 }
